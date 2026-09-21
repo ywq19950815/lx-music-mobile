@@ -1,4 +1,4 @@
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 import { Icon } from '@/components/common/Icon'
 import { useIsPlay } from '@/store/player/hook'
 import { useTheme } from '@/store/theme/hook'
@@ -6,7 +6,7 @@ import { playNext, playPrev, togglePlay } from '@/core/player/player'
 import { createStyle } from '@/utils/tools'
 import { useHorizontalMode } from '@/utils/hooks'
 
-const BTN_SIZE = 24
+const BTN_SIZE = 22
 const handlePlayPrev = () => {
   void playPrev()
 }
@@ -18,8 +18,8 @@ const PlayPrevBtn = () => {
   const theme = useTheme()
 
   return (
-    <TouchableOpacity style={styles.cotrolBtn} activeOpacity={0.5} onPress={handlePlayPrev}>
-      <Icon name='prevMusic' color={theme['c-button-font']} size={BTN_SIZE} />
+    <TouchableOpacity style={styles.controlNextBtn} activeOpacity={0.6} onPress={handlePlayPrev}>
+      <Icon name='prevMusic' color={theme['c-font']} size={BTN_SIZE} />
     </TouchableOpacity>
   )
 }
@@ -28,8 +28,8 @@ const PlayNextBtn = () => {
   const theme = useTheme()
 
   return (
-    <TouchableOpacity style={styles.cotrolBtn} activeOpacity={0.5} onPress={handlePlayNext}>
-      <Icon name='nextMusic' color={theme['c-button-font']} size={BTN_SIZE} />
+    <TouchableOpacity style={styles.controlNextBtn} activeOpacity={0.6} onPress={handlePlayNext}>
+      <Icon name='nextMusic' color={theme['c-font']} size={BTN_SIZE} />
     </TouchableOpacity>
   )
 }
@@ -39,8 +39,8 @@ const TogglePlayBtn = () => {
   const theme = useTheme()
 
   return (
-    <TouchableOpacity style={styles.cotrolBtn} activeOpacity={0.5} onPress={togglePlay}>
-      <Icon name={isPlay ? 'pause' : 'play'} color={theme['c-button-font']} size={BTN_SIZE} />
+    <TouchableOpacity style={styles.togglePlayBtn} activeOpacity={0.7} onPress={togglePlay}>
+      <Icon name={isPlay ? 'pause' : 'play'} color={theme['c-button-font']} size={20} />
     </TouchableOpacity>
   )
 }
@@ -48,31 +48,33 @@ const TogglePlayBtn = () => {
 export default () => {
   const isHorizontalMode = useHorizontalMode()
   return (
-    <>
-      {/* <TouchableOpacity activeOpacity={0.5} onPress={toggleNextPlayMode}>
-        <Text style={{ ...styles.cotrolBtn }}>
-          <Icon name={playModeIcon} style={{ color: theme.secondary10 }} size={18} />
-        </Text>
-      </TouchableOpacity>
-    */}
-      {/* {btnPrev} */}
+    <View style={styles.btnRow}>
       { isHorizontalMode ? <PlayPrevBtn /> : null }
       <TogglePlayBtn />
       <PlayNextBtn />
-    </>
+    </View>
   )
 }
 
-
 const styles = createStyle({
-  cotrolBtn: {
-    width: 46,
-    height: 46,
+  btnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  togglePlayBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(128, 128, 148, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
-
-    // backgroundColor: '#ccc',
-    shadowOpacity: 1,
-    textShadowRadius: 1,
+    marginHorizontal: 3,
+  },
+  controlNextBtn: {
+    width: 34,
+    height: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 2,
   },
 })

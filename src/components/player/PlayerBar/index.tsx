@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { memo } from 'react'
 import { View } from 'react-native'
 import { useKeyboard } from '@/utils/hooks'
 
@@ -7,59 +7,67 @@ import Title from './components/Title'
 import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { createStyle } from '@/utils/tools'
-// import { useSettingValue } from '@/store/setting/hook'
 import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
+import { useProgress } from '@/store/player/hook'
 
 
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
-  // const { onLayout, ...layout } = useLayout()
   const { keyboardShown } = useKeyboard()
   const theme = useTheme()
   const autoHidePlayBar = useSettingValue('common.autoHidePlayBar')
+  const { progress } = useProgress(true)
 
-  const playerComponent = useMemo(() => (
-    <View style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}>
-      <Pic isHome={isHome} />
-      <View style={styles.center}>
-        <Title isHome={isHome} />
-        {/* <View style={{ ...styles.row, justifyContent: 'space-between' }}>
-          <PlayTime />
-        </View> */}
-        <PlayInfo isHome={isHome} />
-      </View>
-      <View style={styles.right}>
-        <ControlBtn />
+  if (autoHidePlayBar && keyboardShown) return null
+
+  const progressPercent = Math.min(100, Math.max(0, (progress || 0) * 100))
+
+  return (
+    <View style={styles.outerWrapper}>
+      <View style={{ ...styles.container, backgroundColor: theme['c-content-background'], borderColor: theme['c-border-background'] ?? 'rgba(0, 0, 0, 0.08)' }}>
+        <Pic isHome={isHome} />
+        <View style={styles.center}>
+          <Title isHome={isHome} />
+          <PlayInfo isHome={isHome} />
+        </View>
+        <View style={styles.right}>
+          <ControlBtn />
+        </View>
+        <View style={styles.bottomProgressTrack}>
+          <View style={[styles.bottomProgressBar, { width: `${progressPercent}%`, backgroundColor: theme['c-primary-font'] ?? theme['c-primary'] }]} />
+        </View>
       </View>
     </View>
-  ), [theme, isHome])
-
-  // console.log('render pb')
-
-  return autoHidePlayBar && keyboardShown ? null : playerComponent
+  )
 })
 
 
 const styles = createStyle({
+  outerWrapper: {
+    width: '100%',
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    paddingTop: 4,
+    backgroundColor: 'transparent',
+  },
   container: {
     width: '100%',
-    // height: 100,
-    // paddingTop: progressContentPadding,
-    // marginTop: -progressContentPadding,
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
-    // borderTopWidth: BorderWidths.normal2,
-    paddingVertical: 5,
-    paddingLeft: 5,
-    // backgroundColor: AppColors.primary,
-    // backgroundColor: 'red',
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
+    paddingVertical: 6,
+    paddingLeft: 8,
+    paddingRight: 6,
+    borderRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 10,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    borderWidth: 0.8,
+    overflow: 'hidden',
+    position: 'relative',
   },
   left: {
-    // borderRadius: 3,
     flexGrow: 0,
     flexShrink: 0,
   },
@@ -67,23 +75,28 @@ const styles = createStyle({
     flexDirection: 'column',
     flexGrow: 1,
     flexShrink: 1,
-    paddingLeft: 5,
+    paddingLeft: 8,
     height: '100%',
-    // justifyContent: 'space-evenly',
-    // height: 48,
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
+    justifyContent: 'center',
   },
   right: {
     flexDirection: 'row',
     alignItems: 'center',
     flexGrow: 0,
     flexShrink: 0,
-    paddingLeft: 5,
-    paddingRight: 5,
+    paddingLeft: 4,
+    paddingRight: 4,
   },
-  // row: {
-  //   flexDirection: 'row',
-  //   flexGrow: 0,
-  //   flexShrink: 0,
-  // },
+  bottomProgressTrack: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+  },
+  bottomProgressBar: {
+    height: '100%',
+    borderRadius: 1,
+  },
 })

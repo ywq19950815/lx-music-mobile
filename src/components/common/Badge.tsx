@@ -1,23 +1,24 @@
 import { memo, useMemo } from 'react'
+import { View } from 'react-native'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import Text from './Text'
-// const menuItemHeight = 42
-// const menuItemWidth = 100
 
 const styles = createStyle({
-  text: {
-    // paddingLeft: 4,
-    // paddingRight: 4,
-    // borderRadius: 2,
-    // lineHeight: 12,
-    // marginTop: 2,
-    marginRight: 5,
-    fontWeight: '400',
-    // marginRight: 5,
-    // marginBottom: 2,
-    // alignSelf: 'flex-start',
+  badgeContainer: {
+    paddingHorizontal: 4,
+    paddingVertical: 0.5,
+    borderRadius: 3,
+    borderWidth: 0.5,
+    marginRight: 6,
     alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontWeight: '500',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
 })
 
@@ -28,26 +29,29 @@ export default memo(({ type = 'normal', children }: {
   children: string
 }) => {
   const theme = useTheme()
-  // console.log(visible)
   const colors = useMemo(() => {
-    const colors = { textColor: '' }
+    const colors = { textColor: '', borderColor: '', bgColor: 'rgba(0, 0, 0, 0.03)' }
     switch (type) {
       case 'normal':
-        // colors.bgColor = theme.primary
         colors.textColor = theme['c-badge-primary']
+        colors.borderColor = theme['c-badge-primary']
         break
       case 'secondary':
-        // colors.bgColor = theme.primary
         colors.textColor = theme['c-badge-secondary']
+        colors.borderColor = theme['c-badge-secondary']
         break
       case 'tertiary':
-        // colors.bgColor = theme.primary
         colors.textColor = theme['c-badge-tertiary']
+        colors.borderColor = theme['c-badge-tertiary']
         break
     }
     return colors
   }, [type, theme])
 
-  return <Text style={styles.text} size={9} color={colors.textColor}>{children}</Text>
+  return (
+    <View style={[styles.badgeContainer, { borderColor: colors.borderColor, backgroundColor: colors.bgColor }]}>
+      <Text style={styles.text} size={9} color={colors.textColor}>{children}</Text>
+    </View>
+  )
 })
 

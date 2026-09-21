@@ -44,12 +44,23 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
   const singer = `${item.singer}${isShowAlbumName && item.meta.albumName ? ` · ${item.meta.albumName}` : ''}`
 
   return (
-    <View style={{ ...styles.listItem, width: rowInfo.rowWidth, height: ITEM_HEIGHT, backgroundColor: isSelected ? theme['c-primary-background-hover'] : 'rgba(0,0,0,0)', opacity: isSupported ? 1 : 0.5 }}>
+    <View style={{
+      ...styles.listItem,
+      width: rowInfo.rowWidth,
+      height: ITEM_HEIGHT,
+      backgroundColor: isSelected
+        ? theme['c-primary-background-hover']
+        : active
+          ? (theme['c-primary-light-900-alpha-200'] ?? 'rgba(0, 0, 0, 0.03)')
+          : 'rgba(0,0,0,0)',
+      opacity: isSupported ? 1 : 0.5,
+      borderRadius: 8,
+    }}>
       <TouchableOpacity style={styles.listItemLeft} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>
         {
           active
-            ? <Icon style={styles.sn} name="play-outline" size={13} color={theme['c-primary-font']} />
-            : <Text style={styles.sn} size={13} color={theme['c-300']}>{index + 1}</Text>
+            ? <Icon style={styles.sn} name="play-outline" size={14} color={theme['c-primary-font']} />
+            : <Text style={styles.sn} size={13} color={theme['c-350']}>{index + 1}</Text>
         }
         <View style={styles.itemInfo}>
           {/* <View style={styles.listItemTitle}> */}
@@ -70,7 +81,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
       </TouchableOpacity>
       {/* <View style={styles.listItemRight}> */}
       <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
-        <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={12} />
+        <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={14} />
       </TouchableOpacity>
       {/* </View> */}
     </View>
