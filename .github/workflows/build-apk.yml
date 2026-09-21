@@ -1,0 +1,61 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - yangwenqi
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+
+      - name: Build Android Release APK
+        env:
+          DISABLE_SVG: 1
+        shell: bash
+        run: |
+          cd android
+          ./gradlew assembleRelease \
+            -PMYAPP_UPLOAD_STORE_FILE='debug.keystore' \
+            -PMYAPP_UPLOAD_KEY_ALIAS='androiddebugkey' \
+            -PMYAPP_UPLOAD_STORE_PASSWORD='android' \
+            -PMYAPP_UPLOAD_KEY_PASSWORD='android'
+
+      - name: List APK outputs
+        run: |
+          ls -la android/app/build/outputs/apk/release/
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lx-music-mobile-apk
+          path: android/app/build/outputs/apk/release/*.apk
+
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/yangwenqi')
+        with:
+          tag_name: v1.9.1-modern-ui
+          name: "LX Music Mobile v1.9.1 (Modern UI Custom Edition)"
+          body: |
+            ## 洛雪音乐移动版 - 现代化 UI 定制版
+            - 全屏播放器唱机拟物留声机系统（起落唱针 + 匀速旋转黑胶大盘）
+            - 呼吸感聚焦动态歌词（当前行聚光加粗放大 + 景深弱化）
+            - 底部 Mini 播放条悬浮胶囊化与流光进度
+            - 实体双层立体进度条滑块
+            - 全站歌曲与歌单圆角卡片化设计
+          draft: false
+          prerelease: false
+          files: android/app/build/outputs/apk/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
