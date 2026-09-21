@@ -31,6 +31,7 @@ export interface ListProps {
   ListHeaderComponent?: FlatListType['ListEmptyComponent']
   checkHomePagerIdle: boolean
   rowType?: RowInfoType
+  contentPaddingBottom?: number
 }
 export interface ListType {
   setList: (list: LX.Music.MusicInfoOnline[], isAppend: boolean, showSource: boolean) => void
@@ -55,6 +56,7 @@ const List = forwardRef<ListType, ListProps>(({
   ListHeaderComponent,
   checkHomePagerIdle,
   rowType,
+  contentPaddingBottom = 0,
 }, ref) => {
   // const t = useI18n()
   const theme = useTheme()
@@ -223,16 +225,17 @@ const List = forwardRef<ListType, ListProps>(({
         break
     }
     return (
-      <View style={{ width: '100%', paddingBottom: visibleMultiSelect ? MULTI_SELECT_BAR_HEIGHT : 0 }} >
+      <View>
         <Footer label={label} onLoadMore={onLoadMore} />
       </View>
     )
-  }, [onLoadMore, status, visibleMultiSelect])
+  }, [onLoadMore, status])
 
   return (
     <FlatList
       ref={flatListRef}
       style={styles.list}
+      contentContainerStyle={{ paddingBottom: visibleMultiSelect ? Math.max(contentPaddingBottom, MULTI_SELECT_BAR_HEIGHT) : contentPaddingBottom }}
       data={currentList}
       numColumns={rowInfo.current.rowNum}
       horizontal={false}

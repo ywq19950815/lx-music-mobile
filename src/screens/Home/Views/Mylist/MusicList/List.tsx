@@ -273,6 +273,7 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       ref={flatListRef}
       onScroll={handleScroll}
       style={styles.list}
+      contentContainerStyle={{ paddingBottom: 36 }}
       data={currentList}
       maxToRenderPerBatch={4}
       numColumns={rowInfo.current.rowNum}
