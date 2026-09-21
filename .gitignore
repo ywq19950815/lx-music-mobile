@@ -69,3 +69,4 @@ buck-out/
 
 # WorkBuddy
 .workbuddy/
+release/
