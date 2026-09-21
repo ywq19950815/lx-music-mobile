@@ -38,7 +38,15 @@ export default ({ item, activeId, index, longPressIndex, onBoundChange, onShowMe
   return (
     <Button
       ref={buttonRef}
-      style={{ ...styles.button, backgroundColor: index == longPressIndex ? theme['c-button-background-active'] : undefined }}
+      style={{
+        ...styles.button,
+        backgroundColor: active
+          ? (theme['c-primary-background-active'] ?? 'rgba(128, 128, 128, 0.1)')
+          : (index == longPressIndex ? theme['c-button-background-active'] : 'transparent'),
+        borderRadius: 8,
+        marginHorizontal: 4,
+        marginVertical: 2,
+      }}
       key={item.id} onLongPress={setPosition}
       onPress={() => { onBoundChange(item) }}
     >
@@ -47,7 +55,7 @@ export default ({ item, activeId, index, longPressIndex, onBoundChange, onShowMe
           ? <Icon style={styles.listActiveIcon} name="chevron-right" size={12} color={theme['c-primary-font']} />
           : null
       }
-      <Text style={styles.listName} size={14} textBreakStrategy="simple" color={active ? theme['c-primary-font-active'] : theme['c-font']} numberOfLines={1}>{item.name}</Text>
+      <Text style={styles.listName} size={14} textBreakStrategy="simple" color={active ? (theme['c-primary-font-active'] ?? theme['c-primary']) : theme['c-font']} numberOfLines={1}>{item.name}</Text>
     </Button>
   )
 }

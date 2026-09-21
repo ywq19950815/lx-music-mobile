@@ -101,13 +101,47 @@ const Progress = ({ progress, duration, buffered }: {
             ? (
                 <>
                   <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-700'], width: progressStr, position: 'absolute', left: 0, top: 0 }} />
-                  <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-600'], width: `${dragProgress * 100}%`, position: 'absolute', left: 0, top: 0 }}>
-                    <Icon name="full_stop" color={theme['c-primary-light-100']} rawSize={progressDotSize} style={progressDotStyle} />
+                  <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-font'] ?? theme['c-primary'], width: `${dragProgress * 100}%`, position: 'absolute', left: 0, top: 0 }}>
+                    <View
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: 7,
+                        backgroundColor: '#ffffff',
+                        borderWidth: 2,
+                        borderColor: theme['c-primary-font'] ?? theme['c-primary'],
+                        position: 'absolute',
+                        right: -7,
+                        top: -(14 - progressHeight) / 2,
+                        elevation: 4,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 2.5,
+                      }}
+                    />
                   </View>
                 </>
               ) : (
-                <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-light-100-alpha-400'], width: progressStr, position: 'absolute', left: 0, top: 0 }}>
-                  <Icon name="full_stop" color={theme['c-primary-light-100']} rawSize={progressDotSize} style={progressDotStyle} />
+                <View style={{ ...styles.progressBar, backgroundColor: theme['c-primary-font'] ?? theme['c-primary'], width: progressStr, position: 'absolute', left: 0, top: 0 }}>
+                  <View
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#ffffff',
+                      borderWidth: 1.5,
+                      borderColor: theme['c-primary-font'] ?? theme['c-primary'],
+                      position: 'absolute',
+                      right: -5,
+                      top: -(10 - progressHeight) / 2,
+                      elevation: 2,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 1.5,
+                    }}
+                  />
                 </View>
               )
         }

@@ -40,20 +40,20 @@ const styles = createStyle({
   },
   menuItem: {
     flexDirection: 'row',
-    paddingTop: 13,
-    paddingBottom: 13,
-    paddingLeft: 25,
-    paddingRight: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginHorizontal: 12,
+    marginVertical: 2.5,
+    borderRadius: 12,
     alignItems: 'center',
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   iconContent: {
     width: 24,
     alignItems: 'center',
   },
   text: {
-    paddingLeft: 20,
-    // fontWeight: '500',
+    paddingLeft: 16,
+    fontWeight: '500',
   },
 })
 
@@ -64,7 +64,7 @@ const Header = () => {
     <View style={{ paddingTop: statusBarHeight, backgroundColor: theme['c-primary-light-700-alpha-500'] }}>
       <View style={styles.header}>
         <Icon name="logo" color={theme['c-primary-dark-100-alpha-300']} size={28} />
-        <Text style={styles.headerText} size={28} color={theme['c-primary-dark-100-alpha-300']}>LX Music</Text>
+        <Text style={styles.headerText} size={26} color={theme['c-primary-dark-100-alpha-300']}>LX Music</Text>
       </View>
     </View>
   )
@@ -81,8 +81,9 @@ const MenuItem = ({ id, icon, onPress }: {
   const activeId = useNavActiveId()
   const theme = useTheme()
 
-  return activeId == id
-    ? <View style={styles.menuItem}>
+  const isActive = activeId == id
+  return isActive
+    ? <View style={[styles.menuItem, { backgroundColor: theme['c-primary-background-hover'] ?? 'rgba(128, 128, 160, 0.14)' }]}>
         <View style={styles.iconContent}>
           <Icon name={icon} size={20} color={theme['c-primary-font-active']} />
         </View>

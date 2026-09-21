@@ -57,17 +57,23 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
   const tagInfo = useQualityTag(item)
 
   const singer = `${item.singer}${isShowAlbumName && item.meta.albumName ? ` · ${item.meta.albumName}` : ''}`
+  const snColor = index === 0 ? '#ff4d4f' : (index === 1 ? '#fa8c16' : (index === 2 ? '#faad14' : theme['c-300']))
 
   return (
-    <View style={{ ...styles.listItem, width: rowInfo.rowWidth, height: ITEM_HEIGHT, backgroundColor: isSelected ? theme['c-primary-background-hover'] : 'rgba(0,0,0,0)' }}>
+    <View style={{
+      ...styles.listItem,
+      width: rowInfo.rowWidth,
+      height: ITEM_HEIGHT,
+      backgroundColor: isSelected ? (theme['c-primary-background-hover'] ?? 'rgba(128, 128, 128, 0.1)') : 'transparent',
+    }}>
       <TouchableOpacity style={styles.listItemLeft} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>
-        <Text style={styles.sn} size={13} color={theme['c-300']}>{index + 1}</Text>
+        <Text style={[styles.sn, index < 3 ? styles.topSn : null]} size={13} color={snColor}>{index + 1}</Text>
         <View style={styles.itemInfo}>
-          <Text numberOfLines={1}>{item.name}</Text>
+          <Text numberOfLines={1} style={styles.musicTitle}>{item.name}</Text>
           <View style={styles.listItemSingle}>
             { tagInfo.type ? <Badge type={tagInfo.type}>{tagInfo.text}</Badge> : null }
             { showSource ? <Badge type="tertiary">{item.source}</Badge> : null }
-            <Text style={styles.listItemSingleText} size={11} color={theme['c-500']} numberOfLines={1}>{singer}</Text>
+            <Text style={styles.listItemSingleText} size={11} color={theme['c-font-label']} numberOfLines={1}>{singer}</Text>
           </View>
         </View>
         {
@@ -77,7 +83,7 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
         }
       </TouchableOpacity>
      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
-        <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={12} />
+        <Icon name="dots-vertical" style={{ color: theme['c-font-label'] ?? theme['c-350'] }} size={14} />
       </TouchableOpacity>
     </View>
   )
@@ -96,8 +102,10 @@ const styles = createStyle({
     flexDirection: 'row',
     flexWrap: 'nowrap',
     // paddingLeft: 10,
-    paddingRight: 2,
+    paddingRight: 6,
+    paddingLeft: 4,
     alignItems: 'center',
+    borderRadius: 8,
     // borderBottomWidth: BorderWidths.normal,
   },
   listItemLeft: {
@@ -115,21 +123,22 @@ const styles = createStyle({
     paddingLeft: 3,
     paddingRight: 3,
   },
+  topSn: {
+    fontWeight: 'bold',
+  },
   itemInfo: {
     flexGrow: 1,
     flexShrink: 1,
-    paddingRight: 2,
+    paddingRight: 6,
     // paddingTop: 10,
     // paddingBottom: 10,
   },
-  // listItemTitle: {
-  //   // backgroundColor: 'rgba(0,0,0,0.2)',
-  //   flexGrow: 0,
-  //   flexShrink: 1,
-  //   // fontSize: 15,
-  // },
+  musicTitle: {
+    fontWeight: '500',
+    fontSize: 14,
+  },
   listItemSingle: {
-    paddingTop: 2,
+    paddingTop: 3,
     flexDirection: 'row',
     alignItems: 'center',
     // alignItems: 'flex-end',
@@ -144,7 +153,7 @@ const styles = createStyle({
     // paddingTop: 2,
     flexGrow: 0,
     flexShrink: 1,
-    fontWeight: '300',
+    fontWeight: 'normal',
   },
   listItemBadge: {
     // fontSize: 10,
@@ -160,8 +169,8 @@ const styles = createStyle({
   },
   moreButton: {
     height: '80%',
-    paddingLeft: 16,
-    paddingRight: 16,
+    paddingLeft: 12,
+    paddingRight: 12,
     // paddingTop: 10,
     // paddingBottom: 10,
     // backgroundColor: 'rgba(0,0,0,0.2)',

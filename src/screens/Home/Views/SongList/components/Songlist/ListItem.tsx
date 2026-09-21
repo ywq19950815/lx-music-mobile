@@ -27,7 +27,7 @@ export default memo(({ item, index, width, showSource, onPress }: {
           <View style={{ ...styles.listItem, width: itemWidth }}>
             <View style={{ ...styles.listItemImg, backgroundColor: theme['c-content-background'] }}>
               <TouchableOpacity activeOpacity={0.5} onPress={handlePress}>
-                <Image url={item.img} nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_from_${item.id}`} style={{ width: itemWidth, height: itemWidth, borderRadius: 4 }} />
+                <Image url={item.img} nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_from_${item.id}`} style={{ width: itemWidth, height: itemWidth, borderRadius: 10 }} />
                 { showSource ? <Text style={styles.sourceLabel} size={9} color="#fff" >{item.source}</Text> : null }
               </TouchableOpacity>
             </View>
@@ -44,41 +44,43 @@ export default memo(({ item, index, width, showSource, onPress }: {
 const styles = createStyle({
   listItem: {
     // width: 90,
-    margin: 10,
+    margin: 8,
   },
   listItemImg: {
     // backgroundColor: '#eee',
-    borderRadius: 4,
-    marginBottom: 5,
+    borderRadius: 10,
+    marginBottom: 6,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: {
           width: 0,
-          height: 1,
+          height: 2,
         },
-        shadowOpacity: 0.20,
-        shadowRadius: 1.41,
+        shadowOpacity: 0.18,
+        shadowRadius: 3,
       },
       android: {
-        elevation: 2,
+        elevation: 3,
       },
     }),
   },
   sourceLabel: {
-    paddingLeft: 4,
-    paddingBottom: 2,
-    paddingRight: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     position: 'absolute',
-    top: 0,
-    right: 0,
-    borderBottomLeftRadius: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    top: 6,
+    right: 6,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    overflow: 'hidden',
   },
   listItemTitle: {
     fontSize: 12,
+    lineHeight: 16,
     // overflow: 'hidden',
-    marginBottom: 5,
+    marginBottom: 4,
+    fontWeight: '400',
   },
 })

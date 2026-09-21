@@ -66,21 +66,22 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   const theme = useTheme()
   const lrcFontSize = useSettingValue('playDetail.vertical.style.lrcFontSize')
   const textAlign = useSettingValue('playDetail.style.align')
-  const size = lrcFontSize / 10
-  const lineHeight = setSpText(size) * 1.3
+  const active = activeLine == lineNum
+  const baseSize = lrcFontSize / 10
+  const size = active ? baseSize * 1.15 : baseSize
+  const lineHeight = setSpText(size) * 1.38
 
   const colors = useMemo(() => {
-    const active = activeLine == lineNum
     return active ? [
-      theme['c-primary'],
-      theme['c-primary-alpha-200'],
+      theme['c-primary-font'] ?? theme['c-primary'],
+      theme['c-primary-alpha-200'] ?? theme['c-primary'],
       1,
     ] as const : [
       theme['c-350'],
       theme['c-300'],
-      0.6,
+      0.45,
     ] as const
-  }, [activeLine, lineNum, theme])
+  }, [active, theme])
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
@@ -90,11 +91,12 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   // textBreakStrategy="simple" 用于解决某些设备上字体被截断的问题
   // https://stackoverflow.com/a/72822360
   return (
-    <View style={styles.line} onLayout={handleLayout}>
+    <View style={[styles.line, active ? styles.activeLine : null]} onLayout={handleLayout}>
       <AnimatedColorText style={{
         ...styles.lineText,
         textAlign,
         lineHeight,
+        fontWeight: active ? 'bold' : 'normal',
       }} textBreakStrategy="simple" color={colors[0]} opacity={colors[2]} size={size}>{line.text}</AnimatedColorText>
       {
         line.extendedLyrics.map((lrc, index) => {
@@ -102,6 +104,7 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
             ...styles.lineTranslationText,
             textAlign,
             lineHeight: lineHeight * 0.8,
+            fontWeight: active ? 'bold' : 'normal',
           }} textBreakStrategy="simple" key={index} color={colors[1]} opacity={colors[2]} size={size * 0.8}>{lrc}</AnimatedColorText>)
         })
       }
@@ -334,17 +337,21 @@ export default () => {
 const styles = createStyle({
   container: {
     flex: 1,
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingLeft: 24,
+    paddingRight: 24,
     // backgroundColor: 'rgba(0,0,0,0.1)',
   },
   space: {
     paddingTop: '100%',
   },
   line: {
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
     // opacity: 0,
+  },
+  activeLine: {
+    paddingTop: 14,
+    paddingBottom: 14,
   },
   lineText: {
     textAlign: 'center',
@@ -358,7 +365,7 @@ const styles = createStyle({
     textAlign: 'center',
     // fontSize: 13,
     // lineHeight: 17,
-    paddingTop: 5,
+    paddingTop: 6,
     // paddingBottom: 5,
   },
 })

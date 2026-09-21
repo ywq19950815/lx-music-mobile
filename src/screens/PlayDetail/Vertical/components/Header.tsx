@@ -25,8 +25,8 @@ const Title = () => {
 
   return (
     <View style={styles.titleContent}>
-      <Text numberOfLines={1} style={styles.title}>{musicInfo.name}</Text>
-      <Text numberOfLines={1} style={styles.title} size={12} color={theme['c-font-label']}>{musicInfo.singer}</Text>
+      <Text numberOfLines={1} style={styles.title} size={16}>{musicInfo.name}</Text>
+      <Text numberOfLines={1} style={styles.singer} size={12} color={theme['c-font-label']}>{musicInfo.singer}</Text>
     </View>
   )
 }
@@ -60,18 +60,22 @@ export default memo(() => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    // justifyContent: 'center',
+    alignItems: 'center',
     height: '100%',
   },
   titleContent: {
     flex: 1,
-    paddingHorizontal: 5,
-    // alignItems: 'center',
+    paddingHorizontal: 8,
+    alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    // flex: 1,
-    // textAlign: 'center',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  singer: {
+    textAlign: 'center',
+    marginTop: 2,
   },
   icon: {
     paddingLeft: 4,

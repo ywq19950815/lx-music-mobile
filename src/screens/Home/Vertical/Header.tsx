@@ -43,18 +43,14 @@ const LeftHeader = () => {
       paddingTop: statusBarHeight,
     }}>
       <View style={styles.left}>
-        <TouchableOpacity style={styles.btn} onPress={openMenu}>
-          <Icon color={theme['c-font']} name="menu" size={18} />
+        <TouchableOpacity style={styles.btn} onPress={openMenu} activeOpacity={0.6}>
+          <Icon color={theme['c-font']} name="menu" size={20} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.titleBtn} onPress={openMenu}>
-          <Text style={styles.leftTitle} size={18}>{t(id)}</Text>
+        <TouchableOpacity style={styles.titleBtn} onPress={openMenu} activeOpacity={0.7}>
+          <Text style={styles.leftTitle} size={19}>{t(id)}</Text>
         </TouchableOpacity>
       </View>
       {headerComponents[id] ?? null}
-
-      {/* <TouchableOpacity style={styles.btn} onPress={openSetting}>
-        <Icon style={{ ...styles.btnText, color: theme['c-font'] }} name="setting" size={styles.btnText.fontSize} />
-      </TouchableOpacity> */}
     </View>
   )
 }
@@ -146,12 +142,14 @@ const styles = createStyle({
     justifyContent: 'center',
   },
   leftTitle: {
-    paddingLeft: 14,
+    paddingLeft: 12,
     paddingRight: 16,
+    fontWeight: '600',
   },
   rightTitle: {
     paddingLeft: 16,
-    paddingRight: 16,
+    paddingRight: 12,
+    fontWeight: '600',
   },
 })
 
