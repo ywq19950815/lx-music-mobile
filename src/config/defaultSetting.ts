@@ -73,7 +73,8 @@ const defaultSetting: LX.AppSetting = {
   'sync.enable': false,
 
   // 'theme.id': 'blue_plus',
-  'theme.id': 'green',
+  // 对齐汽水音乐的纯黑沉浸风：默认暗色主题
+  'theme.id': 'black',
   'theme.lightId': 'green',
   'theme.darkId': 'black',
   'theme.hideBgDark': false,
@@ -81,11 +82,10 @@ const defaultSetting: LX.AppSetting = {
   'theme.fontShadow': false,
 }
 
-
-// 使用新年皮肤
-if (new Date().getMonth() < 2) {
-  defaultSetting['theme.id'] = 'happy_new_year'
-  defaultSetting['desktopLyric.style.lyricPlayedColor'] = 'rgba(255, 18, 34, 1)'
-}
+// 使用新年皮肤（已按用户要求停用，避免主题被强制覆盖）
+// if (new Date().getMonth() < 2) {
+//   defaultSetting['theme.id'] = 'happy_new_year'
+//   defaultSetting['desktopLyric.style.lyricPlayedColor'] = 'rgba(255, 18, 34, 1)'
+// }
 
 export default defaultSetting

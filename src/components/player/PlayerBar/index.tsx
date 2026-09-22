@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { useKeyboard } from '@/utils/hooks'
 
 import Pic from './components/Pic'
@@ -24,7 +24,11 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
 
   return (
     <View style={styles.outerWrapper}>
-      <View style={{ ...styles.container, backgroundColor: theme['c-content-background'], borderColor: theme['c-border-background'] ?? 'rgba(0, 0, 0, 0.08)' }}>
+      <View style={{
+        ...styles.container,
+        backgroundColor: theme['c-primary-light-700-alpha-500'] ?? theme['c-content-background'],
+        borderColor: theme['c-border-background'] ?? 'rgba(128, 128, 148, 0.16)',
+      }}>
         <Pic isHome={isHome} />
         <View style={styles.center}>
           <Title isHome={isHome} />
@@ -52,17 +56,17 @@ const styles = createStyle({
   },
   container: {
     width: '100%',
-    paddingVertical: 6,
+    paddingVertical: 7,
     paddingLeft: 7,
     paddingRight: 6,
-    borderRadius: 28,
+    borderRadius: 30,
     flexDirection: 'row',
     alignItems: 'center',
-    elevation: 6,
+    elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.10,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: 'hidden',
     position: 'relative',
@@ -90,10 +94,12 @@ const styles = createStyle({
   bottomProgressTrack: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    left: 14,
+    right: 14,
     height: 2,
-    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    borderRadius: 1,
+    backgroundColor: 'rgba(128, 128, 148, 0.16)',
+    overflow: 'hidden',
   },
   bottomProgressBar: {
     height: '100%',

@@ -4,9 +4,10 @@ import { View, TouchableOpacity } from 'react-native'
 import Text from '@/components/common/Text'
 import Badge, { type BadgeType } from '@/components/common/Badge'
 import { Icon } from '@/components/common/Icon'
+import Image from '@/components/common/Image'
 import { useI18n } from '@/lang'
 import { useTheme } from '@/store/theme/hook'
-import { scaleSizeH } from '@/utils/pixelRatio'
+import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { LIST_ITEM_HEIGHT } from '@/config/constant'
 import { createStyle, type RowInfo } from '@/utils/tools'
 
@@ -68,6 +69,12 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
     }}>
       <TouchableOpacity style={styles.listItemLeft} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>
         <Text style={[styles.sn, index < 3 ? styles.topSn : null]} size={13} color={snColor}>{index + 1}</Text>
+        {/* 汽水音乐式圆角封面缩略图 */}
+        <Image
+          url={item.meta.picUrl}
+          style={styles.cover}
+          resizeMode="cover"
+        />
         <View style={styles.itemInfo}>
           <Text numberOfLines={1} style={styles.musicTitle}>{item.name}</Text>
           <View style={styles.listItemSingle}>
@@ -116,12 +123,19 @@ const styles = createStyle({
     alignItems: 'center',
   },
   sn: {
-    width: 38,
+    width: 30,
     // fontSize: 12,
     textAlign: 'center',
     // backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingLeft: 3,
-    paddingRight: 3,
+    paddingLeft: 2,
+    paddingRight: 2,
+  },
+  cover: {
+    width: 42,
+    height: 42,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(128, 128, 148, 0.12)',
   },
   topSn: {
     fontWeight: 'bold',

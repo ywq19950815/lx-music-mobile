@@ -1,5 +1,6 @@
 export const HEADER_HEIGHT = 42
-export const LIST_ITEM_HEIGHT = 54
+// 汽水音乐式列表行高（含 42dp 圆角封面缩略图 + 上下留白）
+export const LIST_ITEM_HEIGHT = 62
 export const LIST_SCROLL_POSITION_KEY = '__LIST_SCROLL_POSITION_KEY__'
 
 export const SPLIT_CHAR = {
