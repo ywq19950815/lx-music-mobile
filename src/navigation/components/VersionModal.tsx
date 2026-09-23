@@ -3,7 +3,6 @@ import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 
 import { compareVer, sizeFormate } from '@/utils'
 import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
-import { updateApp } from '@/utils/version'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { type VersionInfo } from '@/store/version/state'
@@ -11,7 +10,7 @@ import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import { useVersionDownloadProgressUpdated, useVersionInfo, useVersionInfoIgnoreVersionUpdated } from '@/store/version/hook'
 import ModalContent from './ModalContent'
-import { checkUpdate, downloadUpdate, hideModal, setIgnoreVersion } from '@/core/version'
+import { checkUpdate, hideModal, setIgnoreVersion } from '@/core/version'
 
 const VersionItem = ({ version, desc }: VersionInfo) => {
   return (
@@ -165,13 +164,8 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
   }
 
   const handleConfirm = () => {
-    if (versionInfo.isLatest || versionInfo.isUnknown) {
-      void checkUpdate()
-    } else if (versionInfo.status == 'downloaded') {
-      void updateApp()
-    } else if (versionInfo.status == 'idle' || versionInfo.status == 'error') {
-      downloadUpdate()
-    }
+    // 在线更新已停用，这里仅刷新一次版本状态（始终为「已是最新」）
+    void checkUpdate()
   }
 
   return (

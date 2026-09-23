@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import Dialog, { type DialogType } from './Dialog'
 import Text from './Text'
 import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
-import { type GlobalAlertOptions } from '@/event/appEvent'
+import { type GlobalAlertOptions, type GlobalAlertAction } from '@/event/appEvent'
 
 /**
  * 全局新粗野主义（Neo-Brutalism）弹窗宿主
@@ -28,6 +28,23 @@ export default () => {
     // 2. 挂载到 globalThis 上便于 Alert.alert 桥接兜底
     globalThis.__lxEmitAlert = (title: string, message: string, buttons?: any[]) => {
       const btns = buttons && buttons.length ? buttons : [{ text: '确定' }]
+
+      // 多选项模式（如通知权限 / 电池优化白名单的 3 个选项）→ 纵向按钮列表
+      if (btns.length > 2) {
+        handleShow({
+          title: title || '提示',
+          message: String(message || ''),
+          actions: btns.map((btn: any, index: number) => ({
+            text: btn?.text || `选项 ${index + 1}`,
+            style: index === btns.length - 1 ? 'primary' : 'default',
+            onPress: () => btn?.onPress?.(),
+          })),
+          onConfirm: () => {},
+          onCancel: () => {},
+        })
+        return
+      }
+
       const isConfirm = btns.length > 1
       const cancelBtn = isConfirm ? btns[0] : null
       const confirmBtn = isConfirm ? btns[1] : btns[0]
@@ -72,10 +89,17 @@ export default () => {
     }
   }, [])
 
+  const handleAction = useCallback((action: GlobalAlertAction) => {
+    dialogRef.current?.setVisible(false)
+    activeRef.current = null
+    action.onPress?.()
+  }, [])
+
   if (!config) return null
 
   const showCancel = config.showCancel ?? true
   const bgClose = config.bgClose ?? true
+  const actions = config.actions?.length ? config.actions : null
 
   return (
     <Dialog
@@ -98,28 +122,54 @@ export default () => {
           </Text>
         </ScrollView>
       </View>
-      <View style={styles.btns}>
-        {showCancel ? (
+      {actions ? (
+        <View style={styles.actionsCol}>
+          {actions.map((action, index) => (
+            <TouchableOpacity
+              key={`${action.text}-${index}`}
+              style={[
+                styles.actionBtn,
+                action.style === 'primary'
+                  ? styles.actionBtnPrimary
+                  : action.style === 'danger' ? styles.actionBtnDanger : styles.actionBtnDefault,
+              ]}
+              activeOpacity={0.75}
+              onPress={() => handleAction(action)}
+            >
+              <Text
+                style={styles.btnText}
+                size={13}
+                color={action.style === 'danger' ? neoColors.coral : neoColors.black}
+              >
+                {action.text}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.btns}>
+          {showCancel ? (
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              activeOpacity={0.75}
+              onPress={handleCancel}
+            >
+              <Text style={styles.btnText} size={13} color={neoColors.black}>
+                {config.cancelButtonText || '取消'}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
-            style={styles.cancelBtn}
+            style={styles.confirmBtn}
             activeOpacity={0.75}
-            onPress={handleCancel}
+            onPress={handleConfirm}
           >
             <Text style={styles.btnText} size={13} color={neoColors.black}>
-              {config.cancelButtonText || '取消'}
+              {config.confirmButtonText || '确定'}
             </Text>
           </TouchableOpacity>
-        ) : null}
-        <TouchableOpacity
-          style={styles.confirmBtn}
-          activeOpacity={0.75}
-          onPress={handleConfirm}
-        >
-          <Text style={styles.btnText} size={13} color={neoColors.black}>
-            {config.confirmButtonText || '确定'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      )}
     </Dialog>
   )
 }
@@ -168,5 +218,30 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontWeight: '800',
+  },
+  // ---- 多按钮纵向列表（通知权限 / 电池优化等原生多选项弹窗）----
+  actionsCol: {
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+    gap: 8,
+  },
+  actionBtn: {
+    width: '100%',
+    paddingVertical: 10,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: neoBorders.thin,
+    borderColor: neoColors.black,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...neoShadows.sm,
+  },
+  actionBtnDefault: {
+    backgroundColor: neoColors.white,
+  },
+  actionBtnPrimary: {
+    backgroundColor: neoColors.yellow,
+  },
+  actionBtnDanger: {
+    backgroundColor: '#FFE3E3',
   },
 })

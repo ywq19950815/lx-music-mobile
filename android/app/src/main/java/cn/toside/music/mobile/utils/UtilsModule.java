@@ -261,15 +261,6 @@ public class UtilsModule extends ReactContextBaseJavaModule {
     }).start();
   }
 
-  @ReactMethod
-  public void shareText(String shareTitle, String title, String text) {
-    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-    shareIntent.setType("text/plain");
-    shareIntent.putExtra(Intent.EXTRA_TEXT,text);
-    shareIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-    Objects.requireNonNull(reactContext.getCurrentActivity()).startActivity(Intent.createChooser(shareIntent, shareTitle));
-  }
-
   // https://stackoverflow.com/questions/73463341/in-per-app-language-how-to-get-app-locale-in-api-33-if-system-locale-is-diffe
   @ReactMethod
   public void getSystemLocales(Promise promise) {

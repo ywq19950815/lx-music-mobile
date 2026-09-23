@@ -272,38 +272,48 @@ export const checkNotificationPermission = async() => {
   const enabled = await isNotificationsEnabled()
   if (enabled) return
   return new Promise<void>((resolve) => {
-    Alert.alert(
-      global.i18n.t('notifications_check_title'),
-      global.i18n.t('notifications_check_tip'),
-      [
-        {
-          text: global.i18n.t('never_show'),
-          onPress: () => {
-            void saveData(storageDataPrefix.notificationTipEnable, '1')
-            toast(global.i18n.t('disagree_tip'))
-            resolve()
+    // 统一使用新粗野主义全局弹窗（多按钮纵向列表），避免弹出生硬的安卓原生灰色系统对话框
+    if (global.app_event?.showGlobalAlert) {
+      global.app_event.showGlobalAlert({
+        title: global.i18n.t('notifications_check_title'),
+        message: global.i18n.t('notifications_check_tip'),
+        actions: [
+          {
+            text: global.i18n.t('never_show'),
+            style: 'default',
+            onPress: () => {
+              void saveData(storageDataPrefix.notificationTipEnable, '1')
+              toast(global.i18n.t('disagree_tip'))
+              resolve()
+            },
           },
-        },
-        {
-          text: global.i18n.t('disagree'),
-          onPress: () => {
-            toast(global.i18n.t('disagree_tip'))
-            resolve()
+          {
+            text: global.i18n.t('disagree'),
+            style: 'default',
+            onPress: () => {
+              toast(global.i18n.t('disagree_tip'))
+              resolve()
+            },
           },
-        },
-        {
-          text: global.i18n.t('agree_go'),
-          onPress: () => {
-            requestAnimationFrame(() => {
-              void requestNotificationPermission().then((result) => {
-                if (!result) toast(global.i18n.t('disagree_tip'))
-                resolve()
+          {
+            text: global.i18n.t('agree_go'),
+            style: 'primary',
+            onPress: () => {
+              requestAnimationFrame(() => {
+                void requestNotificationPermission().then((result) => {
+                  if (!result) toast(global.i18n.t('disagree_tip'))
+                  resolve()
+                })
               })
-            })
+            },
           },
-        },
-      ],
-    )
+        ],
+        onConfirm: () => {},
+        onCancel: () => {},
+      })
+    } else {
+      resolve()
+    }
   })
 }
 
@@ -314,38 +324,48 @@ export const checkIgnoringBatteryOptimization = async() => {
   const enabled = await isIgnoringBatteryOptimization()
   if (enabled) return
   return new Promise<void>((resolve) => {
-    Alert.alert(
-      global.i18n.t('ignoring_battery_optimization_check_title'),
-      global.i18n.t('ignoring_battery_optimization_check_tip'),
-      [
-        {
-          text: global.i18n.t('never_show'),
-          onPress: () => {
-            void saveData(storageDataPrefix.ignoringBatteryOptimizationTipEnable, '1')
-            toast(global.i18n.t('disagree_tip'))
-            resolve()
+    // 统一使用新粗野主义全局弹窗（多按钮纵向列表），避免弹出生硬的安卓原生灰色系统对话框
+    if (global.app_event?.showGlobalAlert) {
+      global.app_event.showGlobalAlert({
+        title: global.i18n.t('ignoring_battery_optimization_check_title'),
+        message: global.i18n.t('ignoring_battery_optimization_check_tip'),
+        actions: [
+          {
+            text: global.i18n.t('never_show'),
+            style: 'default',
+            onPress: () => {
+              void saveData(storageDataPrefix.ignoringBatteryOptimizationTipEnable, '1')
+              toast(global.i18n.t('disagree_tip'))
+              resolve()
+            },
           },
-        },
-        {
-          text: global.i18n.t('disagree'),
-          onPress: () => {
-            toast(global.i18n.t('disagree_tip'))
-            resolve()
+          {
+            text: global.i18n.t('disagree'),
+            style: 'default',
+            onPress: () => {
+              toast(global.i18n.t('disagree_tip'))
+              resolve()
+            },
           },
-        },
-        {
-          text: global.i18n.t('agree_to'),
-          onPress: () => {
-            requestAnimationFrame(() => {
-              void requestIgnoreBatteryOptimization().then((result) => {
-                if (!result) toast(global.i18n.t('disagree_tip'))
-                resolve()
+          {
+            text: global.i18n.t('agree_to'),
+            style: 'primary',
+            onPress: () => {
+              requestAnimationFrame(() => {
+                void requestIgnoreBatteryOptimization().then((result) => {
+                  if (!result) toast(global.i18n.t('disagree_tip'))
+                  resolve()
+                })
               })
-            })
+            },
           },
-        },
-      ],
-    )
+        ],
+        onConfirm: () => {},
+        onCancel: () => {},
+      })
+    } else {
+      resolve()
+    }
   })
 }
 export const resetNotificationPermissionCheck = async() => {
@@ -565,7 +585,7 @@ export const cheatTip = async() => {
     title: '谨防被骗提示',
     message: `1. 本项目无微信公众号之类的所谓「官方账号」，也未在小米、华为、vivo 等应用商店发布应用，商店内的「Andy Music」「安迪音乐」相关的应用全部属于假冒应用，谨防被骗！\n
 2. 本软件完全无广告且无引流（如需要加群、关注公众号之类才能使用或者升级）的行为，若你使用过程中遇到广告或者引流的信息，则表明你当前运行的软件是第三方修改版。\n
-3. 目前本项目的原始发布地址只有 GitHub，其他渠道均为第三方转载发布，可信度请自行鉴别。`,
+3. 请仅从可信的官方渠道获取本应用，其他渠道均为第三方转载发布，可信度请自行鉴别。`,
     btnText: '我知道了 (Close)',
     bgClose: true,
   }).then(() => {

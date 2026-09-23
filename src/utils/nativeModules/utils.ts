@@ -44,10 +44,6 @@ export const requestNotificationPermission = async() => new Promise<boolean>((re
   })
 })
 
-export const shareText = async(shareTitle: string, title: string, text: string): Promise<void> => {
-  UtilsModule.shareText(shareTitle, title, text)
-}
-
 export const getSystemLocales = async(): Promise<string> => {
   return UtilsModule.getSystemLocales()
 }

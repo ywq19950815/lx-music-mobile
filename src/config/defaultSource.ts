@@ -63,7 +63,7 @@ export const BUILTIN_SOURCE_METAS: readonly BuiltinSourceMeta[] = [
     name: '野花🌷',
     alias: '野花',
     version: '1',
-    author: '开源社区',
+    author: '内置音源',
     description: '覆盖酷我/网易/咪咕/企鹅/酷狗主流平台',
   },
   {
@@ -87,7 +87,7 @@ export const BUILTIN_SOURCE_METAS: readonly BuiltinSourceMeta[] = [
     name: '野草🌾',
     alias: '野草',
     version: '1',
-    author: '开源社区',
+    author: '内置音源',
     description: '酷我高保真快速线路支持',
   },
   {

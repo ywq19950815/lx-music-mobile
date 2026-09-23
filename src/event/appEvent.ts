@@ -14,6 +14,14 @@ import { type SearchType } from '@/store/search/state'
 //   // },
 // }
 
+export interface GlobalAlertAction {
+  /** 按钮文案 */
+  text: string
+  /** 视觉样式：primary=亮黄主按钮，default=白底描边，danger=浅红危险按钮 */
+  style?: 'primary' | 'default' | 'danger'
+  onPress?: () => void
+}
+
 export interface GlobalAlertOptions {
   title?: string
   message: string
@@ -21,6 +29,8 @@ export interface GlobalAlertOptions {
   cancelButtonText?: string
   showCancel?: boolean
   bgClose?: boolean
+  /** 多按钮模式：设置后将忽略 confirmButtonText / cancelButtonText / showCancel，按数组顺序纵向渲染 */
+  actions?: GlobalAlertAction[]
   onConfirm: () => void
   onCancel: () => void
 }

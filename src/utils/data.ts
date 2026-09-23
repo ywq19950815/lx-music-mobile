@@ -3,7 +3,7 @@ import { DEFAULT_SETTING, LIST_IDS, storageDataPrefix, type NAV_ID_Type } from '
 import { throttle } from './common'
 // import { gzip, ungzip } from '@/utils/nativeModules/gzip'
 // import { readFile, writeFile, temporaryDirectoryPath, unlink } from '@/utils/fs'
-// import { isNotificationsEnabled, openNotificationPermissionActivity, shareText } from '@/utils/nativeModules/utils'
+// import { isNotificationsEnabled, openNotificationPermissionActivity } from '@/utils/nativeModules/utils'
 // import { i18n } from '@/plugins/i18n'
 // import musicSdk from '@/utils/musicSdk'
 

@@ -1,101 +1,82 @@
-import { memo, useState, useEffect } from 'react'
+import { memo } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import Section from '../components/Section'
-import SubTitle from '../components/SubTitle'
-import Button from '../components/Button'
-import { sizeFormate } from '@/utils'
-
 import { useI18n } from '@/lang'
-import { useVersionDownloadProgressUpdated, useVersionInfo } from '@/store/version/hook'
 import Text from '@/components/common/Text'
-import { showModal } from '@/core/version'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 const currentVer = process.versions.app
+
+/**
+ * 版本信息（Neo-Brutalism）
+ *
+ * 本应用版本体系已从 v0.x 重新开始，且不再对外请求任何第三方版本信息，
+ * 因此这里只展示本地当前版本，并固定提示「已是最新版本」，
+ * 不再显示来源不明的「最新版本」号，也不提供在线升级入口。
+ */
 export default memo(() => {
   const t = useI18n()
-  const versionInfo = useVersionInfo()
-  // const versionStatus = useVrsionUpdateStatus()
-  const [title, setTitle] = useState('')
-  const [tip, setTip] = useState('')
-  const progress = useVersionDownloadProgressUpdated()
-  const handleOpenVersionModal = () => {
-    // setVersionInfo({ showModal: true })
-    showModal()
-  }
-
-  useEffect(() => {
-    if (versionInfo.isLatest) {
-      setTitle(t('version_tip_latest'))
-      setTip('')
-    } else if (versionInfo.isUnknown) {
-      setTitle(t('version_title_unknown'))
-      setTip(t('version_tip_unknown'))
-    } else {
-      switch (versionInfo.status) {
-        case 'downloading':
-          setTitle(t('version_title_new'))
-          setTip(t('version_btn_downloading', {
-            total: sizeFormate(progress.total),
-            current: sizeFormate(progress.current),
-            progress: progress.total ? (progress.current / progress.total * 100).toFixed(2) : '0',
-          }))
-          break
-        case 'downloaded':
-          setTitle(t('version_title_update'))
-          setTip('')
-          break
-        case 'checking':
-          setTitle(t('version_title_checking'))
-          setTip('')
-          break
-        case 'error':
-          setTitle(t('version_title_failed'))
-          setTip(t('version_tip_failed'))
-          break
-        // case 'idle':
-        //   break
-        default:
-          setTitle(t('version_title_new'))
-          setTip('')
-          break
-      }
-    }
-  }, [t, versionInfo, progress])
 
   return (
     <Section title={t('setting_version')}>
-      <SubTitle title={title}>
-        <View style={styles.desc}>
-          <Text size={14} style={styles.verText}>{t('version_label_latest_ver')}{versionInfo.newVersion?.version || currentVer}</Text>
-          <Text size={14} style={styles.verText}>{t('version_label_current_ver')}{currentVer}</Text>
-          {
-            tip ? <Text size={13} style={styles.tipText}>{tip}</Text> : null
-          }
+      <View style={styles.card}>
+        <View style={styles.left}>
+          <Text style={styles.label}>{t('version_label_current_ver')}</Text>
+          <Text style={styles.version}>v{currentVer}</Text>
         </View>
-        <View style={styles.btn}>
-          <Button onPress={handleOpenVersionModal}>{t('setting_version_show_ver_modal')}</Button>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{t('version_tip_latest')}</Text>
         </View>
-      </SubTitle>
+      </View>
     </Section>
   )
 })
 
 const styles = StyleSheet.create({
-  desc: {
-    marginBottom: 10,
-    gap: 4,
-  },
-  verText: {
-    color: '#000000',
-    fontWeight: '700',
-  },
-  tipText: {
-    color: '#555555',
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  btn: {
+  card: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: neoColors.offWhite,
+    borderWidth: neoBorders.thin,
+    borderColor: neoColors.black,
+    borderRadius: neoBorders.radiusMd,
+    boxShadow: neoShadows.sm.boxShadow,
+  },
+  left: {
+    flexGrow: 1,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  label: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: neoColors.gray700,
+  },
+  version: {
+    marginTop: 2,
+    fontSize: 18,
+    fontWeight: '900',
+    color: neoColors.black,
+    letterSpacing: -0.4,
+  },
+  badge: {
+    flexGrow: 0,
+    flexShrink: 0,
+    marginLeft: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    backgroundColor: neoColors.green,
+    borderWidth: neoBorders.thin,
+    borderColor: neoColors.black,
+    borderRadius: neoBorders.radiusPill,
+  },
+  badgeText: {
+    fontSize: 11.5,
+    fontWeight: '900',
+    color: neoColors.black,
   },
 })
