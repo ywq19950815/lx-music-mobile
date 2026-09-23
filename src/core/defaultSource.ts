@@ -1,64 +1,138 @@
 import { getData, saveData } from '@/plugins/storage'
-import { DEFAULT_SOURCE, isDefaultSourceName, isLegacyDefaultSourceName } from '@/config/defaultSource'
+import {
+  DEFAULT_SOURCE,
+  BUILTIN_SOURCE_METAS,
+  isDefaultSourceName,
+  isLegacyDefaultSourceName,
+} from '@/config/defaultSource'
 import { addUserApi, getUserApiList, removeUserApi } from '@/utils/data'
-import { DEFAULT_SOURCE_SCRIPT } from '@/resources/defaultSourceScript'
+import { BUILTIN_SOURCES, DEFAULT_SOURCE_SCRIPT } from '@/resources/builtinSources'
 import { log } from '@/utils/log'
 
 /**
- * 安装内置默认音源（全豆要[聚合音源] v9.3 特供版）。
+ * 安装/恢复全部 10 款内置音源。
  *
- * 采用本地预置脚本常量直接安装，彻底摆脱网络环境和代理不稳定问题，
- * 同时自动清理历史旧版失效音源，保证用户开箱即用。
- *
- * @returns 安装成功时返回音源 id，失败返回 null（静默降级，不阻断 App 启动）
+ * @param forceUpdate 是否强制覆盖更新已有内置源（true: 全部重新装入；false: 仅补充安装缺失的源）
+ * @returns 返回默认音源（全豆要）的 id，供后续自动选中
  */
-export const installDefaultSource = async(): Promise<string | null> => {
+export const installAllBuiltinSources = async(forceUpdate = false): Promise<{ defaultSourceId: string | null, totalInstalled: number }> => {
   try {
-    // 1. 查找并清理旧版失效音源（如独家音源）
-    const list = await getUserApiList()
-    const legacyApis = list.filter(api => isLegacyDefaultSourceName(api.name))
+    // 1. 获取现有音源列表
+    const currentList = await getUserApiList()
+
+    // 2. 清理历史失效音源（如早期失效的独家音源 1.1.0）
+    const legacyApis = currentList.filter(api => isLegacyDefaultSourceName(api.name, api.version))
     if (legacyApis.length) {
       await removeUserApi(legacyApis.map(a => a.id))
-      log.info(`[defaultSource] 已清理旧版失效音源: ${legacyApis.map(a => a.name).join(', ')}`)
+      log.info(`[defaultSource] 已清理历史失效音源: ${legacyApis.map(a => a.name).join(', ')}`)
     }
 
-    // 2. 直接安装内置打包的可靠音源脚本
-    const apiInfo = await addUserApi(DEFAULT_SOURCE_SCRIPT)
+    // 重新获取列表
+    const existingList = await getUserApiList()
+    let defaultSourceId: string | null = null
+    let totalInstalled = 0
 
-    // 3. 记录最新版本标记
+    // 3. 逐个检查并安装内置音源
+    for (const source of BUILTIN_SOURCES) {
+      const existing = existingList.find(api =>
+        api.name === source.name ||
+        api.name.includes(source.alias) ||
+        (source.isDefault && isDefaultSourceName(api.name)),
+      )
+
+      if (existing) {
+        if (forceUpdate) {
+          // 强制更新：先删除旧的，再安装新的
+          await removeUserApi([existing.id])
+          const newApi = await addUserApi(source.script)
+          totalInstalled++
+          log.info(`[defaultSource] 已重新安装内置源: ${source.name}(${newApi.id})`)
+          if (source.isDefault || isDefaultSourceName(source.name)) {
+            defaultSourceId = newApi.id
+          }
+        } else {
+          // 已存在且不强制更新：保留现有
+          if (source.isDefault || isDefaultSourceName(source.name)) {
+            defaultSourceId = existing.id
+          }
+        }
+      } else {
+        // 尚未安装：执行安装
+        const newApi = await addUserApi(source.script)
+        totalInstalled++
+        log.info(`[defaultSource] 已安装内置源: ${source.name}(${newApi.id})`)
+        if (source.isDefault || isDefaultSourceName(source.name)) {
+          defaultSourceId = newApi.id
+        }
+      }
+    }
+
+    // 4. 标记全部内置源已初始化
     await saveData(DEFAULT_SOURCE.storageKey, true)
-    log.info(`[defaultSource] 默认音源安装成功: ${apiInfo.name}(${apiInfo.id})`)
+    log.info(`[defaultSource] 内置音源库初始化完成，本次安装/更新 ${totalInstalled} 个`)
+
+    return { defaultSourceId, totalInstalled }
+  } catch (err: any) {
+    log.error(`[defaultSource] 安装内置音源失败: ${err?.message ?? err}`)
+    return { defaultSourceId: null, totalInstalled: 0 }
+  }
+}
+
+/**
+ * 安装单个默认推荐音源（全豆要），保持向后兼容
+ */
+export const installDefaultSource = async(): Promise<string | null> => {
+  const res = await installAllBuiltinSources(false)
+  if (res.defaultSourceId) return res.defaultSourceId
+
+  // 兜底单独安装默认脚本
+  try {
+    const apiInfo = await addUserApi(DEFAULT_SOURCE_SCRIPT)
     return apiInfo.id
   } catch (err: any) {
-    log.error(`[defaultSource] 默认音源安装失败: ${err?.message ?? err}`)
+    log.error(`[defaultSource] 兜底安装默认音源失败: ${err?.message ?? err}`)
     return null
   }
 }
 
 /**
- * 查找已安装的最新内置默认音源，返回其 id（未安装则返回 null）
+ * 查找已安装的默认推荐音源（全豆要）的 id
  */
 export const findInstalledDefaultSource = async(): Promise<string | null> => {
   const list = await getUserApiList()
-  const target = list.find(api => api.name.includes('全豆要') || api.name === DEFAULT_SOURCE.name)
+  const target = list.find(api => isDefaultSourceName(api.name))
   return target?.id ?? null
 }
 
 /**
- * 判断最新内置默认音源是否已经安装过（依据本地标记 + 实际列表双重确认）
+ * 检查全部内置音源是否已安装
  */
 export const isDefaultSourceInstalled = async(): Promise<boolean> => {
-  if (await findInstalledDefaultSource()) return true
-  return (await getData<boolean>(DEFAULT_SOURCE.storageKey)) === true
+  const isKeySet = (await getData<boolean>(DEFAULT_SOURCE.storageKey)) === true
+  if (isKeySet) return true
+  const list = await getUserApiList()
+  const defaultApi = list.find(api => isDefaultSourceName(api.name))
+  return !!defaultApi
 }
 
 /**
- * 确保内置默认音源可用：
- * 已安装且版本匹配则直接返回其 id；未安装或为旧版则执行安装/升级后返回。
+ * 启动时确保全部内置音源完整可用：
+ * 若有缺失则自动补充安装，确保用户拥有全套 10 个可用音源。
  */
 export const ensureDefaultSource = async(): Promise<string | null> => {
-  const installed = await findInstalledDefaultSource()
   const isKeySet = (await getData<boolean>(DEFAULT_SOURCE.storageKey)) === true
-  if (installed && isKeySet) return installed
-  return installDefaultSource()
+  const list = await getUserApiList()
+
+  // 检查是否 10 个内置源都已经安装了
+  const installedCount = BUILTIN_SOURCE_METAS.filter(meta =>
+    list.some(api => api.name === meta.name || api.name.includes(meta.alias)),
+  ).length
+
+  if (isKeySet && installedCount >= BUILTIN_SOURCE_METAS.length) {
+    return findInstalledDefaultSource()
+  }
+
+  // 缺失任何内置源，或标记尚未设置，自动执行静默增量补全
+  const res = await installAllBuiltinSources(false)
+  return res.defaultSourceId ?? (await findInstalledDefaultSource())
 }

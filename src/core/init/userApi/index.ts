@@ -270,7 +270,7 @@ export default async(setting: LX.AppSetting) => {
       const currentApiSource = setting['common.apiSource']
       const userApis = await getUserApiList()
       const currentApi = userApis.find(api => api.id === currentApiSource)
-      const needSwitch = !currentApiSource || !currentApi || isDefaultSourceName(currentApi.name)
+      const needSwitch = !currentApiSource || !currentApi || (isDefaultSourceName(currentApi.name) && currentApi.id !== installedId)
 
       if (needSwitch && currentApiSource !== installedId) {
         setting['common.apiSource'] = installedId

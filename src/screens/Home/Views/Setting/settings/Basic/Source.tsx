@@ -13,8 +13,13 @@ import { useStatus, useUserApiList } from '@/store/userApi'
 import Button from '../../components/Button'
 import UserApiEditModal, { type UserApiEditModalType } from './UserApiEditModal'
 import Text from '@/components/common/Text'
-import { DEFAULT_SOURCE, isDefaultSourceName } from '@/config/defaultSource'
-import { installDefaultSource } from '@/core/defaultSource'
+import {
+  BUILTIN_SOURCE_METAS,
+  DEFAULT_SOURCE,
+  isBuiltinSourceName,
+  isDefaultSourceName,
+} from '@/config/defaultSource'
+import { findInstalledDefaultSource, installAllBuiltinSources } from '@/core/defaultSource'
 import { refreshUserApiList } from '@/core/userApi'
 import { neoColors } from '@/theme/neobrutalism'
 
@@ -30,24 +35,25 @@ const useActive = (id: string) => {
   return isActive
 }
 
-const Item = ({ id, name, desc, statusLabel, change }: {
+const Item = ({ id, name, desc, statusLabel, isBuiltin, change }: {
   id: string
   name: string
   desc?: string
   statusLabel?: string
+  isBuiltin?: boolean
   change: (id: string) => void
 }) => {
   const isActive = useActive(id)
-  // const [toggleCheckBox, setToggleCheckBox] = useState(false)
   return (
-    <CheckBox marginBottom={5} check={isActive} onChange={() => { change(id) }} need>
+    <CheckBox marginBottom={6} check={isActive} onChange={() => { change(id) }} need>
       <Text style={styles.sourceLabel}>
         {name}
+        {isBuiltin ? <Text style={styles.builtinTag} size={11}> [内置]</Text> : null}
         {
-          desc ? <Text style={styles.sourceDesc} size={13}>  {desc}</Text> : null
+          desc ? <Text style={styles.sourceDesc} size={12}>  {desc}</Text> : null
         }
         {
-          statusLabel ? <Text style={styles.sourceStatus} size={13}>  {statusLabel}</Text> : null
+          statusLabel ? <Text style={styles.sourceStatus} size={12}>  {statusLabel}</Text> : null
         }
       </Text>
     </CheckBox>
@@ -55,67 +61,91 @@ const Item = ({ id, name, desc, statusLabel, change }: {
 }
 
 /**
- * 内置默认音源卡片（Neo-Brutalism 波普风）
+ * 内置优质音源库卡片（Neo-Brutalism 波普风）
  *
- * App 首次启动会自动安装该音源；此卡片提供「一键安装 / 重新下载」入口，
- * 方便用户误删后快速恢复，不需要自己去找源。
+ * 聚合 awaw.cc 推荐的 10 款稳定音源（全豆要、六音、长青、独家、Huibq、野花、幻音、ikun、野草、聚合API），
+ * 用户可在下方音源列表中任意点击单选框秒切；本卡片提供状态概览与一键重置恢复能力。
  */
-const DefaultSourceCard = memo(() => {
+const BuiltinSourceHubCard = memo(() => {
   const t = useI18n()
   const userApiList = useUserApiList()
   const apiSourceSetting = useSettingValue('common.apiSource')
   const [loading, setLoading] = useState(false)
 
-  const installedApi = useMemo(() => userApiList.find(api => isDefaultSourceName(api.name)), [userApiList])
-  const isActive = !!installedApi && installedApi.id == apiSourceSetting
+  // 统计已安装的内置音源数量
+  const installedBuiltinCount = useMemo(() => {
+    return BUILTIN_SOURCE_METAS.filter(meta =>
+      userApiList.some(api => api.name === meta.name || api.name.includes(meta.alias)),
+    ).length
+  }, [userApiList])
 
-  const handleInstall = useCallback(() => {
+  // 当前激活的音源
+  const currentActiveApi = useMemo(() => {
+    return userApiList.find(api => api.id === apiSourceSetting)
+  }, [userApiList, apiSourceSetting])
+
+  // 恢复/补全全部 10 款内置音源
+  const handleRestoreAll = useCallback(() => {
     if (loading) return
     setLoading(true)
-    void installDefaultSource().then((id) => {
-      if (!id) {
-        toast(t('user_api_import_failed_tip', { message: 'network error' }), 'long')
-        return
-      }
-      toast(t('user_api_import_success_tip'))
-      // 安装完成后刷新 store 里的音源列表，让新音源立刻出现在列表里
+    void installAllBuiltinSources(true).then(({ defaultSourceId, totalInstalled }) => {
+      toast(`已成功就绪 ${totalInstalled || 10} 款内置音源！`)
       void refreshUserApiList()
+      // 若当前未激活有效音源，自动切换到默认源
+      if (!apiSourceSetting && defaultSourceId) {
+        setApiSource(defaultSourceId)
+      }
+    }).catch((err) => {
+      toast(t('user_api_import_failed_tip', { message: String(err?.message ?? err) }), 'long')
     }).finally(() => {
       setLoading(false)
     })
-  }, [loading, t])
+  }, [loading, t, apiSourceSetting])
 
-  const handleActive = useCallback(() => {
-    if (!installedApi) return
-    setApiSource(installedApi.id)
-  }, [installedApi])
+  // 快速切回默认推荐源（全豆要）
+  const handleSwitchToDefault = useCallback(() => {
+    void findInstalledDefaultSource().then((defaultId) => {
+      if (defaultId) {
+        setApiSource(defaultId)
+        toast('已切换为推荐音源：全豆要[聚合音源]')
+      } else {
+        handleRestoreAll()
+      }
+    })
+  }, [handleRestoreAll])
+
+  const isCurrentDefault = currentActiveApi && isDefaultSourceName(currentActiveApi.name)
 
   return (
     <View style={styles.defaultCard}>
       <View style={styles.defaultCardHeader}>
-        <Text size={14} style={styles.defaultCardTitle}>{DEFAULT_SOURCE.name}</Text>
-        <Text size={11} style={styles.defaultCardBadge}>{isActive ? '使用中' : installedApi ? '已安装' : '未安装'}</Text>
+        <Text size={15} style={styles.defaultCardTitle}>内置优质音源库 (10款)</Text>
+        <Text size={11} style={styles.defaultCardBadge}>
+          {installedBuiltinCount >= 10 ? '全套已就绪' : `已安装 ${installedBuiltinCount}/10`}
+        </Text>
       </View>
       <Text size={11} style={styles.defaultCardDesc} numberOfLines={2}>
-        内置音源，开箱即用。首次启动自动安装，无需手动找源。
+        已内置全豆要、六音、长青、独家、Huibq、野花、幻音、ikun、野草、聚合API等 10 款优质音源。下方点击单选框即可自由切换！
       </Text>
       <View style={styles.defaultCardBtns}>
         <TouchableOpacity
           style={{ ...styles.defaultBtn, ...styles.defaultBtnPrimary }}
-          onPress={installedApi ? handleActive : handleInstall}
+          onPress={handleRestoreAll}
           disabled={loading}
         >
           <Text size={12} style={styles.defaultBtnText}>
-            {loading ? '安装中…' : installedApi ? (isActive ? '当前音源' : '启用') : '一键安装'}
+            {loading ? '安装中…' : installedBuiltinCount >= 10 ? '恢复/重置全部源' : '一键补全10款源'}
           </Text>
         </TouchableOpacity>
-        {installedApi
-          ? (
-              <TouchableOpacity style={{ ...styles.defaultBtn, ...styles.defaultBtnGhost }} onPress={handleInstall} disabled={loading}>
-                <Text size={12} style={styles.defaultBtnGhostText}>重新下载</Text>
-              </TouchableOpacity>
-            )
-          : null}
+        {!isCurrentDefault ? (
+          <TouchableOpacity
+            style={{ ...styles.defaultBtn, ...styles.defaultBtnGhost }}
+            onPress={handleSwitchToDefault}
+            disabled={loading}
+          >
+            <Text size={12} style={styles.defaultBtnGhostText}>切回推荐默认源</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   )
@@ -146,15 +176,14 @@ export default memo(() => {
     }
     return userApiListRaw.map(api => {
       const statusLabel = api.id == apiSourceSetting ? `[${getApiStatus()}]` : ''
+      const isBuiltin = isBuiltinSourceName(api.name)
       return {
         id: api.id,
         name: api.name,
+        isBuiltin,
         label: `${api.name}${statusLabel}`,
         desc: [/^\d/.test(api.version) ? `v${api.version}` : api.version].filter(Boolean).join(', '),
         statusLabel,
-        // status: apiStatus.status,
-        // message: apiStatus.message,
-        // disabled: false,
       }
     })
   }, [userApiListRaw, apiStatus, apiSourceSetting, t])
@@ -166,13 +195,23 @@ export default memo(() => {
 
   return (
     <SubTitle title={t('setting_basic_source')}>
-      <DefaultSourceCard />
+      <BuiltinSourceHubCard />
       <View style={styles.list}>
         {
           list.map(({ id, name }) => <Item name={name} id={id} key={id} change={setApiSourceId} />)
         }
         {
-          userApiList.map(({ id, name, desc, statusLabel }) => <Item name={name} desc={desc} statusLabel={statusLabel} id={id} key={id} change={setApiSourceId} />)
+          userApiList.map(({ id, name, desc, statusLabel, isBuiltin }) => (
+            <Item
+              name={name}
+              desc={desc}
+              statusLabel={statusLabel}
+              isBuiltin={isBuiltin}
+              id={id}
+              key={id}
+              change={setApiSourceId}
+            />
+          ))
         }
       </View>
       <View style={styles.btn}>
@@ -187,14 +226,12 @@ const styles = createStyle({
   list: {
     flexGrow: 0,
     flexShrink: 1,
-    // flexDirection: 'row',
-    // flexWrap: 'wrap',
   },
   btn: {
     marginTop: 10,
     flexDirection: 'row',
   },
-  // ===== 内置默认音源卡片（Neo-Brutalism） =====
+  // ===== 内置音源库卡片（Neo-Brutalism） =====
   defaultCard: {
     marginBottom: 12,
     padding: 12,
@@ -265,18 +302,19 @@ const styles = createStyle({
     fontWeight: '900',
   },
   sourceLabel: {
-    // 音源名称：纯黑加粗，在纯白卡片上保持最高可读性
     color: neoColors.black,
     fontWeight: '700',
   },
   sourceDesc: {
-    // 版本号：用中性深灰而非主题色，避免深色主题下变成浅灰看不清
     color: neoColors.gray700,
     fontWeight: '600',
   },
   sourceStatus: {
-    // 状态文案（[初始化成功] 等）：同上，显式指定深色
     color: neoColors.gray700,
     fontWeight: '600',
+  },
+  builtinTag: {
+    color: '#00875A', // 翠绿醒目标识
+    fontWeight: '800',
   },
 })
