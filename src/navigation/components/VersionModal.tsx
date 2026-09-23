@@ -1,9 +1,8 @@
 import { useMemo, useState, useEffect, memo } from 'react'
-import { View, ScrollView } from 'react-native'
+import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 
 import { compareVer, sizeFormate } from '@/utils'
-
-import Button from '@/components/common/Button'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 import { updateApp } from '@/utils/version'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
@@ -178,26 +177,40 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
   return (
     <ModalContent>
       <Content title={title} newVersionInfo={versionInfo.newVersion} />
-      { tip.length ? <Text style={styles.tip} color={theme['c-primary-font']}>{tip}</Text> : null }
+      { tip.length ? <Text style={styles.tip} color={neoColors.black}>{tip}</Text> : null }
       <View style={styles.btns}>
         {
           ignoreBtn.show
             ? (
-                <Button disabled={ignoreBtn.disabled} style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} onPress={handleIgnore}>
-                  <Text color={theme['c-button-font']}>{ignoreBtn.text}</Text>
-                </Button>
+                <TouchableOpacity
+                  disabled={ignoreBtn.disabled}
+                  style={[styles.cancelBtn, ignoreBtn.disabled && styles.btnDisabled]}
+                  activeOpacity={0.75}
+                  onPress={handleIgnore}
+                >
+                  <Text style={styles.btnText} color={neoColors.black} size={13}>{ignoreBtn.text}</Text>
+                </TouchableOpacity>
               )
             : null
         }
-        <Button style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} onPress={handleCancel}>
-          <Text color={theme['c-button-font']}>{closeBtnText}</Text>
-        </Button>
+        <TouchableOpacity
+          style={styles.cancelBtn}
+          activeOpacity={0.75}
+          onPress={handleCancel}
+        >
+          <Text style={styles.btnText} color={neoColors.black} size={13}>{closeBtnText}</Text>
+        </TouchableOpacity>
         {
           confirmBtn.show
             ? (
-                <Button disabled={confirmBtn.disabled} style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} onPress={handleConfirm}>
-                  <Text color={theme['c-button-font']}>{confirmBtn.text}</Text>
-                </Button>
+                <TouchableOpacity
+                  disabled={confirmBtn.disabled}
+                  style={[styles.confirmBtn, confirmBtn.disabled && styles.btnDisabled]}
+                  activeOpacity={0.75}
+                  onPress={handleConfirm}
+                >
+                  <Text style={styles.btnText} color={neoColors.black} size={13}>{confirmBtn.text}</Text>
+                </TouchableOpacity>
               )
             : null
         }
@@ -206,22 +219,21 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
   )
 }
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   main: {
-    // flexGrow: 0,
-    flexShrink: 1,
-    marginTop: 15,
-    marginLeft: 15,
-    marginRight: 15,
-    marginBottom: 20,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   content: {
-    flexGrow: 0,
+    maxHeight: 280,
   },
   title: {
-    fontSize: 18,
+    fontSize: 17,
+    fontWeight: '900',
+    color: neoColors.black,
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: 14,
   },
   history: {
     marginTop: 15,
@@ -230,34 +242,56 @@ const styles = createStyle({
     marginBottom: 10,
   },
   label: {
-    fontSize: 14,
-    marginBottom: 2,
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: neoColors.black,
+    marginBottom: 3,
   },
   desc: {
-    fontSize: 13,
+    fontSize: 12.5,
     lineHeight: 18,
+    color: neoColors.gray700,
   },
   tip: {
-    paddingLeft: 15,
-    paddingRight: 15,
+    paddingHorizontal: 16,
     paddingBottom: 10,
+    fontSize: 12,
+    fontWeight: '700',
   },
   btns: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    paddingBottom: 15,
-    paddingLeft: 15,
-    // paddingRight: 15,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    gap: 10,
   },
-  btn: {
-    flex: 1,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 10,
-    paddingRight: 10,
+  cancelBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: neoBorders.thin,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.white,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 4,
-    marginRight: 15,
+    ...neoShadows.sm,
+  },
+  confirmBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: neoBorders.thin,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.yellow,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...neoShadows.sm,
+  },
+  btnDisabled: {
+    opacity: 0.45,
+  },
+  btnText: {
+    fontWeight: '900',
   },
 })
 

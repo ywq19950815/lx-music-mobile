@@ -4,7 +4,6 @@ const defaultSetting: LX.AppSetting = {
   'common.langId': null,
   'common.apiSource': '',
   'common.sourceNameType': 'alias',
-  'common.shareType': 'system',
   'common.isAgreePact': true,
   'common.autoHidePlayBar': true,
   'common.homePageScroll': true,
@@ -56,6 +55,7 @@ const defaultSetting: LX.AppSetting = {
   'desktopLyric.style.lyricUnplayColor': 'rgba(255, 255, 255, 1)',
   'desktopLyric.style.lyricPlayedColor': 'rgba(7, 197, 86, 1)',
   'desktopLyric.style.lyricShadowColor': 'rgba(0, 0, 0, 0.6)',
+  'desktopLyric.isKaraoke': true,
 
   'search.isShowHotSearch': false,
   'search.isShowHistorySearch': false,

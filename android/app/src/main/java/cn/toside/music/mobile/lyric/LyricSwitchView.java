@@ -6,6 +6,9 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.TextPaint;
 import android.text.TextUtils;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -28,6 +31,9 @@ public final class LyricSwitchView extends TextSwitcher {
   private boolean isShowAnima;
 
   private boolean isSingleLine;
+  private boolean isKaraoke = true;
+  private int unplayColor = Color.WHITE;
+  private int playedColor = Color.parseColor("#07c556");
 
   public LyricSwitchView(Context context, boolean isSingleLine, boolean isShowAnima) {
     super(context);
@@ -197,6 +203,50 @@ public final class LyricSwitchView extends TextSwitcher {
 
   public void setGravity(int i) {
     for (TextView v : viewArray) v.setGravity(i);
+  }
+
+  public void setIsKaraoke(boolean isKaraoke) {
+    this.isKaraoke = isKaraoke;
+  }
+
+  public void setColors(int unplayColor, int playedColor) {
+    this.unplayColor = unplayColor;
+    this.playedColor = playedColor;
+  }
+
+  public void setProgress(float progress, int playedChars, boolean isKaraoke, int unplayColor, int playedColor) {
+    this.isKaraoke = isKaraoke;
+    this.unplayColor = unplayColor;
+    this.playedColor = playedColor;
+
+    View current = getCurrentView();
+    if (current == null) return;
+
+    if (current instanceof LyricTextView) {
+      ((LyricTextView) current).setProgress(progress, isKaraoke, unplayColor, playedColor);
+    } else if (current instanceof TextView) {
+      TextView tv = (TextView) current;
+      if (!isKaraoke) {
+        tv.setTextColor(playedColor);
+        return;
+      }
+      CharSequence text = tv.getText();
+      if (text != null && text.length() > 0) {
+        String str = text.toString();
+        int firstLineEnd = str.indexOf('\n');
+        if (firstLineEnd < 0) firstLineEnd = str.length();
+
+        int clampedPlayed = Math.min(firstLineEnd, Math.max(0, playedChars));
+        SpannableString span = new SpannableString(str);
+        if (clampedPlayed > 0) {
+          span.setSpan(new ForegroundColorSpan(playedColor), 0, clampedPlayed, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        if (clampedPlayed < str.length()) {
+          span.setSpan(new ForegroundColorSpan(unplayColor), clampedPlayed, str.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        tv.setText(span, TextView.BufferType.SPANNABLE);
+      }
+    }
   }
 
 }

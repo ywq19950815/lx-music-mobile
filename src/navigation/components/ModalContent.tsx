@@ -1,55 +1,77 @@
-import { View } from 'react-native'
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
-// import { useWindowSize } from '@/utils/hooks'
-const HEADER_HEIGHT = 20
+import { View, StyleSheet } from 'react-native'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+
+const HEADER_HEIGHT = 32
 
 interface Props {
   children: React.ReactNode
 }
 
-
+/**
+ * RNN 全屏 Overlay 弹窗的 Neo-Brutalism 容器
+ * 供 PactModal、VersionModal、SyncModeModal 等全屏浮层使用
+ */
 export default ({ children }: Props) => {
-  const theme = useTheme()
-
   return (
-    <View style={{ ...styles.centeredView, backgroundColor: 'rgba(50,50,50,.3)' }}>
-      <View style={{ ...styles.modalView, backgroundColor: theme['c-content-background'] }}>
-        <View style={{ ...styles.header, backgroundColor: theme['c-primary-light-100-alpha-100'] }}></View>
-        {children}
+    <View style={styles.centeredView}>
+      <View style={styles.modalView}>
+        <View style={styles.header}>
+          <View style={styles.headerDots}>
+            <View style={[styles.dot, { backgroundColor: neoColors.black }]} />
+            <View style={[styles.dot, { backgroundColor: neoColors.black }]} />
+            <View style={[styles.dot, { backgroundColor: neoColors.black }]} />
+          </View>
+        </View>
+        <View style={styles.body}>
+          {children}
+        </View>
       </View>
     </View>
   )
 }
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    paddingHorizontal: 20,
   },
   modalView: {
-    maxWidth: '90%',
-    minWidth: '60%',
-    maxHeight: '78%',
-    // backgroundColor: 'white',
-    borderRadius: 4,
-    // shadowColor: '#000',
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 2,
-    // },
-    // shadowOpacity: 0.25,
-    // shadowRadius: 4,
-    elevation: 3,
+    width: '100%',
+    maxWidth: 340,
+    maxHeight: '82%',
+    backgroundColor: neoColors.offWhite,
+    borderRadius: neoBorders.radiusMd,
+    borderWidth: 2.5,
+    borderColor: neoColors.black,
+    ...neoShadows.lg,
+    overflow: 'hidden',
   },
   header: {
     flexGrow: 0,
     flexShrink: 0,
     flexDirection: 'row',
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: 12,
+    backgroundColor: neoColors.yellow,
+    borderBottomWidth: 2,
+    borderBottomColor: neoColors.black,
     height: HEADER_HEIGHT,
+  },
+  headerDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  body: {
+    backgroundColor: neoColors.offWhite,
   },
 })

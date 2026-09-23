@@ -52,6 +52,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
 
   private boolean isLock = false;
   private boolean isSingleLine = false;
+  private boolean isKaraoke = true;
   private boolean isShowToggleAnima = false;
   private String unplayColor = "rgba(255, 255, 255, 1)";
   private String playedColor = "rgba(7, 197, 86, 1)";
@@ -208,6 +209,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
   public void showLyricView(Bundle options) {
     isLock = options.getBoolean("isLock", isLock);
     isSingleLine = options.getBoolean("isSingleLine", isSingleLine);
+    isKaraoke = options.getBoolean("isKaraoke", isKaraoke);
     isShowToggleAnima = options.getBoolean("isShowToggleAnima", isShowToggleAnima);
     unplayColor = options.getString("unplayColor", unplayColor);
     playedColor = options.getString("playedColor", playedColor);
@@ -249,6 +251,8 @@ public class LyricView extends Activity implements View.OnTouchListener {
 
   private void createTextView() {
     textView = new LyricSwitchView(reactContext, isSingleLine, isShowToggleAnima);
+    textView.setIsKaraoke(isKaraoke);
+    textView.setColors(parseColor(unplayColor), parseColor(playedColor));
     textView.setText("");
     textView.setText(currentLyric);
 
@@ -519,7 +523,23 @@ public class LyricView extends Activity implements View.OnTouchListener {
     if (textView == null) return;
     textView.setTextColor(parseColor(playedColor));
     textView.setShadowColor(parseColor(shadowColor));
+    textView.setColors(parseColor(unplayColor), parseColor(playedColor));
     // windowManager.updateViewLayout(textView, layoutParams);
+  }
+
+  public void setIsKaraoke(boolean isKaraoke) {
+    this.isKaraoke = isKaraoke;
+    if (textView == null) return;
+    textView.setIsKaraoke(isKaraoke);
+  }
+
+  public void setProgress(float progress, int playedChars) {
+    if (textView == null) return;
+    runOnUiThread(() -> {
+      if (textView != null) {
+        textView.setProgress(progress, playedChars, isKaraoke, parseColor(unplayColor), parseColor(playedColor));
+      }
+    });
   }
 
   public void setLyricTextPosition(String textX, String textY) {

@@ -14,6 +14,7 @@ import {
   setTextSize,
   setShowToggleAnima,
   setSingleLine,
+  setIsKaraoke,
   setPosition,
   setMaxLineNum,
   setWidth,
@@ -35,6 +36,7 @@ export const showDesktopLyric = async() => {
   await showDesktopLyricView({
     isShowToggleAnima: setting['desktopLyric.showToggleAnima'],
     isSingleLine: setting['desktopLyric.isSingleLine'],
+    isKaraoke: setting['desktopLyric.isKaraoke'],
     isLock: setting['desktopLyric.isLock'],
     unplayColor: setting['desktopLyric.style.lyricUnplayColor'],
     playedColor: setting['desktopLyric.style.lyricPlayedColor'],
@@ -51,11 +53,12 @@ export const showDesktopLyric = async() => {
   let lrc = playerState.musicInfo.lrc ?? ''
   let tlrc = playerState.musicInfo.tlrc ?? ''
   let rlrc = playerState.musicInfo.rlrc ?? ''
+  let lxlrc = playerState.musicInfo.lxlrc ?? ''
   if (setting['player.isS2t']) {
     lrc = tranditionalize(lrc)
     tlrc = tranditionalize(tlrc)
   }
-  await setLyric(lrc, tlrc, rlrc)
+  await setLyric(lrc, tlrc, rlrc, lxlrc)
   if (playerState.isPlay && !global.lx.gettingUrlId) {
     void getPosition().then(position => {
       void play(position * 1000)
@@ -84,6 +87,7 @@ export const setDesktopLyricAlpha = setAlpha
 export const setDesktopLyricTextSize = setTextSize
 export const setShowDesktopLyricToggleAnima = setShowToggleAnima
 export const setDesktopLyricSingleLine = setSingleLine
+export const setDesktopLyricIsKaraoke = setIsKaraoke
 export const setDesktopLyricPosition = setPosition
 export const setDesktopLyricMaxLineNum = setMaxLineNum
 export const setDesktopLyricWidth = setWidth

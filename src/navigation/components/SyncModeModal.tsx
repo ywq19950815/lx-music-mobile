@@ -10,6 +10,7 @@ import ModalContent from './ModalContent'
 import syncState from '@/store/sync/state'
 import CheckBox from '@/components/common/CheckBox'
 import { setSyncModeComponentId } from '@/core/sync'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 
 const styles = createStyle({
@@ -43,15 +44,18 @@ const styles = createStyle({
     // paddingRight: 15,
   },
   btn: {
-    // flex: 1,
-    paddingTop: 9,
-    paddingBottom: 9,
-    paddingLeft: 8,
-    paddingRight: 8,
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingLeft: 12,
+    paddingRight: 12,
     alignItems: 'center',
-    borderRadius: 4,
-    marginRight: 15,
-    minWidth: 100,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.yellow,
+    marginRight: 12,
+    minWidth: 90,
+    ...neoShadows.sm,
   },
   tips: {
     paddingLeft: 15,

@@ -7,6 +7,9 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
 import { AnimatedColorText } from '@/components/common/Text'
+import Text from '@/components/common/Text'
+import { useStatusText } from '@/store/player/hook'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 import { setSpText } from '@/utils/pixelRatio'
 import playerState from '@/store/player/state'
 import { scrollTo } from '@/utils/scroll'
@@ -68,7 +71,8 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
     </View>
   )
 }, (prevProps, nextProps) => {
-  return prevProps.line === nextProps.line &&
+  return prevProps.lineNum === nextProps.lineNum &&
+    prevProps.line === nextProps.line &&
     prevProps.activeLine != nextProps.lineNum &&
     nextProps.activeLine != nextProps.lineNum
 })
@@ -237,6 +241,14 @@ export default () => {
   }, [isShowLyricProgressSetting])
 
   const handleScrollToIndexFailed: FlatListType['onScrollToIndexFailed'] = (info) => {
+    const spaceH = listLayoutInfoRef.current.spaceHeight || 160
+    const approxOffset = spaceH + info.index * 38
+    try {
+      flatListRef.current?.scrollToOffset({
+        offset: Math.max(0, approxOffset - (scrollInfoRef.current?.layoutMeasurement.height || 300) * 0.42),
+        animated: false,
+      })
+    } catch {}
     void wait().then(() => {
       handleScrollToActive(info.index)
     })
@@ -268,6 +280,16 @@ export default () => {
     <View style={styles.space} onLayout={handleSpaceLayout}></View>
   ), [handleSpaceLayout])
 
+  const statusText = useStatusText()
+  const emptyComponent = useMemo(() => (
+    <View style={styles.emptyContainer}>
+      <View style={styles.emptyCard}>
+        <Text style={styles.emptyIcon}>🎵</Text>
+        <Text style={styles.emptyText}>{playerState.musicInfo.id ? (statusText || '正在加载歌词...') : '暂无播放歌曲'}</Text>
+      </View>
+    </View>
+  ), [statusText])
+
   return (
     <>
       <FlatList
@@ -277,12 +299,15 @@ export default () => {
         style={styles.container}
         ref={flatListRef}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={spaceComponent}
-        ListFooterComponent={spaceComponent}
+        ListHeaderComponent={lyricLines.length ? spaceComponent : null}
+        ListFooterComponent={lyricLines.length ? spaceComponent : null}
+        ListEmptyComponent={emptyComponent}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
         fadingEdgeLength={100}
-        initialNumToRender={Math.max(line + 10, 10)}
+        initialNumToRender={Math.max(line + 25, 30)}
+        maxToRenderPerBatch={25}
+        windowSize={15}
         onScrollToIndexFailed={handleScrollToIndexFailed}
         onScroll={handleScroll}
       />
@@ -300,6 +325,30 @@ const styles = createStyle({
   },
   space: {
     paddingTop: '100%',
+  },
+  emptyContainer: {
+    paddingTop: '35%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyCard: {
+    backgroundColor: neoColors.yellow,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    borderRadius: neoBorders.radiusMd,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
+    ...neoShadows.sm,
+  },
+  emptyIcon: {
+    fontSize: 26,
+    marginBottom: 6,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: neoColors.black,
   },
   line: {
     paddingTop: 10,

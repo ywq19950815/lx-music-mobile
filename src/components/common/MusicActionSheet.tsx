@@ -32,7 +32,6 @@ export interface MusicActionSheetProps {
   onAdd?: (selectInfo: any) => void
   onMove?: (selectInfo: any) => void
   onEditMetadata?: (selectInfo: any) => void
-  onCopyName?: (selectInfo: any) => void
   onChangePosition?: (selectInfo: any) => void
   onToggleSource?: (selectInfo: any) => void
   onMusicSourceDetail?: (selectInfo: any) => void
@@ -406,7 +405,7 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                   <Text style={styles.quickActionLabel}>{t('play_later')}</Text>
                 </TouchableOpacity>
 
-                {/* 3. 歌曲换源 / 复制名称 */}
+                {/* 3. 歌曲换源 */}
                 {props.onToggleSource && !isLocal ? (
                   <TouchableOpacity
                     style={[styles.quickActionBtn, { backgroundColor: '#FF66B2' }]}
@@ -418,18 +417,7 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                     </View>
                     <Text style={styles.quickActionLabel}>{t('toggle_source')}</Text>
                   </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    style={[styles.quickActionBtn, { backgroundColor: '#E1F5EE' }]}
-                    activeOpacity={0.8}
-                    onPress={() => handleAction(props.onCopyName)}
-                  >
-                    <View style={styles.quickActionIconWrap}>
-                      <Icon name="share" size={15} color={neoColors.black} />
-                    </View>
-                    <Text style={styles.quickActionLabel}>{t('copy_name')}</Text>
-                  </TouchableOpacity>
-                )}
+                ) : null}
 
                 {/* 4. 添加到... */}
                 <TouchableOpacity
@@ -463,23 +451,6 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                           <Icon name="add_folder" size={17} color={neoColors.black} />
                         </View>
                         <Text style={styles.actionRowText}>{t('move_to')}</Text>
-                        <Text style={styles.actionArrow}>›</Text>
-                      </View>
-                    </TouchableHighlight>
-                  )}
-
-                  {/* 复制歌曲与歌手名 */}
-                  {props.onCopyName && props.onToggleSource && !isLocal && (
-                    <TouchableHighlight
-                      style={styles.actionRow}
-                      underlayColor={neoColors.yellow}
-                      onPress={() => handleAction(props.onCopyName)}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
-                        <View style={styles.actionIconBox}>
-                          <Icon name="share" size={16} color={neoColors.black} />
-                        </View>
-                        <Text style={styles.actionRowText}>{t('copy_name')}</Text>
                         <Text style={styles.actionArrow}>›</Text>
                       </View>
                     </TouchableHighlight>

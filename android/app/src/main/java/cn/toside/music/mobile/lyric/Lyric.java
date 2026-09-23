@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.facebook.react.bridge.Arguments;
@@ -34,6 +36,89 @@ public class Lyric extends LyricPlayer {
   String lyricText = "";
   String translationText = "";
   String romaLyricText = "";
+  String lxlyricText = "";
+
+  private final Handler progressHandler = new Handler(Looper.getMainLooper());
+  private boolean isProgressRunning = false;
+  private final Runnable progressRunnable = new Runnable() {
+    @Override
+    public void run() {
+      if (!isPlay || isScreenOff || !isShowLyricView || lyricView == null) {
+        isProgressRunning = false;
+        return;
+      }
+      updateLyricProgress();
+      progressHandler.postDelayed(this, 30);
+    }
+  };
+
+  private void startProgressTimer() {
+    if (isProgressRunning) return;
+    isProgressRunning = true;
+    progressHandler.post(progressRunnable);
+  }
+
+  private void stopProgressTimer() {
+    isProgressRunning = false;
+    progressHandler.removeCallbacks(progressRunnable);
+  }
+
+  private void updateLyricProgress() {
+    if (lyricView == null || lines == null || lastLine < 0 || lastLine >= lines.size()) return;
+    HashMap curLine = (HashMap) lines.get(lastLine);
+    if (curLine == null) return;
+
+    int curTime = getCurrentTime();
+    int lineStart = (int) curLine.get("time");
+    int nextLineStart;
+    if (lastLine + 1 < lines.size()) {
+      HashMap nextLine = (HashMap) lines.get(lastLine + 1);
+      nextLineStart = nextLine != null ? (int) nextLine.get("time") : lineStart + 5000;
+    } else {
+      nextLineStart = lineStart + 5000;
+    }
+
+    int duration = nextLineStart - lineStart;
+    if (duration <= 0) duration = 3000;
+
+    int elapsed = curTime - lineStart;
+    float progress = (float) elapsed / (float) duration;
+    if (progress < 0f) progress = 0f;
+    if (progress > 1f) progress = 1f;
+
+    String text = (String) curLine.get("text");
+    if (text == null) text = "";
+    int textLen = text.length();
+
+    ArrayList<WordInfo> words = (ArrayList<WordInfo>) curLine.get("words");
+    int playedChars = 0;
+
+    if (words != null && !words.isEmpty()) {
+      int charsAcc = 0;
+      float totalWordProgress = 0f;
+      for (WordInfo w : words) {
+        int wLen = w.word.length();
+        if (elapsed >= w.start + w.duration) {
+          charsAcc += wLen;
+          totalWordProgress += wLen;
+        } else if (elapsed > w.start && w.duration > 0) {
+          float wProg = (float) (elapsed - w.start) / (float) w.duration;
+          totalWordProgress += (wProg * wLen);
+          break;
+        } else {
+          break;
+        }
+      }
+      playedChars = charsAcc;
+      if (textLen > 0) {
+        progress = Math.min(1.0f, totalWordProgress / (float) textLen);
+      }
+    } else {
+      playedChars = Math.round(progress * textLen);
+    }
+
+    lyricView.setProgress(progress, playedChars);
+  }
 
   Lyric(ReactApplicationContext reactContext, boolean isShowTranslation, boolean isShowRoma, float playbackRate) {
     this.reactAppContext = reactContext;
@@ -108,6 +193,7 @@ public class Lyric extends LyricPlayer {
   }
   private void handleScreenOff() {
     isScreenOff = true;
+    stopProgressTimer();
     if (isDisableAutoPause()) return;
     setTempPause(true);
   }
@@ -119,10 +205,12 @@ public class Lyric extends LyricPlayer {
     lyricView.runOnUiThread(() -> {
       handleGetCurrentLyric(lastLine);
       setTempPause(false);
+      if (isPlay) startProgressTimer();
     });
   }
 
   private void pausePlayer() {
+    stopProgressTimer();
     if (!isRunPlayer || isShowLyricView || isSendLyricTextEvent) return;
     isRunPlayer = false;
     this.pause();
@@ -181,6 +269,7 @@ public class Lyric extends LyricPlayer {
   public void hideDesktopLyric() {
     if (!isShowLyricView) return;
     isShowLyricView = false;
+    stopProgressTimer();
     pausePlayer();
     if (lyricView != null) {
       lyricView.destroy();
@@ -193,14 +282,27 @@ public class Lyric extends LyricPlayer {
     ArrayList<String> extendedLyrics = new ArrayList<>(2);
     if (isShowTranslation && !"".equals(translationText)) extendedLyrics.add(translationText);
     if (isShowRoma && !"".equals(romaLyricText)) extendedLyrics.add(romaLyricText);
-    super.setLyric(lyricText, extendedLyrics);
+    super.setLyric(lyricText, extendedLyrics, lxlyricText);
   }
 
-  public void setLyric(String lyric, String translation, String romaLyric) {
+  public void setLyric(String lyric, String translation, String romaLyric, String lxlyric) {
     lyricText = lyric;
     translationText = translation;
     romaLyricText = romaLyric;
+    lxlyricText = lxlyric != null ? lxlyric : "";
     refreshLyric();
+  }
+
+  public void setLyric(String lyric, String translation, String romaLyric) {
+    setLyric(lyric, translation, romaLyric, "");
+  }
+
+  @Override
+  public void play(int curTime) {
+    super.play(curTime);
+    if (isShowLyricView) {
+      startProgressTimer();
+    }
   }
 
   @Override
@@ -216,13 +318,23 @@ public class Lyric extends LyricPlayer {
   @Override
   public void onPlay(int lineNum) {
     handleGetCurrentLyric(lineNum);
+    if (isPlay && isShowLyricView) {
+      startProgressTimer();
+      updateLyricProgress();
+    }
     // Log.d("Lyric", lineNum + " " + text + " " + (String) line.get("translation"));
   }
 
   public void pauseLyric() {
+    stopProgressTimer();
     pause();
     if (!isRunPlayer) return;
     handleGetCurrentLyric(-1);
+  }
+
+  public void setIsKaraoke(boolean isKaraoke) {
+    if (lyricView == null) return;
+    lyricView.setIsKaraoke(isKaraoke);
   }
 
   public void lockLyric() {

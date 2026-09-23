@@ -27,11 +27,6 @@ declare global {
       'common.sourceNameType': 'alias' | 'real'
 
       /**
-       * 歌曲分享方式
-       */
-      'common.shareType': 'system' | 'clipboard'
-
-      /**
        * 是否同意软件协议
        */
       'common.isAgreePact': boolean
@@ -285,6 +280,11 @@ declare global {
         * 桌面歌词字体阴影颜色
         */
       'desktopLyric.style.lyricShadowColor': string
+
+      /**
+        * 桌面歌词逐字变色 (卡拉OK效果)
+        */
+      'desktopLyric.isKaraoke': boolean
 
       /**
        * 是否显示热门搜索

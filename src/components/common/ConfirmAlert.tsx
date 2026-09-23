@@ -16,7 +16,10 @@ export interface ConfirmAlertProps {
   text?: string
   cancelText?: string
   confirmText?: string
+  btnText?: string
   showConfirm?: boolean
+  showCancel?: boolean
+  autoHideOnConfirm?: boolean
   disabledConfirm?: boolean
   reverseBtn?: boolean
   children?: React.ReactNode | React.ReactNode[]
@@ -37,7 +40,10 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
   text = '',
   cancelText = '',
   confirmText = '',
+  btnText = '',
   showConfirm = true,
+  showCancel = true,
+  autoHideOnConfirm = false,
   disabledConfirm = false,
   children,
   reverseBtn = false,
@@ -59,6 +65,9 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
   const handleConfirm = () => {
     if (disabledConfirm) return
     onConfirm?.()
+    if (autoHideOnConfirm || !showCancel) {
+      dialogRef.current?.setVisible(false)
+    }
   }
 
   return (
@@ -71,15 +80,17 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
         </ScrollView>
       </View>
       <View style={[styles.btns, reverseBtn && styles.btnsReversed]}>
-        <TouchableOpacity
-          style={styles.cancelBtn}
-          activeOpacity={0.7}
-          onPress={handleCancel}
-        >
-          <Text style={styles.btnText} size={13} color={neoColors.black}>
-            {cancelText || t('cancel')}
-          </Text>
-        </TouchableOpacity>
+        {showCancel ? (
+          <TouchableOpacity
+            style={styles.cancelBtn}
+            activeOpacity={0.7}
+            onPress={handleCancel}
+          >
+            <Text style={styles.btnText} size={13} color={neoColors.black}>
+              {cancelText || t('cancel')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
         {showConfirm ? (
           <TouchableOpacity
             style={[styles.confirmBtn, disabledConfirm && styles.disabledBtn]}
@@ -88,7 +99,7 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
             disabled={disabledConfirm}
           >
             <Text style={styles.btnText} size={13} color={neoColors.black}>
-              {confirmText || t('confirm')}
+              {confirmText || btnText || t('confirm')}
             </Text>
           </TouchableOpacity>
         ) : null}

@@ -86,10 +86,8 @@ public class LyricModule extends ReactContextBaseJavaModule {
 
 
   @ReactMethod
-  public void setLyric(String lyric, String translation, String romaLyric, Promise promise) {
-    // Log.d("Lyric", "set lyric: " + lyric);
-    // Log.d("Lyric", "set lyric translation: " + translation);
-    if (this.lyric != null) this.lyric.setLyric(lyric, translation, romaLyric);
+  public void setLyric(String lyric, String translation, String romaLyric, String lxlyric, Promise promise) {
+    if (this.lyric != null) this.lyric.setLyric(lyric, translation, romaLyric, lxlyric);
     promise.resolve(null);
   }
 
@@ -167,6 +165,12 @@ public class LyricModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void setSingleLine(boolean singleLine, Promise promise) {
     if (lyric != null) lyric.setSingleLine(singleLine);
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void setIsKaraoke(boolean isKaraoke, Promise promise) {
+    if (lyric != null) lyric.setIsKaraoke(isKaraoke);
     promise.resolve(null);
   }
 

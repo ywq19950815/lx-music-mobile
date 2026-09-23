@@ -10,7 +10,6 @@ export interface ListMenuProps {
   onAdd: (selectInfo: SelectInfo) => void
   onMove: (selectInfo: SelectInfo) => void
   onEditMetadata: (selectInfo: SelectInfo) => void
-  onCopyName: (selectInfo: SelectInfo) => void
   onChangePosition: (selectInfo: SelectInfo) => void
   onToggleSource: (selectInfo: SelectInfo) => void
   onMusicSourceDetail: (selectInfo: SelectInfo) => void

@@ -21,8 +21,20 @@ public class LyricPlayer {
   Pattern msTimePattern;
 
   String lyric = "";
+  String lxlyric = "";
   ArrayList<String> extendedLyrics = new ArrayList<>();
   List<HashMap> lines = new ArrayList<>();
+
+  public static class WordInfo {
+    public int start;
+    public int duration;
+    public String word;
+    public WordInfo(int start, int duration, String word) {
+      this.start = start;
+      this.duration = duration;
+      this.word = word;
+    }
+  }
   HashMap tags = new HashMap();
   boolean isPlay = false;
   float playbackRate = 1;
@@ -87,7 +99,7 @@ public class LyricPlayer {
     return (int)(System.nanoTime() / 1000000);
   }
 
-  private int getCurrentTime() {
+  public int getCurrentTime() {
     return (int)((getNow() - this.performanceTime) * this.playbackRate) + startPlayTime;
   }
 
@@ -141,6 +153,39 @@ public class LyricPlayer {
             timeStr = formatTimeLabel(timeStr);
             HashMap targetLine = (HashMap) linesMap.get(timeStr);
             if (targetLine != null) ((ArrayList<String>) targetLine.get("extendedLyrics")).add(text);
+          }
+        }
+      }
+    }
+  }
+
+  final Pattern lxWordPattern = Pattern.compile("<(\\d+),(\\d+)>([^<\\r\\n]*)");
+  private void parseLxLyric(HashMap linesMap, String lxlyric) {
+    String[] lxLines = lxlyric.split("\r\n|\n|\r");
+    for (String lineStr : lxLines) {
+      String line = lineStr.trim();
+      Matcher timeFieldResult = timeFieldPattern.matcher(line);
+      if (timeFieldResult.find()) {
+        String timeField = timeFieldResult.group();
+        Matcher timeMatchResult = timePattern.matcher(timeField);
+        if (timeMatchResult.find()) {
+          String timeStr = formatTimeLabel(timeMatchResult.group());
+          HashMap targetLine = (HashMap) linesMap.get(timeStr);
+          if (targetLine != null) {
+            String wordsStr = line.replaceAll(timeFieldExp, "").trim();
+            Matcher wordMatcher = lxWordPattern.matcher(wordsStr);
+            ArrayList<WordInfo> words = new ArrayList<>();
+            while (wordMatcher.find()) {
+              try {
+                int start = Integer.parseInt(wordMatcher.group(1));
+                int duration = Integer.parseInt(wordMatcher.group(2));
+                String word = wordMatcher.group(3);
+                words.add(new WordInfo(start, duration, word));
+              } catch (Exception ignored) {}
+            }
+            if (!words.isEmpty()) {
+              targetLine.put("words", words);
+            }
           }
         }
       }
@@ -228,6 +273,10 @@ public class LyricPlayer {
       parseExtendedLyric(linesMap, extendedLyric);
     }
 
+    if (this.lxlyric != null && !this.lxlyric.isEmpty()) {
+      parseLxLyric(linesMap, this.lxlyric);
+    }
+
     Set<Entry<String, Integer>> set = timeMap.entrySet();
     List<Entry<String, Integer>> list = new ArrayList<Entry<String, Integer>>(set);
     Collections.sort(list, new Comparator<Entry<String, Integer>>() {
@@ -248,6 +297,7 @@ public class LyricPlayer {
   private void  init() {
     if (lyric == null) lyric = "";
     if (extendedLyrics == null) extendedLyrics = new ArrayList<>();
+    if (lxlyric == null) lxlyric = "";
     initTag();
     initLines();
     onSetLyric(lines);
@@ -346,9 +396,14 @@ public class LyricPlayer {
   }
 
   public void setLyric(String lyric, ArrayList<String> extendedLyrics) {
+    setLyric(lyric, extendedLyrics, "");
+  }
+
+  public void setLyric(String lyric, ArrayList<String> extendedLyrics, String lxlyric) {
     if (isPlay) pause();
     this.lyric = lyric;
     this.extendedLyrics = extendedLyrics;
+    this.lxlyric = lxlyric != null ? lxlyric : "";
     init();
   }
 

@@ -47,6 +47,7 @@ export const setSendLyricTextEvent = async(isSend: boolean) => {
 export const showDesktopLyricView = async({
   isShowToggleAnima,
   isSingleLine,
+  isKaraoke,
   width,
   maxLineNum,
   isLock,
@@ -62,6 +63,7 @@ export const showDesktopLyricView = async({
 }: {
   isShowToggleAnima: boolean
   isSingleLine: boolean
+  isKaraoke?: boolean
   width: number
   maxLineNum: number
   isLock: boolean
@@ -78,6 +80,7 @@ export const showDesktopLyricView = async({
   return LyricModule.showDesktopLyric({
     isSingleLine,
     isShowToggleAnima,
+    isKaraoke: isKaraoke ?? true,
     isLock,
     unplayColor,
     playedColor,
@@ -121,10 +124,15 @@ export const pause = async(): Promise<void> => {
  * set lyric
  * @param lyric lyric str
  * @param translation lyric translation
- * @param romalrc lyric translation
+ * @param romalrc lyric roma
+ * @param lxlrc lyric word-by-word karaoke
  */
-export const setLyric = async(lyric: string, translation: string, romalrc: string): Promise<void> => {
-  return LyricModule.setLyric(lyric, translation || '', romalrc || '')
+export const setLyric = async(lyric: string, translation: string, romalrc: string, lxlrc: string = ''): Promise<void> => {
+  return LyricModule.setLyric(lyric, translation || '', romalrc || '', lxlrc || '')
+}
+
+export const setIsKaraoke = async(isKaraoke: boolean): Promise<void> => {
+  return LyricModule.setIsKaraoke(isKaraoke)
 }
 
 export const setPlaybackRate = async(rate: number): Promise<void> => {

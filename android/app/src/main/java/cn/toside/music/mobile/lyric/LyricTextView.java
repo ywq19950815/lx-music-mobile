@@ -28,6 +28,19 @@ public class LyricTextView extends TextView {
   public static final int startScrollDelay = 1500;
   public static final int invalidateDelay = 10;
 
+  private float progress = 0f;
+  private boolean isKaraoke = false;
+  private int unplayColor = 0xFFFFFFFF;
+  private int playedColor = 0xFF07C556;
+
+  public void setProgress(float progress, boolean isKaraoke, int unplayColor, int playedColor) {
+    this.progress = progress;
+    this.isKaraoke = isKaraoke;
+    this.unplayColor = unplayColor;
+    this.playedColor = playedColor;
+    postInvalidate();
+  }
+
   public LyricTextView(Context context) {
     super(context);
     mStartScrollRunnable = LyricTextView.this::startScroll;
@@ -118,8 +131,21 @@ public class LyricTextView extends TextView {
   protected void onDraw(Canvas canvas) {
     float mSpeed = speed;
     if (text != null) {
-      Log.d("Lyric", "getHeight: " + getHeight() + " y: " + y);
-      canvas.drawText(text, getDrawX(), y, mPaint);
+      float drawX = getDrawX();
+      if (isKaraoke) {
+        mPaint.setColor(unplayColor);
+        canvas.drawText(text, drawX, y, mPaint);
+        if (progress > 0f) {
+          float clipRight = drawX + textLength * Math.min(1.0f, progress);
+          canvas.save();
+          canvas.clipRect(drawX, 0, clipRight, getHeight());
+          mPaint.setColor(playedColor);
+          canvas.drawText(text, drawX, y, mPaint);
+          canvas.restore();
+        }
+      } else {
+        canvas.drawText(text, drawX, y, mPaint);
+      }
       if (getText().length() >= 20) {
         mSpeed += mSpeed;
       }

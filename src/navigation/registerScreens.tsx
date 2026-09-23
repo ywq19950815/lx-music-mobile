@@ -24,6 +24,7 @@ import {
 import VersionModal from './components/VersionModal'
 import PactModal from './components/PactModal'
 import SyncModeModal from './components/SyncModeModal'
+import GlobalAlertHost from '@/components/common/GlobalAlertHost'
 
 function WrappedComponent(Component: any) {
   return function inject(props: Record<string, any>) {
@@ -32,6 +33,7 @@ function WrappedComponent(Component: any) {
         <Component
           {...props}
         />
+        <GlobalAlertHost />
       </Provider>
     )
 

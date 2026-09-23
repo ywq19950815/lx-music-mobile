@@ -111,7 +111,7 @@ const ListItem = memo(({ info, onPlay, onOpenDetail }: {
       </View>
       <View style={styles.listItemBtns}>
         <Button style={styles.listItemBtn} onPress={() => { onOpenDetail(info) }}>
-          <Icon name="share" style={{ color: theme['c-button-font'] }} size={18} />
+          <Icon name="album" style={{ color: theme['c-button-font'] }} size={18} />
         </Button>
         <Button style={styles.listItemBtn} onPress={() => { onPlay(info) }}>
           <Icon name="play" style={{ color: theme['c-button-font'] }} size={18} />

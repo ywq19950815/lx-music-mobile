@@ -55,7 +55,7 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
     <View style={styles.inputWrapper}>
       <View style={styles.searchBox}>
         <View style={styles.searchIconBox}>
-          <Icon name="search" size={14} color={neoColors.black} />
+          <Icon name="search-2" size={14} color={neoColors.black} />
         </View>
         <Input
           ref={inputRef}

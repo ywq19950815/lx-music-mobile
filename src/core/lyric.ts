@@ -31,10 +31,12 @@ export const init = async() => {
  * set lyric
  * @param lyric lyric str
  * @param translation lyric translation
+ * @param romalrc lyric roma
+ * @param lxlrc lyric word-by-word karaoke
  */
-const handleSetLyric = async(lyric: string, translation = '', romalrc = '') => {
+const handleSetLyric = async(lyric: string, translation = '', romalrc = '', lxlrc = '') => {
   lrcSetLyric(lyric, translation, romalrc)
-  await setDesktopLyric(lyric, translation, romalrc)
+  await setDesktopLyric(lyric, translation, romalrc, lxlrc)
   if (settingState.setting['player.isShowBluetoothFullLyric']) {
     void updateNowPlayingTitles({
       lyric,
@@ -111,13 +113,17 @@ export const play = () => {
 
 export const setLyric = async() => {
   if (!playerState.musicInfo.id) return
-  if (playerState.musicInfo.lrc) {
-    let tlrc = ''
-    let rlrc = ''
-    if (playerState.musicInfo.tlrc) tlrc = playerState.musicInfo.tlrc
-    if (playerState.musicInfo.rlrc) rlrc = playerState.musicInfo.rlrc
-    await handleSetLyric(playerState.musicInfo.lrc, tlrc, rlrc)
+  let lrc = playerState.musicInfo.lrc || ''
+  let tlrc = playerState.musicInfo.tlrc || ''
+  let rlrc = playerState.musicInfo.rlrc || ''
+  let lxlrc = playerState.musicInfo.lxlrc || ''
+
+  // 若无普通歌词但有逐字歌词，剥离标签作为普通歌词兜底
+  if (!lrc && lxlrc) {
+    lrc = lxlrc.replace(/<\d+,\d+>/g, '')
   }
+
+  await handleSetLyric(lrc, tlrc, rlrc, lxlrc)
 
   if (playerState.isPlay) play()
 }

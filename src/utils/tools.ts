@@ -3,7 +3,7 @@ import { Platform, ToastAndroid, BackHandler, Linking, Dimensions, Alert, Appear
 import Clipboard from '@react-native-clipboard/clipboard'
 import { storageDataPrefix } from '@/config/constant'
 import { gzipFile, readFile, temporaryDirectoryPath, unGzipFile, unlink, writeFile } from '@/utils/fs'
-import { getSystemLocales, isIgnoringBatteryOptimization, isNotificationsEnabled, requestNotificationPermission, requestIgnoreBatteryOptimization, shareText } from '@/utils/nativeModules/utils'
+import { getSystemLocales, isIgnoringBatteryOptimization, isNotificationsEnabled, requestNotificationPermission, requestIgnoreBatteryOptimization } from '@/utils/nativeModules/utils'
 import musicSdk from '@/utils/musicSdk'
 import { getData, removeData, saveData } from '@/plugins/storage'
 import BackgroundTimer from 'react-native-background-timer'
@@ -191,25 +191,38 @@ export const confirmDialog = async({
   bgClose = true,
 }) => {
   return new Promise<boolean>(resolve => {
-    Alert.alert(title, message, [
-      {
-        text: cancelButtonText,
-        onPress() {
+    if (global.app_event?.showGlobalAlert) {
+      global.app_event.showGlobalAlert({
+        title,
+        message,
+        cancelButtonText,
+        confirmButtonText,
+        showCancel: true,
+        bgClose,
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      })
+    } else {
+      Alert.alert(title, message, [
+        {
+          text: cancelButtonText,
+          onPress() {
+            resolve(false)
+          },
+        },
+        {
+          text: confirmButtonText,
+          onPress() {
+            resolve(true)
+          },
+        },
+      ], {
+        cancelable: bgClose,
+        onDismiss() {
           resolve(false)
         },
-      },
-      {
-        text: confirmButtonText,
-        onPress() {
-          resolve(true)
-        },
-      },
-    ], {
-      cancelable: bgClose,
-      onDismiss() {
-        resolve(false)
-      },
-    })
+      })
+    }
   })
 }
 
@@ -220,19 +233,31 @@ export const tipDialog = async({
   bgClose = true,
 }) => {
   return new Promise<void>(resolve => {
-    Alert.alert(title, message, [
-      {
-        text: btnText,
-        onPress() {
+    if (global.app_event?.showGlobalAlert) {
+      global.app_event.showGlobalAlert({
+        title,
+        message,
+        confirmButtonText: btnText,
+        showCancel: false,
+        bgClose,
+        onConfirm: () => resolve(),
+        onCancel: () => resolve(),
+      })
+    } else {
+      Alert.alert(title, message, [
+        {
+          text: btnText,
+          onPress() {
+            resolve()
+          },
+        },
+      ], {
+        cancelable: bgClose,
+        onDismiss() {
           resolve()
         },
-      },
-    ], {
-      cancelable: bgClose,
-      onDismiss() {
-        resolve()
-      },
-    })
+      })
+    }
   })
 }
 
@@ -332,22 +357,6 @@ export const resetIgnoringBatteryOptimizationCheck = async() => {
 
 export const formatMusicName = (format: string, name: string, singer: string) => {
   return format.replace('歌手', singer).replace('歌名', name)
-}
-
-export const shareMusic = (shareType: LX.ShareType, downloadFileName: LX.AppSetting['download.fileName'], musicInfo: LX.Music.MusicInfo) => {
-  const name = musicInfo.name
-  const singer = musicInfo.singer
-  const detailUrl = musicInfo.source == 'local' ? '' : musicSdk[musicInfo.source]?.getMusicDetailPageUrl(toOldMusicInfo(musicInfo)) ?? ''
-  const musicTitle = formatMusicName(downloadFileName, name, singer)
-  switch (shareType) {
-    case 'system':
-      void shareText(global.i18n.t('share_card_title_music', { name }), global.i18n.t('share_title_music'), `${musicTitle.replace(/\s/g, '')}${detailUrl ? '\n' + detailUrl : ''}`)
-      break
-    case 'clipboard':
-      clipboardWriteText(`${musicTitle}${detailUrl ? '\n' + detailUrl : ''}`)
-      toast(global.i18n.t('copy_name_tip'))
-      break
-  }
 }
 
 export const onDimensionChange = (handler: (info: { window: ScaledSize, screen: ScaledSize }) => void) => {

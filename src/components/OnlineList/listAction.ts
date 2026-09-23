@@ -4,7 +4,7 @@ import { playList, playNext } from '@/core/player/player'
 import { addTempPlayList } from '@/core/player/tempPlayList'
 import settingState from '@/store/setting/state'
 import { getListMusicSync } from '@/utils/listManage'
-import { confirmDialog, openUrl, shareMusic, toast } from '@/utils/tools'
+import { confirmDialog, openUrl, toast } from '@/utils/tools'
 import { addDislikeInfo, hasDislike } from '@/core/dislikeList'
 import playerState from '@/store/player/state'
 import musicSdk from '@/utils/musicSdk'
@@ -27,10 +27,6 @@ export const handlePlayLater = (musicInfo: LX.Music.MusicInfoOnline, selectedLis
   }
 }
 
-
-export const handleShare = (musicInfo: LX.Music.MusicInfoOnline) => {
-  shareMusic(settingState.setting['common.shareType'], settingState.setting['download.fileName'], musicInfo)
-}
 
 export const handleShowMusicSourceDetail = async(minfo: LX.Music.MusicInfoOnline) => {
   const url = musicSdk[minfo.source as LX.OnlineSource]?.getMusicDetailPageUrl(toOldMusicInfo(minfo))

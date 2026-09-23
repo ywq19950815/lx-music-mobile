@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import CheckBox from './Checkbox'
+import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/ConfirmAlert'
 
-import { createStyle, tipDialog } from '@/utils/tools'
+import { createStyle } from '@/utils/tools'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
 import Text from '../Text'
@@ -26,6 +27,7 @@ export interface CheckBoxProps {
 export default ({ check, label, children, onChange, helpTitle, helpDesc, disabled = false, need = false, marginRight = 0, marginBottom = 0, size = 1 }: CheckBoxProps) => {
   const theme = useTheme()
   const [isDisabled, setDisabled] = useState(false)
+  const alertRef = useRef<ConfirmAlertType>(null)
 
   useEffect(() => {
     if (need) {
@@ -44,15 +46,13 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
     onChange?.(!check)
   }, [isDisabled, disabled, onChange, check])
 
+  const handleShowHelp = useCallback(() => {
+    alertRef.current?.setVisible(true)
+  }, [])
+
+  const modalTitle = helpTitle || (typeof label === 'string' ? label : '') || '提示说明'
+
   const helpComponent = useMemo(() => {
-    const handleShowHelp = () => {
-      const modalTitle = helpTitle || (typeof label === 'string' ? label : '') || '提示说明'
-      void tipDialog({
-        title: modalTitle,
-        message: helpDesc,
-        btnText: global.i18n.t('understand'),
-      })
-    }
     return (helpTitle ?? helpDesc) ? (
       <TouchableOpacity
         style={styles.helpBtn}
@@ -63,7 +63,7 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
         <Text style={styles.helpBtnText}>?</Text>
       </TouchableOpacity>
     ) : null
-  }, [helpTitle, helpDesc, label])
+  }, [helpTitle, helpDesc, handleShowHelp])
 
   const contentStyle = { ...styles.content, marginBottom: scaleSizeH(marginBottom) }
   const labelStyle = { ...styles.label, marginRight: scaleSizeW(marginRight) }
@@ -98,6 +98,16 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
         ) : children}
       </TouchableOpacity>
       {helpComponent}
+      {(helpTitle ?? helpDesc) ? (
+        <ConfirmAlert
+          ref={alertRef}
+          title={modalTitle}
+          text={helpDesc}
+          showCancel={false}
+          confirmText={global.i18n?.t('understand') || '我知道了'}
+          onConfirm={() => alertRef.current?.setVisible(false)}
+        />
+      ) : null}
     </View>
   )
 }

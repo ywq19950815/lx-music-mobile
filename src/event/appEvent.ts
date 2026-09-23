@@ -14,6 +14,17 @@ import { type SearchType } from '@/store/search/state'
 //   // },
 // }
 
+export interface GlobalAlertOptions {
+  title?: string
+  message: string
+  confirmButtonText?: string
+  cancelButtonText?: string
+  showCancel?: boolean
+  bgClose?: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}
+
 export class AppEvent extends Event {
   // configUpdate() {
   //   this.emit('configUpdate')
@@ -200,6 +211,10 @@ export class AppEvent extends Event {
 
   selectSyncMode(mode: LX.Sync.ModeType) {
     this.emit('selectSyncMode', mode)
+  }
+
+  showGlobalAlert(options: GlobalAlertOptions) {
+    this.emit('showGlobalAlert', options)
   }
 }
 
