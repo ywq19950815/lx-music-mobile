@@ -88,6 +88,11 @@ const List = forwardRef<ListType, ListProps>(({
       style={styles.list}
       data={currentList}
       onEndReachedThreshold={0.5}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条并保持滚动跟手
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="always"
+      scrollEventThrottle={16}
       // maxToRenderPerBatch={4}
       // updateCellsBatchingPeriod={80}
       // windowSize={8}

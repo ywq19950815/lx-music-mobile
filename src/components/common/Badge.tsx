@@ -1,26 +1,7 @@
 import { memo, useMemo } from 'react'
-import { View } from 'react-native'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
+import { View, StyleSheet } from 'react-native'
 import Text from './Text'
-
-const styles = createStyle({
-  badgeContainer: {
-    paddingHorizontal: 4,
-    paddingVertical: 0.5,
-    borderRadius: 3,
-    borderWidth: 0.5,
-    marginRight: 6,
-    alignSelf: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontWeight: '500',
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-  },
-})
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 export type BadgeType = 'normal' | 'secondary' | 'tertiary'
 
@@ -28,30 +9,51 @@ export default memo(({ type = 'normal', children }: {
   type?: BadgeType
   children: string
 }) => {
-  const theme = useTheme()
-  const colors = useMemo(() => {
-    const colors = { textColor: '', borderColor: '', bgColor: 'rgba(0, 0, 0, 0.03)' }
+  const badgeStyle = useMemo(() => {
     switch (type) {
-      case 'normal':
-        colors.textColor = theme['c-badge-primary']
-        colors.borderColor = theme['c-badge-primary']
-        break
       case 'secondary':
-        colors.textColor = theme['c-badge-secondary']
-        colors.borderColor = theme['c-badge-secondary']
-        break
+        return {
+          bgColor: neoColors.cyan,
+          textColor: neoColors.black,
+        }
       case 'tertiary':
-        colors.textColor = theme['c-badge-tertiary']
-        colors.borderColor = theme['c-badge-tertiary']
-        break
+        return {
+          bgColor: neoColors.pink,
+          textColor: neoColors.black,
+        }
+      case 'normal':
+      default:
+        return {
+          bgColor: neoColors.yellow,
+          textColor: neoColors.black,
+        }
     }
-    return colors
-  }, [type, theme])
+  }, [type])
 
   return (
-    <View style={[styles.badgeContainer, { borderColor: colors.borderColor, backgroundColor: colors.bgColor }]}>
-      <Text style={styles.text} size={9} color={colors.textColor}>{children}</Text>
+    <View style={[styles.badgeContainer, { backgroundColor: badgeStyle.bgColor }]}>
+      <Text style={[styles.text, { color: badgeStyle.textColor }]} size={9}>{children}</Text>
     </View>
   )
+})
+
+const styles = StyleSheet.create({
+  badgeContainer: {
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    marginRight: 6,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...neoShadows.sm,
+  },
+  text: {
+    fontWeight: '900',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
 })
 

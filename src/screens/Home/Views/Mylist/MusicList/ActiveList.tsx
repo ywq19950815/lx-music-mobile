@@ -1,18 +1,15 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react'
-import { TouchableOpacity } from 'react-native'
-
+import { TouchableOpacity, View, StyleSheet } from 'react-native'
 import { Icon } from '@/components/common/Icon'
-import { BorderWidths } from '@/theme'
-import { useTheme } from '@/store/theme/hook'
 import { useActiveListId, useListFetching } from '@/store/list/hook'
 import listState from '@/store/list/state'
-import { createStyle } from '@/utils/tools'
 import { getListPrevSelectId } from '@/utils/data'
 import { setActiveList } from '@/core/list'
 import Text from '@/components/common/Text'
 import { LIST_IDS } from '@/config/constant'
 import Loading from '@/components/common/Loading'
 import { useSettingValue } from '@/store/setting/hook'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 export interface ActiveListProps {
   onShowSearchBar: () => void
@@ -22,8 +19,13 @@ export interface ActiveListType {
   setVisibleBar: (visible: boolean) => void
 }
 
+/**
+ * NeoActiveList: 新粗野主义风格的当前歌单切换与搜索条。
+ * - 纯黑 2px 底边
+ * - 亮黄色波普胶囊指示器
+ * - 粗黑大字号
+ */
 export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, onScrollToTop }, ref) => {
-  const theme = useTheme()
   const currentListId = useActiveListId()
   const fetching = useListFetching(currentListId)
   const langId = useSettingValue('common.langId')
@@ -38,7 +40,6 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
       default:
         return listState.allList.find(l => l.id === currentListId)?.name ?? ''
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentListId, langId])
   const [visibleBar, setVisibleBar] = useState(true)
 
@@ -58,50 +59,82 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
     })
   }, [])
 
+  // 隐藏时必须卸载，否则这层浮层会继续拦截点击（例如搜索按钮/胶囊点不动）
+  if (!visibleBar) return null
+
   return (
-    <TouchableOpacity onPress={showList} onLongPress={onScrollToTop} style={{ ...styles.currentList, opacity: visibleBar ? 1 : 0, borderBottomColor: theme['c-border-background'] }}>
-      <Icon style={styles.currentListIcon} color={theme['c-button-font']} name="chevron-right" size={12} />
-      { fetching ? <Loading color={theme['c-button-font']} style={styles.loading} /> : null }
-      <Text style={styles.currentListText} numberOfLines={1} color={theme['c-button-font']}>{currentListName}</Text>
-      <TouchableOpacity style={styles.currentListBtns} onPress={onShowSearchBar}>
-        <Icon color={theme['c-button-font']} name="search-2" />
+    <View style={styles.container}>
+      <TouchableOpacity
+        onPress={showList}
+        onLongPress={onScrollToTop}
+        style={styles.pillBtn}
+        activeOpacity={0.7}
+      >
+        <View style={styles.pillTag}>
+          <Icon name="chevron-right" size={14} color={neoColors.black} />
+          {fetching ? <Loading color={neoColors.black} style={styles.loading} /> : null}
+          <Text style={styles.listTitle} numberOfLines={1}>
+            {currentListName}
+          </Text>
+        </View>
       </TouchableOpacity>
-    </TouchableOpacity>
+
+      {/* 搜索小按钮 */}
+      <TouchableOpacity
+        style={styles.searchBtn}
+        onPress={onShowSearchBar}
+        activeOpacity={0.6}
+      >
+        <Icon color={neoColors.black} name="search-2" size={16} />
+      </TouchableOpacity>
+    </View>
   )
 })
 
-
-const styles = createStyle({
-  currentList: {
+const styles = StyleSheet.create({
+  container: {
     flexDirection: 'row',
-    paddingRight: 2,
-    height: 36,
     alignItems: 'center',
-    borderBottomWidth: BorderWidths.normal,
-    // backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: neoColors.white,
+    borderBottomWidth: neoBorders.regular,
+    borderBottomColor: neoColors.black,
   },
-  currentListIcon: {
-    paddingLeft: 15,
-    paddingRight: 10,
-    // paddingTop: 10,
-    // paddingBottom: 0,
-  },
-  currentListText: {
+  pillBtn: {
     flex: 1,
-    // minWidth: 70,
-    // paddingLeft: 10,
-    paddingRight: 10,
-    // paddingTop: 10,
-    // paddingBottom: 10,
+    marginRight: 10,
+  },
+  pillTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: neoBorders.radiusPill,
+    backgroundColor: neoColors.yellow,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    gap: 4,
   },
   loading: {
-    marginRight: 5,
+    marginRight: 4,
   },
-  currentListBtns: {
-    width: 46,
+  listTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: neoColors.black,
+    letterSpacing: -0.2,
+  },
+  searchBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: neoColors.white,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100%',
-    // backgroundColor: 'rgba(0,0,0,0.2)',
   },
 })

@@ -221,16 +221,11 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
   }
 
   const handlePress = (item: LX.Music.MusicInfo, index: number) => {
-    // console.log(global.lx.homePagerIdle)
-    requestAnimationFrame(() => {
-      // console.log(global.lx.homePagerIdle)
-      if (!global.lx.homePagerIdle) return
-      if (isMultiSelectModeRef.current) {
-        handleSelect(item, index)
-      } else {
-        handlePlay(index)
-      }
-    })
+    if (isMultiSelectModeRef.current) {
+      handleSelect(item, index)
+    } else {
+      handlePlay(index)
+    }
   }
 
   const handleLongPress = (item: LX.Music.MusicInfo, index: number) => {
@@ -273,11 +268,16 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       ref={flatListRef}
       onScroll={handleScroll}
       style={styles.list}
-      contentContainerStyle={{ paddingBottom: 36 }}
+      contentContainerStyle={{ paddingBottom: 90 }}
       data={currentList}
       maxToRenderPerBatch={4}
       numColumns={rowInfo.current.rowNum}
       horizontal={false}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条并保持滚动跟手
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="always"
+      scrollEventThrottle={16}
       // updateCellsBatchingPeriod={80}
       windowSize={8}
       removeClippedSubviews={true}

@@ -7,7 +7,6 @@ const defaultSetting: LX.AppSetting = {
   'common.shareType': 'system',
   'common.isAgreePact': true,
   'common.autoHidePlayBar': true,
-  'common.drawerLayoutPosition': 'left',
   'common.homePageScroll': true,
   'common.allowProgressBarSeek': true,
   'common.showBackBtn': false,
@@ -77,9 +76,6 @@ const defaultSetting: LX.AppSetting = {
   'theme.id': 'black',
   'theme.lightId': 'green',
   'theme.darkId': 'black',
-  'theme.hideBgDark': false,
-  'theme.dynamicBg': false,
-  'theme.fontShadow': false,
 }
 
 // 使用新年皮肤（已按用户要求停用，避免主题被强制覆盖）

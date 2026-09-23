@@ -1,9 +1,8 @@
 import { forwardRef, useImperativeHandle, useState } from 'react'
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, StyleSheet, View } from 'react-native'
 
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 export interface ActiveListNameProps {
   onShowBound: () => void
@@ -13,44 +12,68 @@ export interface ActiveListNameType {
 }
 
 export default forwardRef<ActiveListNameType, ActiveListNameProps>(({ onShowBound }, ref) => {
-  const theme = useTheme()
-  let [currentListName, setCurrentListName] = useState('')
+  const [currentListName, setCurrentListName] = useState('热歌榜')
 
   useImperativeHandle(ref, () => ({
     setBound(id, name) {
-      setCurrentListName(name)
+      setCurrentListName(name || '热歌榜')
     },
   }), [])
 
   return (
-    <TouchableOpacity onPress={onShowBound} style={styles.currentList}>
-      <Text numberOfLines={1} style={styles.currentListText} color={theme['c-button-font']}>{currentListName}</Text>
+    <TouchableOpacity
+      testID="btn-leaderboard-change-board"
+      activeOpacity={0.8}
+      onPress={onShowBound}
+      style={styles.badgeBtn}
+    >
+      <Text style={styles.trophy}>🏆</Text>
+      <Text numberOfLines={1} style={styles.badgeText}>
+        {currentListName}
+      </Text>
+      <View style={styles.chevronWrap}>
+        <Text style={styles.chevron}>切换 ▾</Text>
+      </View>
     </TouchableOpacity>
   )
 })
 
-
-const styles = createStyle({
-  currentList: {
-    flex: 1,
+const styles = StyleSheet.create({
+  badgeBtn: {
     flexDirection: 'row',
-    paddingRight: 2,
-    // height: 36,
     alignItems: 'center',
-    // backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: neoColors.cyan,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    borderRadius: neoBorders.radiusPill,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    shadowColor: neoColors.black,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
   },
-  currentListIcon: {
-    paddingLeft: 15,
-    paddingRight: 10,
-    // paddingTop: 10,
-    // paddingBottom: 0,
+  trophy: {
+    fontSize: 13,
+    marginRight: 4,
   },
-  currentListText: {
-    flex: 1,
-    // minWidth: 70,
-    // paddingLeft: 10,
-    paddingRight: 10,
-    // paddingTop: 10,
-    // paddingBottom: 10,
+  badgeText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: neoColors.black,
+    maxWidth: 130,
+  },
+  chevronWrap: {
+    marginLeft: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    backgroundColor: neoColors.black,
+    borderRadius: 6,
+  },
+  chevron: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: neoColors.white,
   },
 })

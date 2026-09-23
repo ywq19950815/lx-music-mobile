@@ -1,18 +1,12 @@
 import { useRef, forwardRef, useImperativeHandle } from 'react'
-// import { Icon } from '@/components/common/Icon'
-import Button from '@/components/common/Button'
-// import { navigations } from '@/navigation'
+import { TouchableOpacity, View, StyleSheet } from 'react-native'
 import Modal, { type ModalType } from './Modal'
 import { type Source } from '@/store/songlist/state'
-import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
-
-// export interface OpenListProps {
-//   onTagChange: (name: string, id: string) => void
-// }
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 export interface OpenListType {
   setInfo: (source: Source) => void
@@ -30,7 +24,6 @@ export default forwardRef<OpenListType, {}>((props, ref) => {
   }))
 
   const handleOpenSonglist = (id: string) => {
-    // console.log(id, songlistInfoRef.current.source)
     navigations.pushSonglistDetailScreen(commonState.componentIds.home!, {
       play_count: undefined,
       id,
@@ -42,27 +35,39 @@ export default forwardRef<OpenListType, {}>((props, ref) => {
     })
   }
 
-  // const handleSourceChange: ModalProps['onSourceChange'] = (source) => {
-  //   songlistInfoRef.current.source = source
-  // }
-
-
   return (
     <>
-      <Button style={styles.button} onPress={() => modalRef.current?.show(songlistInfoRef.current.source)}>
-        <Text>{t('songlist_open')}</Text>
-      </Button>
+      <View style={styles.wrapper}>
+        <TouchableOpacity
+          style={styles.pill}
+          onPress={() => modalRef.current?.show(songlistInfoRef.current.source)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.text} size={11}>
+            {t('songlist_open')}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <Modal ref={modalRef} onOpenId={handleOpenSonglist} />
     </>
   )
 })
 
-const styles = createStyle({
-  button: {
-    // backgroundColor: '#ccc',
-    alignItems: 'center',
+const styles = StyleSheet.create({
+  wrapper: {
     justifyContent: 'center',
-    paddingLeft: 12,
-    paddingRight: 12,
+    paddingHorizontal: 4,
+  },
+  pill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.pink,
+  },
+  text: {
+    fontWeight: '900',
+    color: neoColors.black,
   },
 })

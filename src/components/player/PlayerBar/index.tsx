@@ -1,85 +1,113 @@
 import { memo } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, View, TouchableOpacity } from 'react-native'
 import { useKeyboard } from '@/utils/hooks'
+import { navigations } from '@/navigation'
+import commonState from '@/store/common/state'
 
 import Pic from './components/Pic'
 import Title from './components/Title'
 import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
-import { useProgress } from '@/store/player/hook'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
-
+/**
+ * NeoPlayerBar: 新粗野主义悬浮全局播放条。
+ * - 纯黑 2.5px 实体边框
+ * - 纯黑硬边物理投影（Hard Offset Shadow）
+ * - 亮黄/电光粉波普强调色
+ */
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const { keyboardShown } = useKeyboard()
-  const theme = useTheme()
   const autoHidePlayBar = useSettingValue('common.autoHidePlayBar')
-  const { progress } = useProgress(true)
 
   if (autoHidePlayBar && keyboardShown) return null
 
-  const progressPercent = Math.min(100, Math.max(0, (progress || 0) * 100))
+  const handleOpenPlayDetail = () => {
+    navigations.pushPlayDetailScreen(commonState.componentIds.home || 'home')
+    if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
+      (window as any).__lxTogglePlayDetail(true)
+    }
+    globalThis.app_event?.emit('openPlayDetail')
+  }
 
   return (
     <View style={styles.outerWrapper}>
-      <View style={{
-        ...styles.container,
-        backgroundColor: theme['c-primary-light-700-alpha-500'] ?? theme['c-content-background'],
-        borderColor: theme['c-border-background'] ?? 'rgba(128, 128, 148, 0.16)',
-      }}>
-        <Pic isHome={isHome} />
-        <View style={styles.center}>
-          <Title isHome={isHome} />
-          <PlayInfo isHome={isHome} />
-        </View>
+      {/* 背后纯黑实体硬投影底座 */}
+      <View style={styles.hardShadowUnderlay} />
+
+      {/* 悬浮前台卡片 */}
+      <View style={styles.cardContainer}>
+        {/* 左侧及中间主要区域：点击整条区域均可直接打开全屏播放详情页 */}
+        <TouchableOpacity
+          testID="player-bar-card"
+          style={styles.clickableArea}
+          onPress={handleOpenPlayDetail}
+          activeOpacity={0.75}
+        >
+          <Pic isHome={isHome} />
+          <View style={styles.center}>
+            <Title isHome={isHome} />
+            <PlayInfo isHome={isHome} />
+          </View>
+        </TouchableOpacity>
+
         <View style={styles.right}>
           <ControlBtn />
-        </View>
-        <View style={styles.bottomProgressTrack}>
-          <View style={[styles.bottomProgressBar, { width: `${progressPercent}%`, backgroundColor: theme['c-primary-font'] ?? theme['c-primary'] }]} />
         </View>
       </View>
     </View>
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   outerWrapper: {
     width: '100%',
-    paddingHorizontal: 10,
-    paddingBottom: 8,
+    paddingHorizontal: 12,
+    // 上方留白：与页面内容拉开距离，避免播放条与列表最后一项贴死
     paddingTop: 6,
-    backgroundColor: 'transparent',
-  },
-  container: {
-    width: '100%',
-    paddingVertical: 7,
-    paddingLeft: 7,
-    paddingRight: 6,
-    borderRadius: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
+    // 下方留白：与底部导航之间留出呼吸空间，避免两条黑边紧贴显得拥挤
+    paddingBottom: 10,
     position: 'relative',
   },
-  left: {
-    flexGrow: 0,
-    flexShrink: 0,
+  // 纯黑硬投影底座
+  hardShadowUnderlay: {
+    position: 'absolute',
+    left: 15,
+    right: 9,
+    top: 9,
+    bottom: 7,
+    backgroundColor: neoColors.black,
+    borderRadius: neoBorders.radiusMd,
+    zIndex: 0,
+  },
+  // 前景主体卡片
+  cardContainer: {
+    width: '100%',
+    paddingVertical: 7,
+    paddingLeft: 8,
+    paddingRight: 8,
+    borderRadius: neoBorders.radiusMd,
+    backgroundColor: neoColors.white,
+    borderWidth: neoBorders.regular,
+    borderColor: neoColors.black,
+    flexDirection: 'row',
+    alignItems: 'center',
+    overflow: 'hidden',
+    position: 'relative',
+    zIndex: 1,
+  },
+  clickableArea: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   center: {
     flexDirection: 'column',
     flexGrow: 1,
     flexShrink: 1,
-    paddingLeft: 8,
+    paddingLeft: 10,
     height: '100%',
     justifyContent: 'center',
   },
@@ -89,20 +117,6 @@ const styles = createStyle({
     flexGrow: 0,
     flexShrink: 0,
     paddingLeft: 4,
-    paddingRight: 4,
-  },
-  bottomProgressTrack: {
-    position: 'absolute',
-    bottom: 0,
-    left: 14,
-    right: 14,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: 'rgba(128, 128, 148, 0.16)',
-    overflow: 'hidden',
-  },
-  bottomProgressBar: {
-    height: '100%',
-    borderRadius: 1,
+    paddingRight: 2,
   },
 })

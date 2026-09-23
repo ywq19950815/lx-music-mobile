@@ -11,6 +11,7 @@ import { setSpText } from '@/utils/pixelRatio'
 import playerState from '@/store/player/state'
 import { scrollTo } from '@/utils/scroll'
 import PlayLine, { type PlayLineType } from '../components/PlayLine'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 // import { screenkeepAwake } from '@/utils/nativeModules/utils'
 // import { log } from '@/utils/log'
 // import { toast } from '@/utils/tools'
@@ -91,23 +92,25 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   // textBreakStrategy="simple" 用于解决某些设备上字体被截断的问题
   // https://stackoverflow.com/a/72822360
   return (
-    <View style={[styles.line, active ? styles.activeLine : null]} onLayout={handleLayout}>
-      <AnimatedColorText style={{
-        ...styles.lineText,
-        textAlign,
-        lineHeight,
-        fontWeight: active ? 'bold' : 'normal',
-      }} textBreakStrategy="simple" color={colors[0]} opacity={colors[2]} size={size}>{line.text}</AnimatedColorText>
-      {
-        line.extendedLyrics.map((lrc, index) => {
-          return (<AnimatedColorText style={{
-            ...styles.lineTranslationText,
-            textAlign,
-            lineHeight: lineHeight * 0.8,
-            fontWeight: active ? 'bold' : 'normal',
-          }} textBreakStrategy="simple" key={index} color={colors[1]} opacity={colors[2]} size={size * 0.8}>{lrc}</AnimatedColorText>)
-        })
-      }
+    <View style={[styles.line, active ? styles.activeLineWrapper : null]} onLayout={handleLayout}>
+      <View style={active ? styles.activeLineCard : null}>
+        <AnimatedColorText style={{
+          ...styles.lineText,
+          textAlign,
+          lineHeight,
+          fontWeight: active ? '900' : '600',
+        }} textBreakStrategy="simple" color={active ? neoColors.black : colors[0]} opacity={active ? 1 : colors[2]} size={size}>{line.text}</AnimatedColorText>
+        {
+          line.extendedLyrics.map((lrc, index) => {
+            return (<AnimatedColorText style={{
+              ...styles.lineTranslationText,
+              textAlign,
+              lineHeight: lineHeight * 0.8,
+              fontWeight: active ? '800' : 'normal',
+            }} textBreakStrategy="simple" key={index} color={active ? neoColors.black : colors[1]} opacity={active ? 0.85 : colors[2]} size={size * 0.8}>{lrc}</AnimatedColorText>)
+          })
+        }
+      </View>
     </View>
   )
 }, (prevProps, nextProps) => {
@@ -347,11 +350,21 @@ const styles = createStyle({
   line: {
     paddingTop: 8,
     paddingBottom: 8,
-    // opacity: 0,
+    alignItems: 'center',
   },
-  activeLine: {
-    paddingTop: 14,
-    paddingBottom: 14,
+  activeLineWrapper: {
+    paddingTop: 12,
+    paddingBottom: 12,
+    alignItems: 'center',
+  },
+  activeLineCard: {
+    backgroundColor: neoColors.yellow,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    borderRadius: neoBorders.radiusMd,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    ...neoShadows.sm,
   },
   lineText: {
     textAlign: 'center',

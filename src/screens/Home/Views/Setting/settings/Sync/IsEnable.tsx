@@ -8,6 +8,7 @@ import { connectServer, disconnectServer } from '@/plugins/sync'
 import InputItem from '../../components/InputItem'
 import { getWIFIIPV4Address } from '@/utils/nativeModules/utils'
 import { createStyle, toast } from '@/utils/tools'
+import { neoColors } from '@/theme/neobrutalism'
 import { useI18n } from '@/lang'
 import { updateSetting } from '@/core/common'
 import { addSyncHostHistory, getSyncHost, setSyncHost } from '@/utils/data'
@@ -189,9 +190,14 @@ const styles = createStyle({
   textAddr: {
     marginLeft: 25,
     marginTop: 5,
+    // 显式指定深色：默认色在深色主题下是浅灰，落在纯白卡片上几乎不可见
+    color: neoColors.gray700,
+    fontWeight: '600',
   },
   text: {
     marginLeft: 25,
+    color: neoColors.gray700,
+    fontWeight: '600',
   },
   inputContent: {
     marginTop: 8,

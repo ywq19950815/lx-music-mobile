@@ -10,7 +10,7 @@ import DuplicateMusic, { type DuplicateMusicType } from './DuplicateMusic'
 
 
 export default () => {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(true)
   const listMenuRef = useRef<ListMenuType>(null)
   const listNameEditRef = useRef<ListNameEditType>(null)
   const listMusicSortRef = useRef<ListMusicSortType>(null)

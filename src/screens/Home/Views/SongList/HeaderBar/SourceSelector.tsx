@@ -1,12 +1,11 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react'
 import { StyleSheet, View, type ViewStyle } from 'react-native'
-
-import { createStyle } from '@/utils/tools'
 import SourceSelector, {
   type SourceSelectorType as _SourceSelectorType,
   type SourceSelectorProps as _SourceSelectorProps,
 } from '@/components/SourceSelector'
 import songlistState, { type Source, type InitState } from '@/store/songlist/state'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 type Sources = Readonly<InitState['sources']>
 type SourceSelectorCommonProps = _SourceSelectorProps<Sources>
@@ -30,16 +29,17 @@ export default forwardRef<SourceSelectorType, SourceSelectorProps>(({ style, onS
     },
   }), [])
 
-
   return (
-    <View style={StyleSheet.compose<ViewStyle>(styles.selector, style)}>
+    <View style={[styles.selector, style]}>
       <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} center />
     </View>
   )
 })
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   selector: {
-    // width: 86,
+    justifyContent: 'center',
+    paddingRight: 10,
+    paddingLeft: 4,
   },
 })

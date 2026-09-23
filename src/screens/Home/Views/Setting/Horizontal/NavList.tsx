@@ -87,6 +87,9 @@ export default ({ onChangeId }: {
       keyExtractor={getkey}
       // extraData={activeIndex}
       getItemLayout={getItemLayout}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
     />
   )
 }

@@ -11,6 +11,7 @@ import Lyric from './Lyric'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
+import { neoColors } from '@/theme/neobrutalism'
 // import { useTheme } from '@/store/theme/hook'
 
 const LyricPage = ({ activeIndex }: { activeIndex: number }) => {
@@ -76,13 +77,12 @@ export default memo(({ componentId }: { componentId: string }) => {
       <View style={styles.container}>
         <PagerView
           onPageSelected={onPageSelected}
-          // onPageScrollStateChanged={onPageScrollStateChanged}
           style={styles.pagerView}
         >
-          <View collapsable={false}>
+          <View collapsable={false} style={{ flex: 1, minHeight: 0 }}>
             <Pic componentId={componentId} />
           </View>
-          <View collapsable={false}>
+          <View collapsable={false} style={{ flex: 1, minHeight: 0 }}>
             <LyricPage activeIndex={pageIndex} />
           </View>
         </PagerView>
@@ -99,10 +99,17 @@ export default memo(({ componentId }: { componentId: string }) => {
 const styles = createStyle({
   container: {
     flex: 1,
+    minHeight: 0,
     flexDirection: 'column',
+    backgroundColor: neoColors.offWhite,
+    overflow: 'hidden',
+    position: 'relative',
   },
   pagerView: {
     flex: 1,
+    minHeight: 0,
+    overflow: 'hidden',
+    paddingBottom: 155,
   },
   // pageIndicator: {
   //   flex: 0,

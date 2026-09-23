@@ -1,55 +1,9 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react'
-import { View, ScrollView } from 'react-native'
+import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import Dialog, { type DialogType } from './Dialog'
-import Button from './Button'
-import { createStyle } from '@/utils/tools'
 import { useI18n } from '@/lang/index'
-import { useTheme } from '@/store/theme/hook'
 import Text from './Text'
-
-const styles = createStyle({
-  main: {
-    // flexGrow: 0,
-    flexShrink: 1,
-    marginTop: 15,
-    marginLeft: 5,
-    marginRight: 5,
-    marginBottom: 25,
-  },
-  content: {
-    flexGrow: 0,
-    paddingLeft: 10,
-    paddingRight: 10,
-  },
-  btns: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    paddingBottom: 15,
-    // paddingRight: 15,
-  },
-  btnsDirection: {
-    paddingLeft: 15,
-  },
-  btnsReversedDirection: {
-    paddingLeft: 15,
-    flexDirection: 'row-reverse',
-  },
-  btn: {
-    flex: 1,
-    paddingTop: 9,
-    paddingBottom: 9,
-    paddingLeft: 10,
-    paddingRight: 10,
-    alignItems: 'center',
-    borderRadius: 4,
-  },
-  btnDirection: {
-    marginRight: 15,
-  },
-  btnReversedDirection: {
-    marginLeft: 15,
-  },
-})
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 export interface ConfirmAlertProps {
   onCancel?: () => void
@@ -88,9 +42,7 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
   children,
   reverseBtn = false,
 }: ConfirmAlertProps, ref) => {
-  const theme = useTheme()
   const t = useI18n()
-
   const dialogRef = useRef<DialogType>(null)
 
   useImperativeHandle(ref, () => ({
@@ -104,23 +56,99 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
     dialogRef.current?.setVisible(false)
   }
 
+  const handleConfirm = () => {
+    if (disabledConfirm) return
+    onConfirm?.()
+  }
+
   return (
     <Dialog onHide={onHide} keyHide={keyHide} bgHide={bgHide} closeBtn={closeBtn} title={title} ref={dialogRef}>
       <View style={styles.main}>
-        <ScrollView style={styles.content} keyboardShouldPersistTaps={'always'}>
-          {children ?? <Text>{text}</Text>}
+        <ScrollView style={styles.content} keyboardShouldPersistTaps={'always'}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}>
+          {children ?? <Text style={styles.textBody} size={13} color={neoColors.black}>{text}</Text>}
         </ScrollView>
       </View>
-      <View style={{ ...styles.btns, ...(reverseBtn ? styles.btnsReversedDirection : styles.btnsDirection) }}>
-        <Button style={{ ...styles.btn, ...(reverseBtn ? styles.btnReversedDirection : styles.btnDirection), backgroundColor: theme['c-button-background'] }} onPress={handleCancel}>
-          <Text color={theme['c-button-font']}>{cancelText || t('cancel')}</Text>
-        </Button>
-        {showConfirm
-          ? <Button style={{ ...styles.btn, ...(reverseBtn ? styles.btnReversedDirection : styles.btnDirection), backgroundColor: theme['c-button-background'] }} onPress={onConfirm} disabled={disabledConfirm}>
-              <Text color={theme['c-button-font']}>{confirmText || t('confirm')}</Text>
-            </Button>
-          : null}
+      <View style={[styles.btns, reverseBtn && styles.btnsReversed]}>
+        <TouchableOpacity
+          style={styles.cancelBtn}
+          activeOpacity={0.7}
+          onPress={handleCancel}
+        >
+          <Text style={styles.btnText} size={13} color={neoColors.black}>
+            {cancelText || t('cancel')}
+          </Text>
+        </TouchableOpacity>
+        {showConfirm ? (
+          <TouchableOpacity
+            style={[styles.confirmBtn, disabledConfirm && styles.disabledBtn]}
+            activeOpacity={0.7}
+            onPress={handleConfirm}
+            disabled={disabledConfirm}
+          >
+            <Text style={styles.btnText} size={13} color={neoColors.black}>
+              {confirmText || t('confirm')}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </Dialog>
   )
+})
+
+const styles = StyleSheet.create({
+  main: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  content: {
+    // ⚠️ 限高别卡太紧。内容一旦超过 maxHeight，末行会被 ScrollView 裁掉
+    // （症状：文字下面被切一半、读不到最后一行）。
+    // 抬高到 260 并配合子内容的自适应行高，常见文案（歌单打开的 4 条提示）可完整显示。
+    maxHeight: 260,
+  },
+  textBody: {
+    lineHeight: 20,
+    fontWeight: '600',
+  },
+  btns: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 14,
+    paddingBottom: 14,
+    gap: 10,
+  },
+  btnsReversed: {
+    flexDirection: 'row-reverse',
+  },
+  cancelBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...neoShadows.sm,
+  },
+  confirmBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.yellow,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...neoShadows.sm,
+  },
+  disabledBtn: {
+    opacity: 0.5,
+  },
+  btnText: {
+    fontWeight: '800',
+  },
 })

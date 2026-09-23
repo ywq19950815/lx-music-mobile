@@ -11,6 +11,7 @@ import { getCacheSize, clearCache } from '@/plugins/player/utils'
 import { sizeFormate } from '@/utils'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
+import { neoColors } from '@/theme/neobrutalism'
 import { clearMusicUrl } from '@/utils/data'
 
 export default memo(() => {
@@ -60,7 +61,7 @@ export default memo(() => {
     <>
       <SubTitle title={t('setting__other_resource_cache')}>
         <View style={styles.cacheSize}>
-          <Text>{cacheSize == null ? t('setting_other_cache_getting') : t('setting_other_cache_size') + cacheSize}</Text>
+          <Text style={styles.cacheSizeText}>{cacheSize == null ? t('setting_other_cache_getting') : t('setting_other_cache_size') + cacheSize}</Text>
         </View>
         <View style={styles.clearBtn}>
           <Button disabled={cleaning} onPress={handleCleanCache}>{t('setting_other_cache_clear_btn')}</Button>
@@ -73,6 +74,11 @@ export default memo(() => {
 const styles = StyleSheet.create({
   cacheSize: {
     marginBottom: 5,
+  },
+  // 显式指定深色：默认色在深色主题下是浅灰，落在纯白卡片上几乎不可见
+  cacheSizeText: {
+    color: neoColors.gray700,
+    fontWeight: '600',
   },
   clearBtn: {
     flexDirection: 'row',

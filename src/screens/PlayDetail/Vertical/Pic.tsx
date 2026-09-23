@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { View, Animated, Easing, StyleSheet } from 'react-native'
-import { createStyle } from '@/utils/tools'
 import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook'
 import { useWindowSize } from '@/utils/hooks'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
@@ -9,8 +8,8 @@ import { HEADER_HEIGHT } from './components/Header'
 import Image from '@/components/common/Image'
 import { useStatusbarHeight } from '@/store/common/hook'
 import commonState from '@/store/common/state'
-import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
-
+import { setLoadErrorPicUrl } from '@/core/player/playInfo'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 export default ({ componentId }: { componentId: string }) => {
   const musicInfo = usePlayerMusicInfo()
@@ -90,7 +89,7 @@ export default ({ componentId }: { componentId: string }) => {
   })
 
   const diskSize = useMemo(() => {
-    return Math.min(winWidth * 0.76, (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.46)
+    return Math.min(winWidth * 0.68, (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.36, 230)
   }, [statusBarHeight, winHeight, winWidth])
 
   const centerPicSize = Math.round(diskSize * 0.66)
@@ -98,35 +97,39 @@ export default ({ componentId }: { componentId: string }) => {
 
   const handleError = useCallback((url: string | number) => {
     setLoadErrorPicUrl(url as string)
-    setMusicInfo({
-      pic: null,
-    })
   }, [])
 
   return (
     <View style={styles.container}>
-      {/* 唱针组件（置于唱片顶层） */}
+      {/* 唱针组件（波普亮黄轴承与粉色针头） */}
       <View style={styles.needlePivotAnchor} pointerEvents="none">
         <Animated.View style={[styles.needleArmWrapper, { transform: [{ rotate: needleRotate }] }]}>
-          {/* 金属唱针轴承 */}
+          {/* 波普亮黄轴承底座 */}
           <View style={styles.needlePivotBase} />
-          {/* 唱针杆 */}
+          {/* 纯黑唱针杆 */}
           <View style={styles.needleBar} />
-          {/* 唱针头 */}
+          {/* 电光粉唱针头 */}
           <View style={styles.needleHead} />
         </Animated.View>
       </View>
 
-      {/* 黑胶旋转大唱盘 */}
-      <View style={[styles.diskOuterShadow, { width: diskSize, height: diskSize, borderRadius: diskSize / 2 }]}>
+      {/* 黑胶旋转大唱盘容器 */}
+      <View style={[styles.diskOuterShadow, { width: diskSize, height: diskSize }]}>
+        {/* 波普实体黑色硬阴影底座 */}
+        <View style={[
+          styles.diskHardShadow,
+          { width: diskSize, height: diskSize, borderRadius: diskSize / 2 },
+        ]} />
+
+        {/* 旋转黑胶盘体 */}
         <Animated.View style={[
           styles.vinylDisk,
           { width: diskSize, height: diskSize, borderRadius: diskSize / 2 },
           { transform: [{ rotate: diskSpin }] },
         ]}>
           {/* 唱片外层细刻线环 */}
-          <View style={[styles.grooveRing1, { width: diskSize - 8, height: diskSize - 8, borderRadius: (diskSize - 8) / 2 }]}>
-            <View style={[styles.grooveRing2, { width: diskSize - 20, height: diskSize - 20, borderRadius: (diskSize - 20) / 2 }]}>
+          <View style={[styles.grooveRing1, { width: diskSize - 10, height: diskSize - 10, borderRadius: (diskSize - 10) / 2 }]}>
+            <View style={[styles.grooveRing2, { width: diskSize - 22, height: diskSize - 22, borderRadius: (diskSize - 22) / 2 }]}>
               {/* 中心专辑封面 */}
               <View style={[styles.albumCoverWrapper, { width: centerPicSize, height: centerPicSize, borderRadius: centerPicSize / 2 }]}>
                 <Image
@@ -135,7 +138,7 @@ export default ({ componentId }: { componentId: string }) => {
                   style={{ width: centerPicSize, height: centerPicSize, borderRadius: centerPicSize / 2 }}
                   onError={handleError}
                 />
-                {/* 唱机中央轴孔 */}
+                {/* 唱机中央波普明黄色轴孔 */}
                 <View style={[styles.spindleHole, { width: spindleHoleSize, height: spindleHoleSize, borderRadius: spindleHoleSize / 2 }]} />
               </View>
             </View>
@@ -146,82 +149,78 @@ export default ({ componentId }: { componentId: string }) => {
   )
 }
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     flexShrink: 1,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    paddingTop: 30,
+    paddingTop: 10,
   },
   needlePivotAnchor: {
     position: 'absolute',
-    top: 4,
+    top: 0,
     zIndex: 10,
     alignItems: 'center',
   },
   needleArmWrapper: {
-    width: 60,
-    height: 120,
+    width: 50,
+    height: 95,
     alignItems: 'center',
-    // 旋转锚点位于轴承中心
     transformOrigin: 'top center',
   },
   needlePivotBase: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#d8d8dc',
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: neoColors.yellow,
     borderWidth: 2,
-    borderColor: '#8e8e93',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    borderColor: neoColors.black,
   },
   needleBar: {
-    width: 4,
-    height: 75,
-    backgroundColor: '#c7c7cc',
+    width: 3.5,
+    height: 60,
+    backgroundColor: neoColors.black,
     borderRadius: 2,
-    marginTop: -4,
+    marginTop: -3,
   },
   needleHead: {
     width: 10,
-    height: 18,
+    height: 15,
     borderRadius: 2,
-    backgroundColor: '#3a3a3c',
+    backgroundColor: neoColors.pink,
     marginTop: -2,
-    borderWidth: 1,
-    borderColor: '#e5e5ea',
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
   },
   diskOuterShadow: {
-    elevation: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.38,
-    shadowRadius: 14,
+    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  diskHardShadow: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    backgroundColor: neoColors.black,
   },
   vinylDisk: {
-    backgroundColor: '#121215',
+    backgroundColor: '#0F0F12',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#24242a',
+    borderWidth: 3.5,
+    borderColor: neoColors.black,
   },
   grooveRing1: {
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   grooveRing2: {
-    borderWidth: 0.8,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -229,14 +228,13 @@ const styles = createStyle({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#1e1e24',
-    elevation: 4,
+    borderWidth: 2.5,
+    borderColor: neoColors.black,
   },
   spindleHole: {
     position: 'absolute',
-    backgroundColor: '#0c0c0e',
+    backgroundColor: neoColors.yellow,
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    borderColor: neoColors.black,
   },
 })

@@ -52,7 +52,13 @@ export default forwardRef<ListType, ListProps>(({ onTagChange }, ref) => {
 
 
   return (
-    <ScrollView style={{ flexShrink: 1, flexGrow: 0 }} keyboardShouldPersistTaps={'always'}>
+    <ScrollView
+      style={{ flexShrink: 1, flexGrow: 0 }}
+      keyboardShouldPersistTaps={'always'}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+    >
       <View style={styles.tagContainer} onStartShouldSetResponder={() => true}>
         {
           list.map((type, index) => (

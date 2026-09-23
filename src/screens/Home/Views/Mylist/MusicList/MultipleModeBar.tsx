@@ -100,11 +100,11 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
     ...styles.container,
     // backgroundColor: theme['c-content-background'],
     borderBottomColor: theme['c-border-background'],
-    opacity: visibleBar ? animFade : 0, // Bind opacity to animated value
+    opacity: animFade, // Bind opacity to animated value
     transform: [
       { translateY: animTranslateY },
     ],
-  }), [animFade, animTranslateY, theme, visibleBar])
+  }), [animFade, animTranslateY, theme])
 
   const handleSelectAll = useCallback(() => {
     const selectAll = !isSelectAll
@@ -133,6 +133,10 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
     )
   }, [animaStyle, selectMode, theme, handleSelectAll, isSelectAll, onExitSelectMode, onSwitchMode])
 
+  // 注意：visibleBar 为 false 时必须彻底卸载节点。
+  // 若只把 opacity 设为 0，这条浮层仍会盖在同级的 ActiveList 上拦截点击，
+  // 导致「顶部搜索按钮/歌单胶囊点不动」。
+  if (!visibleBar) return null
   return !visible && animatePlayed ? null : component
 })
 

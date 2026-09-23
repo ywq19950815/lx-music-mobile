@@ -46,22 +46,15 @@ export default forwardRef<BlankViewType, BlankViewProps>(({ onSearch }, ref) => 
 
   return (
     visible
-      ? isShowHotSearch || isShowHistorySearch
-        ? (
-            <ScrollView>
-              <View style={styles.content}>
-                { isShowHotSearch ? <HotSearch ref={hotSearchRef} onSearch={onSearch} /> : null }
-                { isShowHistorySearch ? <HistorySearch ref={historySearchRef} onSearch={onSearch} /> : null }
-              </View>
-            </ScrollView>
-          )
-        : (
-            <View style={styles.welcome}>
-              <Text size={22} color={theme['c-font-label']}>{t('search__welcome')}</Text>
+      ? (
+          <ScrollView style={{ flex: 1 }}>
+            <View style={styles.content}>
+              <HotSearch ref={hotSearchRef} onSearch={onSearch} />
+              { isShowHistorySearch ? <HistorySearch ref={historySearchRef} onSearch={onSearch} /> : null }
             </View>
-          )
+          </ScrollView>
+        )
       : null
-
   )
 })
 

@@ -27,7 +27,18 @@ const List = <T extends ItemT<T>>(props: ListProps<T>, ref: Ref<ListType<T>>) =>
     },
   }))
 
-  return <FlatList removeClippedSubviews={true} keyboardShouldPersistTaps={'always'} {...props} data={list} />
+  return (
+    <FlatList
+      removeClippedSubviews={true}
+      keyboardShouldPersistTaps={'always'}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条并保持滚动跟手
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      scrollEventThrottle={16}
+      {...props}
+      data={list}
+    />
+  )
 }
 
 export default forwardRef(List) as

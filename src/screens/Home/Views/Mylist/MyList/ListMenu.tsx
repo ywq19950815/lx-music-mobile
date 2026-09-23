@@ -52,19 +52,12 @@ export default forwardRef<ListMenuType, ListMenuProps>(({
   const menuRef = useRef<MenuType>(null)
   const selectInfoRef = useRef<SelectInfo>(initSelectInfo as SelectInfo)
   const [menus, setMenus] = useState<Menus>([])
-  const [visible, setVisible] = useState(false)
 
   useImperativeHandle(ref, () => ({
     show(selectInfo, position) {
       selectInfoRef.current = selectInfo
       handleSetMenu(selectInfo.listInfo)
-      if (visible) menuRef.current?.show(position)
-      else {
-        setVisible(true)
-        requestAnimationFrame(() => {
-          menuRef.current?.show(position)
-        })
-      }
+      menuRef.current?.show(position)
     },
   }))
 
@@ -140,13 +133,11 @@ export default forwardRef<ListMenuType, ListMenuProps>(({
   }
 
   return (
-    visible
-      ? <Menu
-          ref={menuRef}
-          menus={menus}
-          onPress={handleMenuPress}
-          width={menuItemWidth}
-        />
-      : null
+    <Menu
+      ref={menuRef}
+      menus={menus}
+      onPress={handleMenuPress}
+      width={menuItemWidth}
+    />
   )
 })

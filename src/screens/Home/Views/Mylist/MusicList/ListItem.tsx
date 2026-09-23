@@ -1,17 +1,14 @@
 import { memo, useRef } from 'react'
-import { View, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity, StyleSheet } from 'react-native'
 import { LIST_ITEM_HEIGHT } from '@/config/constant'
-// import { BorderWidths } from '@/theme'
 import { Icon } from '@/components/common/Icon'
-import { createStyle, type RowInfo } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
+import { type RowInfo } from '@/utils/tools'
 import { useAssertApiSupport } from '@/store/common/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
-import Badge from '@/components/common/Badge'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
-export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT)
-
+export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT) + 4
 
 export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPress, selectedList, rowInfo, isShowAlbumName, isShowInterval }: {
   item: LX.Music.MusicInfo
@@ -25,147 +22,240 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
   isShowAlbumName: boolean
   isShowInterval: boolean
 }) => {
-  const theme = useTheme()
-
   const isSelected = selectedList.includes(item)
-  // console.log(item.name, selectedList, selectedList.includes(item))
   const isSupported = useAssertApiSupport(item.source)
   const moreButtonRef = useRef<TouchableOpacity>(null)
-  const handleShowMenu = () => {
-    if (moreButtonRef.current?.measure) {
-      moreButtonRef.current.measure((fx, fy, width, height, px, py) => {
-        // console.log(fx, fy, width, height, px, py)
-        onShowMenu(item, index, { x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
-      })
-    }
-  }
-  const active = activeIndex == index
 
+  const handleShowMenu = (event?: any) => {
+    console.log('--- [ListItem] handleShowMenu called for:', item.name)
+    const el = moreButtonRef.current as any
+    // Web 环境优先使用 getBoundingClientRect 获取精准相对容器坐标
+    if (el?.getBoundingClientRect) {
+      const rect = el.getBoundingClientRect()
+      const rootEl = (typeof document !== 'undefined') ? (document.getElementById('phone') || document.getElementById('root') || document.body) : null
+      const rootRect = rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 }
+      const posX = Math.max(0, Math.ceil(rect.left - rootRect.left))
+      const posY = Math.max(0, Math.ceil(rect.top - rootRect.top))
+      console.log('--- [ListItem] Calculated pos relative to phone:', posX, posY)
+      onShowMenu(item, index, {
+        x: posX,
+        y: posY,
+        w: Math.ceil(rect.width || 28),
+        h: Math.ceil(rect.height || 28),
+      })
+      return
+    }
+    // 原生移动端使用 measure
+    if (el?.measure) {
+      el.measure((fx: number, fy: number, width: number, height: number, px: number, py: number) => {
+        if (px !== undefined && !isNaN(px)) {
+          onShowMenu(item, index, { x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
+        } else {
+          const pageX = event?.nativeEvent?.pageX ?? 300
+          const pageY = event?.nativeEvent?.pageY ?? 200
+          onShowMenu(item, index, { x: Math.ceil(pageX - 120), y: Math.ceil(pageY), w: 28, h: 28 })
+        }
+      })
+      return
+    }
+    // 终极保底
+    const pageX = event?.nativeEvent?.pageX ?? 300
+    const pageY = event?.nativeEvent?.pageY ?? 200
+    onShowMenu(item, index, { x: Math.ceil(pageX - 120), y: Math.ceil(pageY), w: 28, h: 28 })
+  }
+
+  const active = activeIndex === index
   const singer = `${item.singer}${isShowAlbumName && item.meta.albumName ? ` · ${item.meta.albumName}` : ''}`
 
   return (
-    <View style={{
-      ...styles.listItem,
-      width: rowInfo.rowWidth,
-      height: ITEM_HEIGHT,
-      backgroundColor: isSelected
-        ? theme['c-primary-background-hover']
-        : active
-          ? (theme['c-primary-light-900-alpha-200'] ?? 'rgba(0, 0, 0, 0.03)')
-          : 'rgba(0,0,0,0)',
-      opacity: isSupported ? 1 : 0.5,
-      borderRadius: 8,
-    }}>
-      <TouchableOpacity style={styles.listItemLeft} onPress={() => { onPress(item, index) }} onLongPress={() => { onLongPress(item, index) }}>
+    <View
+      style={[
+        styles.container,
         {
-          active
-            ? <Icon style={styles.sn} name="play-outline" size={14} color={theme['c-primary-font']} />
-            : <Text style={styles.sn} size={13} color={theme['c-350']}>{index + 1}</Text>
-        }
-        <View style={styles.itemInfo}>
-          {/* <View style={styles.listItemTitle}> */}
-          <Text color={active ? theme['c-primary-font'] : theme['c-font']} numberOfLines={1}>{item.name}</Text>
-          {/* </View> */}
-          <View style={styles.listItemSingle}>
-            <Badge>{item.source.toUpperCase()}</Badge>
-            <Text style={styles.listItemSingleText} size={11} color={active ? theme['c-primary-alpha-200'] : theme['c-500']} numberOfLines={1}>
-              {singer}
-            </Text>
+          width: rowInfo.rowWidth,
+          opacity: isSupported ? 1 : 0.5,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.card,
+          active && styles.cardActive,
+          isSelected && styles.cardSelected,
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.contentLeft}
+          onPress={() => onPress(item, index)}
+          onLongPress={() => onLongPress(item, index)}
+          activeOpacity={0.7}
+        >
+          {/* 波普风序号徽章 */}
+          <View style={[styles.indexBadge, active && styles.indexBadgeActive]}>
+            {active ? (
+              <Icon name="play" size={12} color={neoColors.black} />
+            ) : (
+              <Text style={styles.indexText}>{index + 1}</Text>
+            )}
           </View>
-        </View>
-        {
-          isShowInterval ? (
-            <Text size={12} color={active ? theme['c-primary-alpha-400'] : theme['c-250']} numberOfLines={1}>{item.interval}</Text>
-          ) : null
-        }
-      </TouchableOpacity>
-      {/* <View style={styles.listItemRight}> */}
-      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
-        <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={14} />
-      </TouchableOpacity>
-      {/* </View> */}
+
+          {/* 歌名与歌手信息 */}
+          <View style={styles.infoCol}>
+            <Text style={[styles.title, active && styles.titleActive]} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <View style={styles.metaRow}>
+              {/* 波普来源标签 */}
+              <View style={styles.sourceTag}>
+                <Text style={styles.sourceText}>{item.source.toUpperCase()}</Text>
+              </View>
+              <Text style={styles.singerText} numberOfLines={1}>
+                {singer}
+              </Text>
+            </View>
+          </View>
+
+          {/* 时长 */}
+          {isShowInterval ? (
+            <Text style={styles.intervalText} numberOfLines={1}>
+              {item.interval}
+            </Text>
+          ) : null}
+        </TouchableOpacity>
+
+        {/* 右侧波普操作按键 */}
+        <TouchableOpacity
+          ref={moreButtonRef}
+          onPress={handleShowMenu}
+          style={styles.moreBtn}
+          activeOpacity={0.6}
+        >
+          <Icon name="dots-vertical" color={neoColors.black} size={15} />
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }, (prevProps, nextProps) => {
-  return !!(prevProps.item === nextProps.item &&
+  return !!(
+    prevProps.item === nextProps.item &&
     prevProps.index === nextProps.index &&
     prevProps.isShowAlbumName === nextProps.isShowAlbumName &&
     prevProps.isShowInterval === nextProps.isShowInterval &&
-    prevProps.activeIndex != nextProps.index &&
-    nextProps.activeIndex != nextProps.index &&
-    nextProps.selectedList.includes(nextProps.item) == prevProps.selectedList.includes(nextProps.item)
+    prevProps.activeIndex !== nextProps.index &&
+    nextProps.activeIndex !== nextProps.index &&
+    nextProps.selectedList.includes(nextProps.item) === prevProps.selectedList.includes(nextProps.item)
   )
 })
 
-
-const styles = createStyle({
-  listItem: {
-    // width: '50%',
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    // paddingLeft: 10,
-    paddingRight: 2,
-    alignItems: 'center',
-    // borderBottomWidth: BorderWidths.normal,
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
-  listItemLeft: {
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: neoColors.white,
+    borderRadius: neoBorders.radiusMd,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    // 微硬阴影
+    shadowColor: neoColors.black,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2,
+  },
+  // 正在播放激活态：高饱和亮黄色背景 + 纯黑描边
+  cardActive: {
+    backgroundColor: neoColors.yellow,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    shadowOffset: { width: 3, height: 3 },
+  },
+  cardSelected: {
+    backgroundColor: neoColors.cyan,
+  },
+  contentLeft: {
     flex: 1,
-    flexGrow: 1,
-    flexShrink: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  sn: {
-    width: 38,
-    // fontSize: 12,
-    textAlign: 'center',
-    // backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingLeft: 3,
-    paddingRight: 3,
+  // 序号徽章
+  indexBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    backgroundColor: neoColors.gray100,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
   },
-  itemInfo: {
-    flexGrow: 1,
-    flexShrink: 1,
-    // paddingTop: 10,
-    // paddingBottom: 10,
-    paddingRight: 2,
+  indexBadgeActive: {
+    backgroundColor: neoColors.white,
   },
-  // listItemTitle: {
-  //   flexGrow: 0,
-  //   flexShrink: 1,
-  // },
-  listItemSingle: {
-    paddingTop: 3,
+  indexText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: neoColors.black,
+  },
+  infoCol: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: neoColors.black,
+    letterSpacing: -0.2,
+  },
+  titleActive: {
+    fontWeight: '900',
+  },
+  metaRow: {
     flexDirection: 'row',
-    // alignItems: 'flex-end',
+    alignItems: 'center',
+    marginTop: 3,
+    gap: 6,
   },
-  listItemSingleText: {
-    // backgroundColor: 'rgba(0,0,0,0.2)',
-    flexGrow: 0,
+  sourceTag: {
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.cyan,
+  },
+  sourceText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: neoColors.black,
+  },
+  singerText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: neoColors.gray700,
     flexShrink: 1,
-    fontWeight: '300',
-    // fontSize: 15,
   },
-  // listItemBadge: {
-  //   // fontSize: 10,
-  //   paddingLeft: 5,
-  //   paddingTop: 2,
-  //   alignSelf: 'flex-start',
-  // },
-  listItemRight: {
-    flexGrow: 0,
-    flexShrink: 0,
-    flexBasis: 'auto',
-    justifyContent: 'center',
+  intervalText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: neoColors.gray700,
+    marginRight: 8,
   },
-
-  moreButton: {
-    height: '80%',
-    paddingLeft: 16,
-    paddingRight: 16,
-    // paddingTop: 10,
-    // paddingBottom: 10,
-    // backgroundColor: 'rgba(0,0,0,0.2)',
+  moreBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.white,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
   },
 })

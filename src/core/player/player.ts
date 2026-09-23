@@ -599,6 +599,7 @@ export const play = () => {
     return
   }
   void setPlay()
+  global.app_event.play()
 }
 
 /**
@@ -606,6 +607,7 @@ export const play = () => {
  */
 export const pause = async() => {
   await setPause()
+  global.app_event.pause()
 }
 
 /**

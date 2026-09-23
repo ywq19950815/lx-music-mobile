@@ -1,82 +1,112 @@
 import { memo } from 'react'
-import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity, View, StyleSheet } from 'react-native'
 
 import { Icon } from '@/components/common/Icon'
-import Text from '@/components/common/Text'
-import { useI18n } from '@/lang'
 import { useNavActiveId } from '@/store/common/hook'
-import { useTheme } from '@/store/theme/hook'
 import { setNavActiveId } from '@/core/common'
-import { createStyle } from '@/utils/tools'
 import type { InitState as CommonState } from '@/store/common/state'
+import { neoColors } from '@/theme/neobrutalism'
+import { indexMap } from './Main'
 
-const TABS: Array<{ id: CommonState['navActiveId'], icon: string }> = [
-  { id: 'nav_songlist', icon: 'album' },
-  { id: 'nav_top', icon: 'leaderboard' },
-  { id: 'nav_search', icon: 'search-2' },
-  { id: 'nav_love', icon: 'love' },
-  { id: 'nav_setting', icon: 'setting' },
-]
+/**
+ * 底部导航项的展示配置（不含顺序）。
+ * ⚠️ 顺序必须与 PagerView 的页面顺序一致（见 Home/Vertical/Main.tsx 的 indexMap），
+ * 否则「点第 N 个 Tab」和「左滑到第 N 页」会对不上。
+ * 这里直接复用 indexMap 作为唯一顺序来源，避免两边各写一份再次错位。
+ */
+const TAB_META: Record<string, { icon: string; activeColor: string }> = {
+  nav_search: { icon: 'search-2', activeColor: neoColors.pink },
+  nav_songlist: { icon: 'album', activeColor: neoColors.yellow },
+  nav_top: { icon: 'leaderboard', activeColor: neoColors.cyan },
+  nav_love: { icon: 'love', activeColor: neoColors.purple },
+  nav_setting: { icon: 'setting', activeColor: neoColors.green },
+}
 
+const TABS: Array<{ id: CommonState['navActiveId']; icon: string; activeColor: string }> =
+  indexMap.map(id => ({ id, ...TAB_META[id] }))
+
+/**
+ * NeoTabBar: 新粗野主义 / 波普风底部导航栏（纯图标模式）。
+ * - 鲜明 2.5px 纯黑顶部边框
+ * - 纯图标（Icon-only）设计，去除多余文字干扰，视觉纯粹利落
+ * - 激活态：波普高饱和实体印章（亮黄/荧光青/电光粉/薰衣草紫/鲜绿 + 2px黑边 + 零模糊硬阴影）
+ * - 默认态：极简纯黑线性大图标
+ */
 export default memo(() => {
-  const theme = useTheme()
-  const t = useI18n()
   const activeId = useNavActiveId()
 
   return (
-    <View style={{
-      ...styles.container,
-      backgroundColor: theme['c-content-background'],
-      borderTopColor: theme['c-border-background'] ?? 'rgba(128, 128, 148, 0.16)',
-    }}>
-      {
-        TABS.map(({ id, icon }) => {
-          const active = activeId == id
-          return (
-            <TouchableOpacity
-              key={id}
-              style={styles.tab}
-              activeOpacity={0.7}
-              onPress={() => { setNavActiveId(id) }}
-            >
-              <View style={[styles.iconWrap, active ? { backgroundColor: theme['c-primary-background-hover'] ?? 'rgba(128, 128, 160, 0.14)' } : null]}>
-                <Icon name={icon} size={20} color={active ? theme['c-primary-font-active'] : theme['c-font-label']} />
+    <View style={styles.container}>
+      {TABS.map(({ id, icon, activeColor }) => {
+        const active = activeId === id
+        return (
+          <TouchableOpacity
+            key={id}
+            style={styles.tab}
+            activeOpacity={0.7}
+            onPress={() => {
+              setNavActiveId(id)
+            }}
+          >
+            {active ? (
+              // 激活态：波普实体印章按键（黑边 + 高饱和底色 + 零模糊纯黑实体硬投影）
+              <View style={[styles.activeBadge, { backgroundColor: activeColor }]}>
+                <Icon name={icon} size={22} color={neoColors.black} />
               </View>
-              <Text
-                style={{ ...styles.label, color: active ? theme['c-primary-font-active'] : theme['c-font-label'] }}
-                size={11}
-              >{t(id)}</Text>
-            </TouchableOpacity>
-          )
-        })
-      }
+            ) : (
+              // 默认态：极简纯黑大图标
+              <View style={styles.inactiveWrap}>
+                <Icon name={icon} size={22} color={neoColors.gray700} />
+              </View>
+            )}
+          </TouchableOpacity>
+        )
+      })}
     </View>
   )
 })
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'space-around',
     height: 54,
+    backgroundColor: neoColors.white,
+    // 不再画实体顶边：上方播放条已有 2.5px 黑边 + 硬阴影，
+    // 两条黑边紧贴会显得拥挤、层级也分不清。
+    // 改用极浅的分割线 + 顶部一点留白，让播放条像「浮在导航条之上」。
     borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: neoColors.gray200,
+    paddingHorizontal: 12,
   },
   tab: {
     flex: 1,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 5,
-    paddingBottom: 5,
   },
-  iconWrap: {
-    width: 30,
-    height: 24,
+  // 激活态：波普实体印章
+  activeBadge: {
+    width: 48,
+    height: 34,
     borderRadius: 12,
+    borderWidth: 2,
+    borderColor: neoColors.black,
     justifyContent: 'center',
     alignItems: 'center',
+    // 零模糊纯黑实体硬阴影
+    shadowColor: neoColors.black,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
   },
-  label: {
-    marginTop: 2,
-    fontWeight: '500',
+  // 默认态
+  inactiveWrap: {
+    width: 48,
+    height: 34,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })

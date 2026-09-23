@@ -1,11 +1,10 @@
-import { TouchableOpacity } from 'react-native'
+import { TouchableOpacity, StyleSheet, View } from 'react-native'
 import { Icon } from '@/components/common/Icon'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
 import { scaleSizeW } from '@/utils/pixelRatio'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 export const BTN_WIDTH = scaleSizeW(36)
-export const BTN_ICON_SIZE = 24
+export const BTN_ICON_SIZE = 20
 
 export default ({ icon, color, onPress, onLongPress }: {
   icon: string
@@ -13,33 +12,35 @@ export default ({ icon, color, onPress, onLongPress }: {
   onPress: () => void
   onLongPress?: () => void
 }) => {
-  const theme = useTheme()
   return (
-    <TouchableOpacity
-      style={{
-        ...styles.cotrolBtn,
-        width: BTN_WIDTH,
-        height: BTN_WIDTH,
-        borderRadius: BTN_WIDTH / 2,
-        backgroundColor: 'rgba(128, 128, 128, 0.08)',
-      }}
-      activeOpacity={0.6}
-      onPress={onPress}
-      onLongPress={onLongPress}
-    >
-      <Icon name={icon} color={color ?? theme['c-font-label']} size={BTN_ICON_SIZE} />
-    </TouchableOpacity>
+    <View style={styles.btnWrapper}>
+      <TouchableOpacity
+        style={styles.controlBtn}
+        activeOpacity={0.7}
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
+        <Icon name={icon} color={color ?? neoColors.black} size={BTN_ICON_SIZE} />
+      </TouchableOpacity>
+    </View>
   )
 }
 
-const styles = createStyle({
-  cotrolBtn: {
-    marginLeft: 5,
+const styles = StyleSheet.create({
+  btnWrapper: {
+    paddingHorizontal: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  controlBtn: {
+    width: BTN_WIDTH,
+    height: BTN_WIDTH,
+    borderRadius: BTN_WIDTH / 2,
+    backgroundColor: neoColors.white,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
     justifyContent: 'center',
     alignItems: 'center',
-
-    // backgroundColor: '#ccc',
-    shadowOpacity: 1,
-    textShadowRadius: 1,
+    ...neoShadows.sm,
   },
 })

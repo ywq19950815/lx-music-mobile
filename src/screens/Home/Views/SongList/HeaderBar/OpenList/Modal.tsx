@@ -5,6 +5,7 @@ import { View } from 'react-native'
 import Input, { type InputType } from '@/components/common/Input'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
+import { neoColors } from '@/theme/neobrutalism'
 import { useI18n } from '@/lang'
 // import SourceSelector, { type SourceSelectorProps, type SourceSelectorType } from '../SourceSelector'
 import { type Source } from '@/store/songlist/state'
@@ -57,7 +58,6 @@ export default forwardRef<ModalType, ModalProps>(({ onOpenId }, ref) => {
   // const sourceSelectorRef = useRef<SourceSelectorType>(null)
   const inputRef = useRef<IdInputType>(null)
   const [visible, setVisible] = useState(false)
-  const theme = useTheme()
   const t = useI18n()
 
   const handleShow = (source: Source) => {
@@ -101,7 +101,7 @@ export default forwardRef<ModalType, ModalProps>(({ onOpenId }, ref) => {
               {/* <SourceSelector style={{ ...styles.selector, backgroundColor: theme['c-primary-input-background'] }} ref={sourceSelectorRef} onSourceChange={onSourceChange} /> */}
               <IdInput ref={inputRef} />
             </View>
-            <Text style={styles.inputTipText} size={13} color={theme['c-600']}>{t('songlist_open_input_tip')}</Text>
+            <Text style={styles.inputTipText} size={13} color={neoColors.gray700}>{t('songlist_open_input_tip')}</Text>
           </View>
         </ConfirmAlert>
       : null
@@ -126,17 +126,20 @@ const styles = createStyle({
   input: {
     flexGrow: 1,
     flexShrink: 1,
-    minWidth: 290,
-    // borderRadius: 4,
-    // borderTopRightRadius: 4,
-    // borderBottomRightRadius: 4,
-    // paddingTop: 2,
-    // paddingBottom: 2,
+    // ⚠️ 不要写死 minWidth —— 这里曾是 `minWidth: 290`（且未经 scaleSizeW 缩放），
+    // 在 289px 宽的弹窗内容区里会把输入框撑到 303px，右侧 14px 溢出后
+    // 被 Dialog 卡片的 overflow:hidden 裁掉（症状：输入框右边框被切）。
+    // 用 minWidth: 0 让 flex 正常收缩，宽度完全交给父容器。
+    minWidth: 0,
     height: '100%',
   },
   inputTipText: {
     marginTop: 15,
-    // lineHeight: 18,
+    // ⚠️ 必须显式给 lineHeight —— 不设时 Web/RN 取 'normal'（≈1.2 倍字号），
+    // 中文字符在 normal 行高下算得偏高，容易让末行触到 Dialog 内 ScrollView 的
+    // maxHeight 上限而被截断（症状：文字下面被切、读不到最后一行）。
+    // 13px 字号配 19px 行高，既保证中文可读又让文本稳定落在限高内。
+    lineHeight: 19,
   },
 })
 

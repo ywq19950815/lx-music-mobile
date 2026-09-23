@@ -6,7 +6,7 @@ import {
   BorderRadius,
 } from './Typography'
 
-export { default as Themes } from './themes'
+export * from './themes'
 export {
   AppColors,
   MaterialColors,

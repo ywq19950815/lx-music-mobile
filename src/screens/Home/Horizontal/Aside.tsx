@@ -70,7 +70,7 @@ const Header = () => {
     <View style={{ paddingTop: statusBarHeight }}>
       <View style={styles.header}>
         <Icon name="logo" color={theme['c-primary-dark-100-alpha-300']} size={22} />
-        {/* <Text style={styles.headerText} size={16} color={theme['c-primary-dark-100-alpha-300']}>LX Music</Text> */}
+        {/* <Text style={styles.headerText} size={16} color={theme['c-primary-dark-100-alpha-300']}>Andy Music</Text> */}
       </View>
     </View>
   )
@@ -131,7 +131,9 @@ export default memo(() => {
   return (
     <View style={{ ...styles.container, borderRightColor: theme['c-border-background'] }}>
       <Header />
-      <ScrollView style={styles.menus}>
+      <ScrollView style={styles.menus}
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}>
         <View style={styles.list}>
           {NAV_MENUS.map(menu => <MenuItem key={menu.id} id={menu.id} icon={menu.icon} onPress={handlePress} />)}
         </View>

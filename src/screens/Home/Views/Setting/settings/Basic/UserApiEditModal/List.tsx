@@ -100,7 +100,9 @@ export default () => {
   }, [])
 
   return (
-    <ScrollView style={styles.scrollView} keyboardShouldPersistTaps={'always'}>
+    <ScrollView style={styles.scrollView} keyboardShouldPersistTaps={'always'}
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}>
       <View onStartShouldSetResponder={() => true}>
         {
           userApiList.length

@@ -18,23 +18,18 @@ const styles = StyleSheet.create({
     width: PIC_HEIGHT,
     height: PIC_HEIGHT,
     borderRadius: PIC_HEIGHT / 2,
-    backgroundColor: '#16161a',
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    borderWidth: 1.5,
-    borderColor: '#282830',
+    borderWidth: 2,
+    borderColor: '#000000',
   },
   diskGroove: {
     width: PIC_HEIGHT - 4,
     height: PIC_HEIGHT - 4,
     borderRadius: (PIC_HEIGHT - 4) / 2,
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -48,9 +43,9 @@ const styles = StyleSheet.create({
     width: HOLE_SIZE,
     height: HOLE_SIZE,
     borderRadius: HOLE_SIZE / 2,
-    backgroundColor: '#121214',
+    backgroundColor: '#FFE600',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    borderColor: '#000000',
   },
 })
 
@@ -102,8 +97,11 @@ export default ({ isHome }: { isHome: boolean }) => {
   })
 
   const handlePress = () => {
-    if (!musicInfo.id) return
-    navigations.pushPlayDetailScreen(commonState.componentIds.home!)
+    navigations.pushPlayDetailScreen(commonState.componentIds.home || 'home')
+    if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
+      (window as any).__lxTogglePlayDetail(true)
+    }
+    globalThis.app_event?.emit('openPlayDetail')
   }
 
   const handleLongPress = () => {

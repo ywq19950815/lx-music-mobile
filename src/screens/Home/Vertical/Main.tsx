@@ -14,7 +14,6 @@ import settingState from '@/store/setting/state'
 const hideKeys = [
   'list.isShowAlbumName',
   'list.isShowInterval',
-  'theme.fontShadow',
 ] as Readonly<Array<keyof LX.AppSetting>>
 
 const SearchPage = () => {
@@ -178,6 +177,18 @@ const SettingPage = () => {
   return visible ? component : null
 }
 
+/**
+ * PagerView 各页面的顺序（唯一真实来源）。
+ * 底部 TabBar 直接复用这个数组，保证「Tab 顺序」与「左滑翻页顺序」永远一致。
+ */
+export const indexMap = [
+  'nav_search',
+  'nav_songlist',
+  'nav_top',
+  'nav_love',
+  'nav_setting',
+] as const
+
 const viewMap = {
   nav_search: 0,
   nav_songlist: 1,
@@ -185,13 +196,6 @@ const viewMap = {
   nav_love: 3,
   nav_setting: 4,
 }
-const indexMap = [
-  'nav_search',
-  'nav_songlist',
-  'nav_top',
-  'nav_love',
-  'nav_setting',
-] as const
 
 const Main = () => {
   const pagerViewRef = useRef<ComponentRef<typeof PagerView>>(null)
@@ -313,11 +317,14 @@ const Main = () => {
 const styles = createStyle({
   pagerView: {
     flex: 1,
+    minHeight: 0,
     overflow: 'hidden',
   },
   pageStyle: {
-    // alignItems: 'center',
-    // padding: 20,
+    flex: 1,
+    height: '100%',
+    minHeight: 0,
+    overflow: 'hidden',
   },
 })
 

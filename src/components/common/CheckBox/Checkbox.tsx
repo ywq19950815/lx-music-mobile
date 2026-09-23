@@ -7,7 +7,6 @@ import {
   Pressable,
 } from 'react-native'
 
-import { Icon } from '../Icon'
 import { createStyle } from '@/utils/tools'
 import { scaleSizeW } from '@/utils/pixelRatio'
 
@@ -30,19 +29,21 @@ export interface Props {
   /**
    * Custom color for checkbox.
    */
-  tintColors: {
+  tintColors?: {
     true: string
     false: string
   }
 }
 
-const ANIMATION_DURATION = 200
-const PADDING = scaleSizeW(4)
+const ANIMATION_DURATION = 150
+const BOX_SIZE = 22
 
 /**
- * Checkboxes allow the selection of multiple options from a set.
- * This component follows platform guidelines for Android, but can be used
- * on any platform.
+ * Neo-Brutalism 风格复选框：
+ * - 纯黑 2px 粗实描边
+ * - 零模糊 1.5px 实体物理硬阴影
+ * - 选中态高饱和波普明黄 (#FFE600) + 纯黑加粗勾选标记
+ * - 实体按压反馈与流畅弹性微动画
  */
 const Checkbox = ({
   status,
@@ -55,31 +56,27 @@ const Checkbox = ({
   const checked = status === 'checked'
   const indeterminate = status === 'indeterminate'
 
-  const icon = indeterminate
-    ? 'minus-box'
-    : 'checkbox-marked'
-
   const { current: scaleAnim } = React.useRef<Animated.Value>(
     new Animated.Value(checked ? 1 : 0),
   )
 
   const isFirstRendering = React.useRef<boolean>(true)
 
-
   React.useEffect(() => {
-    // Do not run animation on very first rendering
     if (isFirstRendering.current) {
       isFirstRendering.current = false
       return
     }
 
-    Animated.timing(scaleAnim, {
+    Animated.spring(scaleAnim, {
       toValue: checked ? 1 : 0,
-      duration: ANIMATION_DURATION,
+      friction: 6,
+      tension: 100,
       useNativeDriver: true,
     }).start()
   }, [checked, scaleAnim])
 
+  const boxDimension = Math.round(BOX_SIZE * size)
 
   return (
     <Pressable
@@ -89,24 +86,31 @@ const Checkbox = ({
       accessibilityRole="checkbox"
       accessibilityState={{ disabled, checked }}
       accessibilityLiveRegion="polite"
-      style={{ ...styles.container, padding: PADDING, marginLeft: -PADDING }}
+      style={({ pressed }) => [
+        styles.boxWrapper,
+        {
+          width: boxDimension,
+          height: boxDimension,
+          transform: [{ translateY: pressed ? 1.5 : 0 }, { translateX: pressed ? 1.5 : 0 }],
+        },
+        checked ? styles.boxChecked : styles.boxUnchecked,
+        disabled && styles.boxDisabled,
+      ]}
     >
-      <Icon
-        allowFontScaling={false}
-        name="checkbox-blank-outline"
-        size={24 * size}
-        color={tintColors.false}
-      />
-      <View style={[StyleSheet.absoluteFill, styles.fillContainer]}>
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-          <Icon
-            allowFontScaling={false}
-            name={icon}
-            size={24 * size}
-            color={tintColors.true}
-          />
-        </Animated.View>
-      </View>
+      <Animated.View
+        style={{
+          transform: [{ scale: scaleAnim }],
+          opacity: scaleAnim,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {/* 不用图标字体画对勾：selection.json 里根本没有 check-bold 字形，
+            之前渲染出来是一个小圆点。改用纯 View 画的 CSS 对勾，两端渲染一致且锐利。 */}
+        {indeterminate
+          ? <View style={[styles.minusBar, { width: Math.round(11 * size), height: Math.max(2, Math.round(2.5 * size)) }]} />
+          : <View style={[styles.checkMark, { width: Math.round(11 * size), height: Math.round(6 * size) }]} />}
+      </Animated.View>
     </Pressable>
   )
 }
@@ -114,14 +118,45 @@ const Checkbox = ({
 Checkbox.displayName = 'Checkbox'
 
 const styles = createStyle({
-  container: {
+  boxWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 5,
+    shadowColor: '#000000',
+    shadowOffset: { width: 1.5, height: 1.5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2,
+    marginRight: 10,
+    marginLeft: 2,
   },
-  fillContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  boxUnchecked: {
+    backgroundColor: '#FFFFFF',
+  },
+  boxChecked: {
+    backgroundColor: '#FFE600', // 高饱和波普黄
+  },
+  boxDisabled: {
+    backgroundColor: '#E8E8E8',
+    borderColor: '#888888',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  // 纯 View 对勾：左下边框 + -45° 旋转 = ✓
+  checkMark: {
+    borderLeftWidth: 2.5,
+    borderBottomWidth: 2.5,
+    borderColor: '#000000',
+    borderStyle: 'solid',
+    transform: [{ rotate: '-45deg' }],
+    marginTop: -2,
+  },
+  // indeterminate（半选）态的横杠
+  minusBar: {
+    borderRadius: 2,
+    backgroundColor: '#000000',
   },
 })
 

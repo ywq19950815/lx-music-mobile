@@ -22,7 +22,7 @@ export default memo(() => {
   const getErrorLog = () => {
     void getLogs().then(log => {
       if (isUnmountedRef.current) return
-      const logArr = log.split(/^----lx log----\n|\n----lx log----\n|\n----lx log----$/)
+      const logArr = log.split(/^----(?:andy|lx) log----\n|\n----(?:andy|lx) log----\n|\n----(?:andy|lx) log----$/)
       // console.log(logArr)
       logArr.reverse()
       setLogText(logArr.join('\n\n').replace(/^\n+|\n+$/, ''))
@@ -92,9 +92,7 @@ export default memo(() => {
 
 const styles = createStyle({
   checkBox: {
-    // paddingTop: 10,
     paddingBottom: 15,
-    marginLeft: -25,
   },
   btn: {
     flexDirection: 'row',

@@ -1,8 +1,6 @@
 import { useRef, useState, useCallback, useMemo, forwardRef, useImperativeHandle, type Ref } from 'react'
-import { StyleSheet, View, Animated } from 'react-native'
-// import PropTypes from 'prop-types'
-// import { AppColors } from '@/theme'
-import { useTheme } from '@/store/theme/hook'
+import { StyleSheet, View, Animated, Dimensions } from 'react-native'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 import List, { type ItemT, type ListProps, type ListType } from './List'
 // import InsetShadow from 'react-native-inset-shadow'
 
@@ -17,7 +15,6 @@ export interface SearchTipListType<T> {
 const noop = () => {}
 
 const Component = <T extends ItemT<T>>({ onPressBg = noop, ...props }: SearchTipListProps<T>, ref: Ref<SearchTipListType<T>>) => {
-  const theme = useTheme()
   const translateY = useRef(new Animated.Value(0)).current
   const scaleY = useRef(new Animated.Value(0)).current
   const [visible, setVisible] = useState(false)
@@ -43,7 +40,12 @@ const Component = <T extends ItemT<T>>({ onPressBg = noop, ...props }: SearchTip
 
 
   const handleShow = useCallback(() => {
-    // console.log('handleShow', height, visible)
+    // height 为 0 通常意味着宿主还没完成 onLayout，
+    // 此时不再直接放弃（否则表现为「搜索没反应」），而是用窗口高度兜底
+    if (!heightRef.current) {
+      const winH = Dimensions.get('window').height
+      if (winH > 0) heightRef.current = winH
+    }
     if (!heightRef.current) return
     setVisible(true)
     setAnimatPlayed(false)
@@ -109,12 +111,12 @@ const Component = <T extends ItemT<T>>({ onPressBg = noop, ...props }: SearchTip
           { scaleY },
         ],
       }}>
-      <View style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}>
+      <View style={{ ...styles.container, backgroundColor: neoColors.offWhite }}>
         <List ref={listRef} {...props} />
       </View>
       <View style={styles.blank} onTouchStart={onPressBg}></View>
     </Animated.View>
-  ), [onPressBg, props, scaleY, theme, translateY])
+  ), [onPressBg, props, scaleY, translateY])
 
   return !visible && animatePlayed ? null : component
 }
@@ -132,11 +134,16 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   container: {
-    flex: 0,
-    // flexGrow: 0,
-    // borderBottomWidth: BorderWidths.normal,
+    // 注意：不要写 flex: 0。RN 里 flex:0 表示「不伸缩」，RN Web 会展开成
+    // flex-basis:0%，把容器高度压成 0，导致搜索结果算出来但看不见。
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
     elevation: 2,
     maxHeight: '80%',
+    // 全宽 + 底部黑边，与 Neo-Brutalism 顶栏呼应
+    borderBottomWidth: neoBorders.regular,
+    borderBottomColor: neoColors.black,
   },
   blank: {
     flex: 1,

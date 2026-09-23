@@ -1,10 +1,12 @@
-import { forwardRef, useImperativeHandle, useState } from 'react'
-import { View, ScrollView } from 'react-native'
+import { forwardRef, useImperativeHandle, useState, useEffect } from 'react'
+import { View, ScrollView, StyleSheet } from 'react-native'
 
-import { createStyle } from '@/utils/tools'
+import Text from '@/components/common/Text'
 import { type Position } from './ListMenu'
 import ListItem, { type ListItemProps } from './ListItem'
-import { type BoardItem } from '@/store/leaderboard/state'
+import boardState, { type BoardItem } from '@/store/leaderboard/state'
+import { getBoardsList } from '@/core/leaderboard'
+import { neoColors } from '@/theme/neobrutalism'
 
 export interface ListProps {
   onBoundChange: (listId: string) => void
@@ -30,6 +32,25 @@ export default forwardRef<ListType, ListProps>(({ onBoundChange, onShowMenu }, r
     },
   }), [])
 
+  useEffect(() => {
+    // 如果挂载时列表为空，主动从 boardState 或核心获取填充
+    if (!list.length) {
+      const source = boardState.listDetailInfo.source || 'kw'
+      const cached = boardState.boards[source]
+      if (cached?.list?.length) {
+        setList(cached.list)
+        setActiveId(boardState.listDetailInfo.id || cached.list[0].id)
+      } else {
+        void getBoardsList(source).then(res => {
+          if (res?.length) {
+            setList(res)
+            setActiveId(boardState.listDetailInfo.id || res[0].id)
+          }
+        })
+      }
+    }
+  }, [list.length])
+
   const handleBoundChange = (item: BoardItem) => {
     setActiveId(item.id)
     onBoundChange(item.id)
@@ -41,7 +62,18 @@ export default forwardRef<ListType, ListProps>(({ onBoundChange, onShowMenu }, r
   }
 
   return (
-    <ScrollView style={styles.scrollView} keyboardShouldPersistTaps={'always'}>
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={{ paddingBottom: 90, paddingHorizontal: 6 }}
+      keyboardShouldPersistTaps={'always'}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+    >
+      <View style={styles.drawerHeader}>
+        <Text style={styles.drawerTitle}>🏆 榜单分类</Text>
+        <Text style={styles.drawerSub}>点击选择切换</Text>
+      </View>
       <View>
         {
           list.map((item, index) => {
@@ -63,10 +95,27 @@ export default forwardRef<ListType, ListProps>(({ onBoundChange, onShowMenu }, r
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   scrollView: {
     flexShrink: 1,
+    backgroundColor: neoColors.bgCream,
+  },
+  drawerHeader: {
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    marginBottom: 6,
+    borderBottomWidth: 2,
+    borderBottomColor: neoColors.black,
+  },
+  drawerTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: neoColors.black,
+  },
+  drawerSub: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: neoColors.gray700,
+    marginTop: 2,
   },
 })
-

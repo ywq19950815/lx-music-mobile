@@ -1,6 +1,5 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext } from 'react'
 import { ThemeContext } from './state'
-import settingState from '@/store/setting/state'
 
 // export const useSetting = () => {
 //   const [setting, updateSetting] = useState(state.setting)
@@ -36,22 +35,3 @@ import settingState from '@/store/setting/state'
 // }
 
 export const useTheme = () => useContext(ThemeContext)
-
-export const useTextShadow = () => {
-  const [value, update] = useState(settingState.setting['theme.fontShadow'])
-
-  useEffect(() => {
-    const handleUpdate = (keys: Array<keyof LX.AppSetting>, setting: Partial<LX.AppSetting>) => {
-      if (!keys.includes('theme.fontShadow')) return
-      requestAnimationFrame(() => {
-        update(setting['theme.fontShadow']!)
-      })
-    }
-    global.state_event.on('configUpdated', handleUpdate)
-    return () => {
-      global.state_event.off('configUpdated', handleUpdate)
-    }
-  }, [])
-
-  return value
-}

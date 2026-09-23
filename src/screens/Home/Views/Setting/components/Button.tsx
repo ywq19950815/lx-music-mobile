@@ -1,29 +1,58 @@
 import { memo } from 'react'
-
-import Button, { type BtnProps } from '@/components/common/Button'
+import { Pressable, StyleSheet } from 'react-native'
+import type { BtnProps } from '@/components/common/Button'
 import Text from '@/components/common/Text'
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 type ButtonProps = BtnProps
 
 export default memo(({ disabled, onPress, children }: ButtonProps) => {
-  const theme = useTheme()
-
   return (
-    <Button style={{ ...styles.button, backgroundColor: theme['c-button-background'] }} onPress={onPress} disabled={disabled}>
-      <Text size={14} color={theme['c-button-font']}>{children}</Text>
-    </Button>
+    <Pressable
+      style={({ pressed }) => [
+        styles.button,
+        disabled && styles.disabled,
+        !disabled && pressed && styles.pressed,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      <Text size={13.5} style={styles.text}>{children}</Text>
+    </Pressable>
   )
 })
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   button: {
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 5,
-    paddingBottom: 5,
-    borderRadius: 4,
+    backgroundColor: neoColors.yellow,
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    shadowColor: '#000000',
+    shadowOffset: { width: 2.5, height: 2.5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
     marginRight: 10,
+    alignSelf: 'flex-start',
+  },
+  disabled: {
+    backgroundColor: '#E5E5DE',
+    borderColor: '#888888',
+    shadowOpacity: 0,
+    elevation: 0,
+    opacity: 0.6,
+  },
+  pressed: {
+    transform: [{ translateX: 2 }, { translateY: 2 }],
+    shadowOffset: { width: 0.5, height: 0.5 },
+  },
+  text: {
+    fontWeight: '800',
+    color: '#000000',
+    letterSpacing: -0.2,
   },
 })
+

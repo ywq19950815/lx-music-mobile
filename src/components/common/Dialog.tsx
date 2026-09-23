@@ -1,60 +1,12 @@
 import { useImperativeHandle, forwardRef, useMemo, useRef } from 'react'
-import { View, TouchableHighlight } from 'react-native'
-
+import { View, TouchableOpacity, StyleSheet } from 'react-native'
 import Modal, { type ModalType } from './Modal'
 import { Icon } from '@/components/common/Icon'
 import { useKeyboard } from '@/utils/hooks'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
 import Text from './Text'
-import { scaleSizeH } from '@/utils/pixelRatio'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
-const HEADER_HEIGHT = 20
-const styles = createStyle({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalView: {
-    maxWidth: '90%',
-    minWidth: '60%',
-    maxHeight: '78%',
-    // backgroundColor: 'white',
-    borderRadius: 4,
-    // shadowColor: '#000',
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 2,
-    // },
-    // shadowOpacity: 0.25,
-    // shadowRadius: 4,
-    elevation: 3,
-  },
-  header: {
-    flexGrow: 0,
-    flexShrink: 0,
-    flexDirection: 'row',
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-    height: HEADER_HEIGHT,
-  },
-  title: {
-    paddingLeft: 5,
-    paddingRight: 25,
-    lineHeight: HEADER_HEIGHT,
-  },
-  closeBtn: {
-    position: 'absolute',
-    right: 0,
-    borderTopRightRadius: 4,
-    flexGrow: 0,
-    flexShrink: 0,
-    height: HEADER_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-})
+const HEADER_HEIGHT = 34
 
 export interface DialogProps {
   onHide?: () => void
@@ -79,7 +31,6 @@ export default forwardRef<DialogType, DialogProps>(({
   children,
   height,
 }: DialogProps, ref) => {
-  const theme = useTheme()
   const { keyboardShown, keyboardHeight } = useKeyboard()
   const modalRef = useRef<ModalType>(null)
 
@@ -91,23 +42,95 @@ export default forwardRef<DialogType, DialogProps>(({
 
   const closeBtnComponent = useMemo(() => {
     return closeBtn
-      ? <TouchableHighlight style={{ ...styles.closeBtn, width: scaleSizeH(HEADER_HEIGHT) }} underlayColor={theme['c-primary-dark-200-alpha-600']} onPress={() => modalRef.current?.setVisible(false)}>
-          <Icon name="close" color={theme['c-primary-dark-500-alpha-500']} size={10} />
-        </TouchableHighlight>
+      ? (
+          <TouchableOpacity
+            style={styles.closeBtn}
+            activeOpacity={0.7}
+            onPress={() => modalRef.current?.setVisible(false)}
+          >
+            <Icon name="close" color={neoColors.black} size={14} />
+          </TouchableOpacity>
+        )
       : null
-  }, [closeBtn, theme])
+  }, [closeBtn])
 
   return (
-    <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor="rgba(50,50,50,.3)" ref={modalRef}>
-      <View style={{ ...styles.centeredView, paddingBottom: keyboardShown ? keyboardHeight : 0 }}>
-        <View style={{ ...styles.modalView, height, backgroundColor: theme['c-content-background'] }} onStartShouldSetResponder={() => true}>
-          <View style={{ ...styles.header, backgroundColor: theme['c-primary-light-100-alpha-100'] }}>
-            <Text style={styles.title} size={13} color={theme['c-primary-light-1000']} numberOfLines={1}>{title}</Text>
+    <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor="rgba(0, 0, 0, 0.45)" ref={modalRef}>
+      <View style={[styles.centeredView, { paddingBottom: keyboardShown ? keyboardHeight : 0 }]}>
+        <View style={[styles.modalCard, height ? { height } : null]} onStartShouldSetResponder={() => true}>
+          <View style={styles.header}>
+            <View style={styles.headerTitleBox}>
+              <View style={styles.headerDot} />
+              <Text style={styles.title} size={14} color={neoColors.black} numberOfLines={1}>
+                {title}
+              </Text>
+            </View>
             {closeBtnComponent}
           </View>
-          {children}
+          <View style={styles.body}>
+            {children}
+          </View>
         </View>
       </View>
     </Modal>
   )
+})
+
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalCard: {
+    maxWidth: '92%',
+    minWidth: '75%',
+    maxHeight: '82%',
+    backgroundColor: neoColors.white,
+    borderRadius: neoBorders.radiusMd,
+    borderWidth: 2.5,
+    borderColor: neoColors.black,
+    ...neoShadows.lg,
+    overflow: 'hidden',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: neoColors.yellow,
+    borderBottomWidth: 2,
+    borderBottomColor: neoColors.black,
+    height: HEADER_HEIGHT,
+    paddingHorizontal: 10,
+  },
+  headerTitleBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  headerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: neoColors.black,
+    marginRight: 6,
+  },
+  title: {
+    fontWeight: '900',
+  },
+  closeBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...neoShadows.sm,
+  },
+  body: {
+    backgroundColor: neoColors.offWhite,
+  },
 })

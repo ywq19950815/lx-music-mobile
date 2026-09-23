@@ -154,19 +154,15 @@ const List = forwardRef<ListType, ListProps>(({
   }
 
   const handlePress = (item: LX.Music.MusicInfoOnline, index: number) => {
-    requestAnimationFrame(() => {
-      if (checkHomePagerIdle && !global.lx.homePagerIdle) return
-      if (isMultiSelectModeRef.current) {
-        handleSelect(item, index)
+    if (isMultiSelectModeRef.current) {
+      handleSelect(item, index)
+    } else {
+      if (settingState.setting['list.isClickPlayList'] && onPlayList != null) {
+        onPlayList(index)
       } else {
-        if (settingState.setting['list.isClickPlayList'] && onPlayList != null) {
-          onPlayList(index)
-        } else {
-          // console.log(currentList[index])
-          handlePlay(currentList[index])
-        }
+        handlePlay(currentList[index])
       }
-    })
+    }
   }
 
   const handleLongPress = (item: LX.Music.MusicInfoOnline, index: number) => {
@@ -239,6 +235,11 @@ const List = forwardRef<ListType, ListProps>(({
       data={currentList}
       numColumns={rowInfo.current.rowNum}
       horizontal={false}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条并保持滚动跟手
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="always"
+      scrollEventThrottle={16}
       maxToRenderPerBatch={4}
       // updateCellsBatchingPeriod={80}
       windowSize={8}

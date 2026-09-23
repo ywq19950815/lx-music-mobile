@@ -1,11 +1,9 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { ScrollView, TouchableOpacity } from 'react-native'
+import { ScrollView, TouchableOpacity, View, StyleSheet } from 'react-native'
 import songlistState, { type SortInfo, type Source } from '@/store/songlist/state'
 import { useI18n } from '@/lang'
-import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
-import { createStyle } from '@/utils/tools'
-import { BorderWidths } from '@/theme'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 export interface SortTabProps {
   onSortChange: (id: string) => void
@@ -15,12 +13,14 @@ export interface SortTabType {
   setSource: (source: Source, activeTab: SortInfo['id']) => void
 }
 
-
+/**
+ * NeoSortTab: 波普风歌单分类药丸切换条。
+ * 激活项带有亮黄高亮底色与纯黑描边。
+ */
 export default forwardRef<SortTabType, SortTabProps>(({ onSortChange }, ref) => {
   const [sortList, setSortList] = useState<SortInfo[]>([])
   const [activeId, setActiveId] = useState<SortInfo['id']>('')
   const t = useI18n()
-  const theme = useTheme()
   const scrollViewRef = useRef<ScrollView>(null)
 
   useImperativeHandle(ref, () => ({
@@ -41,41 +41,65 @@ export default forwardRef<SortTabType, SortTabProps>(({ onSortChange }, ref) => 
   }
 
   return (
-    <ScrollView ref={scrollViewRef} style={styles.container} keyboardShouldPersistTaps={'always'} horizontal>
-      {
-        sorts.map(s => (
-          <TouchableOpacity style={styles.button} onPress={() => { handleSortChange(s.id) }} key={s.id}>
-            <Text style={{ ...styles.buttonText, borderBottomColor: activeId == s.id ? theme['c-primary-background-active'] : 'transparent' }} color={activeId == s.id ? theme['c-primary-font-active'] : theme['c-font']}>{s.label}</Text>
+    <ScrollView
+      ref={scrollViewRef}
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="always"
+      horizontal
+      showsHorizontalScrollIndicator={false}
+    >
+      {sorts.map(s => {
+        const active = activeId === s.id
+        return (
+          <TouchableOpacity
+            key={s.id}
+            style={[styles.pill, active && styles.pillActive]}
+            onPress={() => handleSortChange(s.id)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.pillText, active && styles.pillTextActive]}>
+              {s.label}
+            </Text>
           </TouchableOpacity>
-        ))
-      }
+        )
+      })}
     </ScrollView>
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     flexShrink: 1,
-    // paddingLeft: 5,
-    // paddingRight: 5,
   },
-  button: {
-    // height: 38,
-    // lineHeight: 38,
-    justifyContent: 'center',
-    paddingLeft: 14,
-    paddingRight: 14,
-    // width: 80,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+  content: {
+    alignItems: 'center',
+    paddingLeft: 12,
+    gap: 8,
   },
-  buttonText: {
-    // height: 38,
-    // lineHeight: 38,
-    textAlign: 'center',
-    paddingHorizontal: 2,
-    paddingVertical: 3,
-    borderBottomWidth: BorderWidths.normal3,
+  pill: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.white,
+  },
+  pillActive: {
+    backgroundColor: neoColors.yellow,
+    shadowColor: neoColors.black,
+    shadowOffset: { width: 1.5, height: 1.5 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2,
+  },
+  pillText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: neoColors.black,
+  },
+  pillTextActive: {
+    fontWeight: '900',
   },
 })

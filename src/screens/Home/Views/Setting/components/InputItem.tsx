@@ -1,11 +1,8 @@
 import { memo, useState, useEffect, useRef } from 'react'
-
 import { StyleSheet, View, Keyboard } from 'react-native'
 import type { InputType, InputProps } from '@/components/common/Input'
 import Input from '@/components/common/Input'
-import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
-
 
 export interface InputItemProps extends InputProps {
   value: string
@@ -18,27 +15,29 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
   const textRef = useRef(value)
   const isMountRef = useRef(false)
   const inputRef = useRef<InputType>(null)
-  const theme = useTheme()
+
   const saveValue = () => {
-    onChanged?.(text, (value: string) => {
+    onChanged?.(text, (val: string) => {
       if (!isMountRef.current) return
-      const newValue = String(value)
+      const newValue = String(val)
       setText(newValue)
       textRef.current = newValue
     })
   }
+
   useEffect(() => {
     isMountRef.current = true
     return () => {
       isMountRef.current = false
     }
   }, [])
+
   useEffect(() => {
     const handleKeyboardDidHide = () => {
       if (!inputRef.current?.isFocused()) return
-      onChanged?.(textRef.current, value => {
+      onChanged?.(textRef.current, val => {
         if (!isMountRef.current) return
-        const newValue = String(value)
+        const newValue = String(val)
         setText(newValue)
         textRef.current = newValue
       })
@@ -49,6 +48,7 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
       keyboardDidHide.remove()
     }
   }, [onChanged])
+
   useEffect(() => {
     if (value != text) {
       const newValue = String(value)
@@ -57,40 +57,51 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
-  const handleSetSelectMode = (text: string) => {
-    setText(text)
-    textRef.current = text
+
+  const handleSetSelectMode = (val: string) => {
+    setText(val)
+    textRef.current = val
   }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label} size={14}>{label}</Text>
+      <Text style={styles.label} size={13.5}>{label}</Text>
       <Input
         value={text}
         ref={inputRef}
         onChangeText={handleSetSelectMode}
-        style={{ ...styles.input, backgroundColor: theme['c-primary-input-background'] }}
+        style={styles.input}
         {...props}
         onBlur={saveValue}
-       />
+      />
     </View>
   )
 })
 
 const styles = StyleSheet.create({
   container: {
-    paddingLeft: 25,
-    marginBottom: 15,
+    paddingLeft: 4,
+    marginBottom: 14,
   },
   label: {
-    marginBottom: 2,
+    marginBottom: 6,
+    fontWeight: '800',
+    color: '#000000',
   },
   input: {
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    flexGrow: 1,
-    flexShrink: 1,
-    borderRadius: 4,
-    // paddingTop: 3,
-    // paddingBottom: 3,
-    maxWidth: 300,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2,
+    color: '#000000',
+    maxWidth: 320,
   },
 })
+

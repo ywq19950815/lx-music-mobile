@@ -1,58 +1,70 @@
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity, View, StyleSheet } from 'react-native'
 import { Icon } from '@/components/common/Icon'
-import { useTheme } from '@/store/theme/hook'
 import { playNext, playPrev, togglePlay } from '@/core/player/player'
 import { useIsPlay } from '@/store/player/hook'
-import { createStyle } from '@/utils/tools'
 import { useWindowSize } from '@/utils/hooks'
 import { BTN_WIDTH } from './MoreBtn/Btn'
 import { useMemo } from 'react'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 const PrevBtn = ({ size }: { size: number }) => {
-  const theme = useTheme()
-  const handlePlayPrev = () => {
-    void playPrev()
-  }
+  const btnSize = size * 0.85
   return (
-    <TouchableOpacity style={{ ...styles.controlSubBtn, width: size * 0.85, height: size * 0.85 }} activeOpacity={0.6} onPress={handlePlayPrev}>
-      <Icon name='prevMusic' color={theme['c-button-font']} rawSize={size * 0.55} />
-    </TouchableOpacity>
+    <View style={styles.subBtnWrapper}>
+      <TouchableOpacity
+        style={[
+          styles.controlSubBtn,
+          { width: btnSize, height: btnSize, borderRadius: btnSize / 2 },
+        ]}
+        activeOpacity={0.7}
+        onPress={() => { void playPrev() }}
+      >
+        <Icon name='prevMusic' color={neoColors.black} rawSize={btnSize * 0.52} />
+      </TouchableOpacity>
+    </View>
   )
 }
 
 const NextBtn = ({ size }: { size: number }) => {
-  const theme = useTheme()
-  const handlePlayNext = () => {
-    void playNext()
-  }
+  const btnSize = size * 0.85
   return (
-    <TouchableOpacity style={{ ...styles.controlSubBtn, width: size * 0.85, height: size * 0.85 }} activeOpacity={0.6} onPress={handlePlayNext}>
-      <Icon name='nextMusic' color={theme['c-button-font']} rawSize={size * 0.55} />
-    </TouchableOpacity>
+    <View style={styles.subBtnWrapper}>
+      <TouchableOpacity
+        style={[
+          styles.controlSubBtn,
+          { width: btnSize, height: btnSize, borderRadius: btnSize / 2 },
+        ]}
+        activeOpacity={0.7}
+        onPress={() => { void playNext() }}
+      >
+        <Icon name='nextMusic' color={neoColors.black} rawSize={btnSize * 0.52} />
+      </TouchableOpacity>
+    </View>
   )
 }
 
 const TogglePlayBtn = ({ size }: { size: number }) => {
-  const theme = useTheme()
   const isPlay = useIsPlay()
-  const playBtnSize = Math.max(54, size * 1.05)
+  const playBtnSize = Math.max(56, size * 1.08)
+
   return (
-    <TouchableOpacity
-      style={[
-        styles.mainPlayBtn,
-        {
-          width: playBtnSize,
-          height: playBtnSize,
-          borderRadius: playBtnSize / 2,
-          backgroundColor: theme['c-primary-light-900-alpha-200'] ?? 'rgba(128, 128, 148, 0.18)',
-          borderColor: theme['c-border-background'] ?? 'rgba(255, 255, 255, 0.15)',
-        },
-      ]}
-      activeOpacity={0.7}
-      onPress={togglePlay}
-    >
-      <Icon name={isPlay ? 'pause' : 'play'} color={theme['c-button-font']} rawSize={playBtnSize * 0.52} />
-    </TouchableOpacity>
+    <View style={styles.mainBtnWrapper}>
+      <TouchableOpacity
+        style={[
+          styles.mainPlayBtn,
+          {
+            width: playBtnSize,
+            height: playBtnSize,
+            borderRadius: playBtnSize / 2,
+            backgroundColor: isPlay ? neoColors.pink : neoColors.yellow,
+          },
+        ]}
+        activeOpacity={0.7}
+        onPress={togglePlay}
+      >
+        <Icon name={isPlay ? 'pause' : 'play'} color={neoColors.black} rawSize={playBtnSize * 0.52} />
+      </TouchableOpacity>
+    </View>
   )
 }
 
@@ -64,7 +76,7 @@ export default () => {
   const maxHeight = Math.max(winSize.height * 0.11, MIN_SIZE)
   const containerStyle = useMemo(() => {
     return {
-      ...styles.conatiner,
+      ...styles.container,
       maxHeight,
     }
   }, [maxHeight])
@@ -79,30 +91,37 @@ export default () => {
   )
 }
 
-const styles = createStyle({
-  conatiner: {
+const styles = StyleSheet.create({
+  container: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
     flexGrow: 1,
     flexShrink: 1,
     paddingHorizontal: '4%',
-    paddingVertical: 18,
+    paddingVertical: 14,
+  },
+  subBtnWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   controlSubBtn: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 24,
-    backgroundColor: 'rgba(128, 128, 148, 0.08)',
+    backgroundColor: neoColors.white,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    ...neoShadows.sm,
+  },
+  mainBtnWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   mainPlayBtn: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
+    borderWidth: 2.5,
+    borderColor: neoColors.black,
+    ...neoShadows.md,
   },
 })

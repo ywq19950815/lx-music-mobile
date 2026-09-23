@@ -42,11 +42,6 @@ declare global {
       'common.autoHidePlayBar': boolean
 
       /**
-       * 抽屉组件弹出方向
-       */
-      'common.drawerLayoutPosition': 'left' | 'right'
-
-      /**
        * 启用首页滑动
        */
       'common.homePageScroll': boolean
@@ -90,21 +85,6 @@ declare global {
        * 暗色主题id
        */
       'theme.darkId': string
-
-      /**
-       * 隐藏黑色主题背景
-       */
-      'theme.hideBgDark': boolean
-
-      /**
-       * 动态背景
-       */
-      'theme.dynamicBg': boolean
-
-      /**
-       * 字体阴影
-       */
-      'theme.fontShadow': boolean
 
       /**
        * 启动时自动播放歌曲

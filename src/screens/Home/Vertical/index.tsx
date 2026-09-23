@@ -1,8 +1,8 @@
-import { View } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import Content from './Content'
 import PlayerBar from '@/components/player/PlayerBar'
 import TabBar from './TabBar'
-import { createStyle } from '@/utils/tools'
+import { neoColors } from '@/theme/neobrutalism'
 
 export default () => {
   return (
@@ -14,8 +14,9 @@ export default () => {
   )
 }
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: neoColors.offWhite,
   },
 })

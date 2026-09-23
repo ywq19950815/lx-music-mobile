@@ -67,10 +67,10 @@ export default memo(() => {
     <Section title={t('setting_version')}>
       <SubTitle title={title}>
         <View style={styles.desc}>
-          <Text size={14}>{t('version_label_latest_ver')}{versionInfo.newVersion?.version}</Text>
-          <Text size={14}>{t('version_label_current_ver')}{currentVer}</Text>
+          <Text size={14} style={styles.verText}>{t('version_label_latest_ver')}{versionInfo.newVersion?.version || currentVer}</Text>
+          <Text size={14} style={styles.verText}>{t('version_label_current_ver')}{currentVer}</Text>
           {
-            tip ? <Text size={14}>{tip}</Text> : null
+            tip ? <Text size={13} style={styles.tipText}>{tip}</Text> : null
           }
         </View>
         <View style={styles.btn}>
@@ -83,7 +83,17 @@ export default memo(() => {
 
 const styles = StyleSheet.create({
   desc: {
-    marginBottom: 8,
+    marginBottom: 10,
+    gap: 4,
+  },
+  verText: {
+    color: '#000000',
+    fontWeight: '700',
+  },
+  tipText: {
+    color: '#555555',
+    fontWeight: '600',
+    marginTop: 2,
   },
   btn: {
     flexDirection: 'row',

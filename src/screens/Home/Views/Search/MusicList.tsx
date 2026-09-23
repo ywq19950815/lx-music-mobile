@@ -83,7 +83,7 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
     onRefresh={handleRefresh}
     onLoadMore={handleLoadMore}
     checkHomePagerIdle
-    contentPaddingBottom={36}
+    contentPaddingBottom={90}
   />
 })
 

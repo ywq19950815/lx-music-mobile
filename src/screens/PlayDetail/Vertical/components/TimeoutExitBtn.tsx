@@ -1,13 +1,10 @@
 import { memo, useRef } from 'react'
 import TimeoutExitEditModal, { type TimeoutExitEditModalType, useTimeInfo } from '@/components/TimeoutExitEditModal'
-import { useTheme } from '@/store/theme/hook'
+import { neoColors } from '@/theme/neobrutalism'
 import Btn from './Btn'
 
-
 export default memo(() => {
-  const theme = useTheme()
   const modalRef = useRef<TimeoutExitEditModalType>(null)
-
   const timeInfo = useTimeInfo()
 
   const handleShow = () => {
@@ -16,7 +13,12 @@ export default memo(() => {
 
   return (
     <>
-      <Btn icon="music_time" color={timeInfo.active ? theme['c-primary-font-active'] : theme['c-font']} onPress={handleShow} />
+      <Btn
+        icon="music_time"
+        bg={timeInfo.active ? neoColors.pink : neoColors.white}
+        color={neoColors.black}
+        onPress={handleShow}
+      />
       <TimeoutExitEditModal ref={modalRef} timeInfo={timeInfo} />
     </>
   )

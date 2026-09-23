@@ -7,7 +7,7 @@ import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { createStyle } from '@/utils/tools'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
-
+import { neoColors } from '@/theme/neobrutalism'
 
 export default memo(() => {
   return (
@@ -21,17 +21,19 @@ export default memo(() => {
 
 const styles = createStyle({
   container: {
-    flex: 0,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     width: '100%',
-    // paddingTop: progressContentPadding,
-    // marginTop: -progressContentPadding,
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
     paddingHorizontal: 15,
-    paddingBottom: 15,
-    paddingTop: 5,
-    // backgroundColor: AppColors.primary,
-    // backgroundColor: 'red',
+    paddingBottom: 12,
+    paddingTop: 8,
+    backgroundColor: neoColors.offWhite,
+    borderTopWidth: 2,
+    borderTopColor: neoColors.black,
     flexDirection: 'column',
+    zIndex: 30,
   },
   status: {
     marginTop: 10,
@@ -39,6 +41,5 @@ const styles = createStyle({
     flex: 0,
     paddingLeft: 5,
     justifyContent: 'space-evenly',
-    // backgroundColor: 'rgba(0, 0, 0, .1)',
   },
 })

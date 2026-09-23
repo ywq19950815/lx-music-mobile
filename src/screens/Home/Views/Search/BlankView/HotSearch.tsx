@@ -1,13 +1,10 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { ScrollView, View } from 'react-native'
+import { ScrollView, View, TouchableOpacity, StyleSheet } from 'react-native'
 import { type Source, type InitState } from '@/store/hotSearch/state'
-import Button from '@/components/common/Button'
 import { getList } from '@/core/hotSearch'
 import Text from '@/components/common/Text'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
-
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 interface ListProps {
   onSearch: (keyword: string) => void
@@ -16,27 +13,39 @@ export interface HotSearchType {
   show: (source: Source) => void
 }
 
-
 export type List = NonNullable<InitState['sourceList'][keyof InitState['sourceList']]>
 
-const ListItem = ({ keyword, onSearch }: {
+const POP_COLORS = [
+  neoColors.yellow,
+  neoColors.cyan,
+  neoColors.pink,
+  neoColors.green,
+  neoColors.purple,
+]
+
+const ListItem = ({ keyword, index, onSearch }: {
   keyword: string
+  index: number
   onSearch: (keyword: string) => void
 }) => {
-  const theme = useTheme()
+  const bg = POP_COLORS[index % POP_COLORS.length]
+
   return (
-    <Button style={{ ...styles.button, backgroundColor: theme['c-button-background'] }} onPress={() => { onSearch(keyword) }}>
-      <Text color={theme['c-button-font']} size={13}>{keyword}</Text>
-    </Button>
+    <TouchableOpacity
+      style={[styles.tagPill, { backgroundColor: bg }]}
+      activeOpacity={0.7}
+      onPress={() => { onSearch(keyword) }}
+    >
+      <Text style={styles.tagText} size={12} color={neoColors.black}>
+        {keyword}
+      </Text>
+    </TouchableOpacity>
   )
 }
 
 export default forwardRef<HotSearchType, ListProps>((props, ref) => {
-  // const [listType, setListType] = useState<SearchState['searchType']>('music')
-  // const listRef = useRef<MusicListType>(null)
   const [list, setList] = useState<List>([])
   const t = useI18n()
-  // const theme = useTheme()
 
   const isUnmountedRef = useRef(false)
   useEffect(() => {
@@ -58,41 +67,69 @@ export default forwardRef<HotSearchType, ListProps>((props, ref) => {
   return (
     list.length
       ? (
-          <ScrollView>
-            <Text style={styles.title} size={16}>{t('search_hot_search')}</Text>
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <View style={styles.accentDot} />
+              <Text style={styles.title} size={15} color={neoColors.black}>
+                {t('search_hot_search')}
+              </Text>
+            </View>
             <View style={styles.list}>
               {
-                list.map(keyword => <ListItem keyword={keyword} key={keyword} onSearch={props.onSearch} />)
+                list.map((keyword, idx) => (
+                  <ListItem
+                    keyword={keyword}
+                    index={idx}
+                    key={keyword}
+                    onSearch={props.onSearch}
+                  />
+                ))
               }
             </View>
-          </ScrollView>
+          </View>
         )
       : null
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  accentDot: {
+    width: 8,
+    height: 8,
+    backgroundColor: neoColors.yellow,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    marginRight: 6,
+    borderRadius: 2,
+  },
   title: {
-    // paddingLeft: 15,
-    paddingTop: 15,
-    // paddingBottom: 10,
+    fontWeight: '900',
   },
   list: {
-    // paddingLeft: 15,
-    // paddingRight: 15,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    // paddingBottom: 15,
   },
-  button: {
-    textAlign: 'center',
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 5,
-    paddingBottom: 5,
-    borderRadius: 4,
-    marginRight: 10,
-    marginTop: 8,
+  tagPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    marginRight: 8,
+    marginBottom: 8,
+    ...neoShadows.sm,
+  },
+  tagText: {
+    fontWeight: '800',
   },
 })

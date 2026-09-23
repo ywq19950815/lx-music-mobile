@@ -15,6 +15,10 @@ import ListMusicSearch, { type ListMusicSearchType } from './ListMusicSearch'
 import MusicPositionModal, { type MusicPositionModalType } from './MusicPositionModal'
 import MetadataEditModal, { type MetadataEditType, type MetadataEditProps } from '@/components/MetadataEditModal'
 import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
+import { scaleSizeH } from '@/utils/pixelRatio'
+
+// 顶部操作条高度：ActiveList 内容高 32 + 上下 padding 6*2 + 底边 2.5，取整对齐
+const TOP_BAR_HEIGHT = scaleSizeH(48)
 
 
 export default () => {
@@ -62,13 +66,20 @@ export default () => {
   }, [])
 
   const showMenu = useCallback((musicInfo: LX.Music.MusicInfo, index: number, position: Position) => {
-    listMenuRef.current?.show({
-      musicInfo,
-      index,
-      listId: listState.activeListId,
-      single: false,
-      selectedList: listRef.current!.getSelectedList(),
-    }, position)
+    console.log('--- [MusicList] showMenu called for:', musicInfo?.name)
+    try {
+      const selectedList = listRef.current?.getSelectedList ? listRef.current.getSelectedList() : []
+      console.log('--- [MusicList] calling listMenuRef.show, hasRef:', !!listMenuRef.current)
+      listMenuRef.current?.show({
+        musicInfo,
+        index,
+        listId: listState.activeListId,
+        single: false,
+        selectedList,
+      }, position)
+    } catch (e) {
+      console.error('--- [MusicList] showMenu error:', e)
+    }
   }, [])
   const handleShowSearch = useCallback(() => {
     isShowSearchBarModeBar.current = true
@@ -91,7 +102,9 @@ export default () => {
     handleExitSearch()
   }, [handleExitSearch])
   const onLayout = useCallback((e: LayoutChangeEvent) => {
-    layoutHeightRef.current = e.nativeEvent.layout.height
+    const h = e.nativeEvent.layout.height
+    // 忽略 0 值：搜索建议浮层依赖非零高度才会展开
+    if (h > 0) layoutHeightRef.current = h
   }, [])
 
   const handleAddMusic = useCallback((info: SelectInfo) => {
@@ -121,7 +134,9 @@ export default () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ zIndex: 2 }}>
+      {/* 顶部整条搜索/选择模式切换区：子元素均为绝对定位浮层，
+          但必须给定高度，否则浮层 height:'100%' 会塌成 0 被裁切成一条细线 */}
+      <View style={styles.topBar}>
         <ActiveList ref={activeListRef} onShowSearchBar={handleShowSearch} onScrollToTop={hancelScrollToTop} />
         <MultipleModeBar
           ref={multipleModeBarRef}
@@ -180,5 +195,10 @@ const styles = createStyle({
   container: {
     flex: 1,
     flexDirection: 'column',
+  },
+  topBar: {
+    // 关键：给绝对定位浮层（ListSearchBar / MultipleModeBar）一个非零高度参照，
+    // 否则 RN Web 下 height:'100%' 解析为 0，浮层被压成一条线
+    height: TOP_BAR_HEIGHT,
   },
 })

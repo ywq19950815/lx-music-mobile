@@ -108,7 +108,3 @@ export const requestStoragePermission = async() => {
   await setSelectedManagedFolder(uri.path)
   return true
 }
-
-export const setBgPic = (pic: string | null) => {
-  commonActions.setBgPic(pic)
-}

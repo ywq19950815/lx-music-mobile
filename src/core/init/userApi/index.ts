@@ -1,10 +1,12 @@
 import { type InitParams, onScriptAction, sendAction, type ResponseParams, type UpdateInfoParams, type RequestParams } from '@/utils/nativeModules/userApi'
-import { log, setUserApiList, setUserApiStatus } from '@/core/userApi'
+import { log, markUserApiInitSettled, setUserApiList, setUserApiStatus } from '@/core/userApi'
 import settingState from '@/store/setting/state'
 import BackgroundTimer from 'react-native-background-timer'
 import { fetchData } from './request'
 import { getUserApiList } from '@/utils/data'
 import { confirmDialog, openUrl, tipDialog } from '@/utils/tools'
+import { ensureDefaultSource } from '@/core/defaultSource'
+import { updateSetting } from '@/core/common'
 
 
 export default async(setting: LX.AppSetting) => {
@@ -73,6 +75,8 @@ export default async(setting: LX.AppSetting) => {
   }
   const handleStateChange = ({ status, errorMessage, info }: InitParams) => {
     // console.log(status, message, info)
+    // 原生侧已回调 → 状态落定，撤掉 setUserApi 里设的超时闸门
+    markUserApiInitSettled()
     setUserApiStatus(status, errorMessage)
     if (!info || info.id !== settingState.setting['common.apiSource']) return
     if (status) {
@@ -251,6 +255,27 @@ export default async(setting: LX.AppSetting) => {
         break
     }
   })
+
+  /**
+   * 首次启动自动安装内置默认音源（ghproxy 加速的独家音源）。
+   * 目的：用户装完 App 即开即听，不需要自己去网上找源再手动导入。
+   * 失败时静默降级，不阻断启动流程。
+   */
+  const setupDefaultSource = async() => {
+    try {
+      const installedId = await ensureDefaultSource()
+      if (!installedId) return
+      // 当前没有可用音源时，自动把内置源设为默认音源
+      if (!setting['common.apiSource']) {
+        setting['common.apiSource'] = installedId
+        updateSetting({ 'common.apiSource': installedId })
+        log.info(`[defaultSource] 已自动切换默认音源: ${installedId}`)
+      }
+    } catch (err: any) {
+      log.error(`[defaultSource] 初始化默认音源失败: ${err?.message ?? err}`)
+    }
+  }
+  await setupDefaultSource()
 
   setUserApiList(await getUserApiList())
 }

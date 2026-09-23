@@ -1,11 +1,8 @@
 import { memo, useEffect, useRef } from 'react'
-import { View, TouchableOpacity, FlatList, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps } from 'react-native'
+import { View, TouchableOpacity, FlatList, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps, StyleSheet } from 'react-native'
 
 import { Icon } from '@/components/common/Icon'
-
-import { useTheme } from '@/store/theme/hook'
 import { useActiveListId, useListFetching, useMyList } from '@/store/list/hook'
-import { createStyle } from '@/utils/tools'
 import { LIST_SCROLL_POSITION_KEY } from '@/config/constant'
 import { getListPosition, saveListPosition } from '@/utils/data'
 import { setActiveList } from '@/core/list'
@@ -13,11 +10,18 @@ import Text from '@/components/common/Text'
 import { type Position } from './ListMenu'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import Loading from '@/components/common/Loading'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 type FlatListType = FlatListProps<LX.List.MyListInfo>
 
-const ITEM_HEIGHT = scaleSizeH(40)
+const ITEM_HEIGHT = scaleSizeH(56)
 
+/**
+ * NeoPlaylistItem: 新粗野主义风格的歌单选择卡片。
+ * - 纯黑 2px 边框
+ * - 纯黑 3px 硬阴影
+ * - 选中态为亮黄色实体卡片
+ */
 const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
   onPress: (item: LX.List.MyListInfo) => void
   index: number
@@ -25,16 +29,13 @@ const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
   item: LX.List.MyListInfo
   onShowMenu: (item: LX.List.MyListInfo, index: number, position: { x: number, y: number, w: number, h: number }) => void
 }) => {
-  const theme = useTheme()
   const moreButtonRef = useRef<TouchableOpacity>(null)
   const fetching = useListFetching(item.id)
-
-  const active = activeId == item.id
+  const active = activeId === item.id
 
   const handleShowMenu = () => {
     if (moreButtonRef.current?.measure) {
       moreButtonRef.current.measure((fx, fy, width, height, px, py) => {
-        // console.log(fx, fy, width, height, px, py)
         onShowMenu(item, index, { x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
       })
     }
@@ -45,30 +46,54 @@ const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
   }
 
   return (
-    <View style={{ ...styles.listItem, height: ITEM_HEIGHT }}>
-      {
-        active
-          ? <Icon style={styles.listActiveIcon} name="chevron-right" size={12} color={theme['c-primary-font']} />
-          : null
-      }
-      { fetching ? <Loading color={active ? theme['c-primary-font'] : theme['c-font']} style={styles.loading} /> : null }
-      <TouchableOpacity style={styles.listName} onPress={handlePress}>
-        <Text numberOfLines={1} color={active ? theme['c-primary-font'] : theme['c-font']}>{item.name}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.listMoreBtn}>
-        <Icon name="dots-vertical" color={theme['c-350']} size={12} />
+    <View style={styles.itemWrapper}>
+      {/* 背后纯黑实体硬投影底座 */}
+      <View style={styles.cardShadow} />
+
+      {/* 前台波普卡片 */}
+      <TouchableOpacity
+        style={[styles.cardBody, active ? styles.cardActive : styles.cardDefault]}
+        onPress={handlePress}
+        activeOpacity={0.8}
+      >
+        <View style={styles.leftIconBox}>
+          <Icon
+            name={active ? 'play' : 'album'}
+            size={16}
+            color={neoColors.black}
+          />
+        </View>
+
+        {fetching ? <Loading color={neoColors.black} style={styles.loading} /> : null}
+
+        <View style={styles.nameBox}>
+          <Text
+            numberOfLines={1}
+            style={[styles.listNameText, active ? styles.listNameActive : styles.listNameDefault]}
+          >
+            {item.name}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleShowMenu}
+          ref={moreButtonRef}
+          style={styles.moreBtn}
+          activeOpacity={0.6}
+        >
+          <Icon name="dots-vertical" color={neoColors.black} size={14} />
+        </TouchableOpacity>
       </TouchableOpacity>
     </View>
   )
 }, (prevProps, nextProps) => {
   return !!(prevProps.item === nextProps.item &&
     prevProps.index === nextProps.index &&
-    prevProps.item.name == nextProps.item.name &&
-    prevProps.activeId != nextProps.item.id &&
-    nextProps.activeId != nextProps.item.id
+    prevProps.item.name === nextProps.item.name &&
+    prevProps.activeId !== nextProps.item.id &&
+    nextProps.activeId !== nextProps.item.id
   )
 })
-
 
 export default ({ onShowMenu }: {
   onShowMenu: (info: { listInfo: LX.List.MyListInfo, index: number }, position: Position) => void
@@ -78,13 +103,11 @@ export default ({ onShowMenu }: {
   const activeListId = useActiveListId()
 
   const handleToggleList = (item: LX.List.MyListInfo) => {
-    // setVisiblePanel(false)
     global.app_event.changeLoveListVisible(false)
     requestAnimationFrame(() => {
       setActiveList(item.id)
     })
   }
-
 
   const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
     void saveListPosition(LIST_SCROLL_POSITION_KEY, nativeEvent.contentOffset.y)
@@ -120,71 +143,101 @@ export default ({ onShowMenu }: {
       ref={flatListRef}
       onScroll={handleScroll}
       style={styles.container}
+      contentContainerStyle={styles.contentContainer}
       data={allList}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条并保持滚动跟手
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="always"
+      scrollEventThrottle={16}
       maxToRenderPerBatch={9}
-      // updateCellsBatchingPeriod={80}
       windowSize={9}
       removeClippedSubviews={true}
       initialNumToRender={18}
       renderItem={renderItem}
       keyExtractor={getkey}
-      // extraData={activeIndex}
       getItemLayout={getItemLayout}
     />
   )
 }
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
-    flexShrink: 1,
-    flexGrow: 0,
+    flex: 1,
   },
-  // listContainer: {
-  //   // borderBottomWidth: BorderWidths.normal2,
-  // },
-
-  listItem: {
-    height: 'auto',
+  contentContainer: {
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+  },
+  itemWrapper: {
+    position: 'relative',
+    marginVertical: 4,
+    height: 48,
+  },
+  cardShadow: {
+    position: 'absolute',
+    left: 2,
+    right: -2,
+    top: 2,
+    bottom: -2,
+    backgroundColor: neoColors.black,
+    borderRadius: neoBorders.radiusSm,
+    zIndex: 0,
+  },
+  cardBody: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 5,
-    paddingLeft: 5,
-    // borderBottomWidth: BorderWidths.normal,
+    paddingHorizontal: 10,
+    borderRadius: neoBorders.radiusSm,
+    borderWidth: 2,
+    borderColor: neoColors.black,
+    zIndex: 1,
   },
-  listActiveIcon: {
-    // width: 18,
-    marginLeft: 3,
-    // paddingRight: 5,
-    textAlign: 'center',
+  cardActive: {
+    backgroundColor: neoColors.yellow,
   },
-  loading: {
-    marginLeft: 5,
+  cardDefault: {
+    backgroundColor: neoColors.white,
   },
-  listName: {
-    height: '100%',
-    // height: 46,
-    // paddingTop: 12,
-    // paddingBottom: 12,
-    justifyContent: 'center',
-    flexGrow: 1,
-    flexShrink: 1,
-    paddingLeft: 5,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  // listNameText: {
-  //   // height: 46,
-  //   fontSize: 14,
-  // },
-  listMoreBtn: {
-    height: '100%',
-    width: 36,
-    // height: 46,
-    // paddingTop: 12,
-    // paddingBottom: 12,
+  leftIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: neoColors.offWhite,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+    marginRight: 8,
+  },
+  loading: {
+    marginRight: 6,
+  },
+  nameBox: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  listNameText: {
+    fontSize: 14,
+    letterSpacing: -0.2,
+  },
+  listNameActive: {
+    color: neoColors.black,
+    fontWeight: '900',
+  },
+  listNameDefault: {
+    color: neoColors.black,
+    fontWeight: '700',
+  },
+  moreBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: neoColors.offWhite,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
-

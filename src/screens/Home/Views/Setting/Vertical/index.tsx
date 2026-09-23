@@ -1,28 +1,20 @@
-export { default } from './Main'
-// // import { View } from 'react-native'
-// import Main from './Main'
-// import { createStyle } from '@/utils/tools'
+import { View, StyleSheet } from 'react-native'
+import Main from './Main'
 
+const Content = () => {
+  return (
+    <View style={styles.container}>
+      <Main />
+    </View>
+  )
+}
 
-// const Content = () => {
-//   return (
-//     <View style={styles.container}>
-//       <Main />
-//     </View>
-//   )
-// }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    height: '100%',
+  },
+})
 
-// const styles = createStyle({
-//   container: {
-//     flex: 1,
-//     flexDirection: 'column',
-//   },
-//   // main: {
-//   //   paddingLeft: 15,
-//   //   paddingRight: 15,
-//   //   paddingTop: 15,
-//   //   paddingBottom: 15,
-//   // },
-// })
+export default Content
 
-// export default Content

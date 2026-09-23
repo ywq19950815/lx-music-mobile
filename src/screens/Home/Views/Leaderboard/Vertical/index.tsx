@@ -12,7 +12,6 @@ import { useTheme } from '@/store/theme/hook'
 // import { useTheme } from '@/store/theme/hook'
 import BoardsList, { type BoardsListType, type BoardsListProps } from '../BoardsList'
 import type { InitState as CommonState } from '@/store/common/state'
-import settingState from '@/store/setting/state'
 import { getBoardsList } from '@/core/leaderboard'
 import { COMPONENT_IDS } from '@/config/constant'
 import { handleCollect, handlePlay } from '../listAction'
@@ -60,8 +59,11 @@ export default () => {
     void handleCollect(id, name, boundInfo.current.source)
   }
   const onShowBound = () => {
-    requestAnimationFrame(() => {
-      drawer.current?.openDrawer()
+    void getBoardsList(boundInfo.current.source).then(list => {
+      boardsListRef.current?.setList(list, boundInfo.current.id || list[0]?.id)
+      requestAnimationFrame(() => {
+        drawer.current?.openDrawer()
+      })
     })
   }
   const onSourceChange: HeaderBarProps['onSourceChange'] = (source) => {
@@ -126,7 +128,7 @@ export default () => {
       // drawerWidth={width}
       widthPercentage={0.82}
       widthPercentageMax={MAX_WIDTH}
-      drawerPosition={settingState.setting['common.drawerLayoutPosition']}
+      drawerPosition="left"
       renderNavigationView={navigationView}
       drawerBackgroundColor={theme['c-content-background']}
       style={{ elevation: 1 }}

@@ -7,7 +7,6 @@ import { useI18n } from '@/lang'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
 import StatusBar from '@/components/common/StatusBar'
-import { useSettingValue } from '@/store/setting/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT as _HEADER_HEIGHT } from '@/config/constant'
 import { type InitState as CommonState } from '@/store/common/state'
@@ -17,7 +16,11 @@ const headerComponents: Partial<Record<CommonState['navActiveId'], React.ReactNo
   nav_search: <SearchTypeSelector />,
 }
 
-const HEADER_HEIGHT = _HEADER_HEIGHT * 0.8
+// 横向（横屏）模式下头部略矮，但不能低于搜索类型切换器所需的最小高度。
+// 切换器实高 29px + 上下留白（paddingTop 2 + paddingBottom 4）= 35px，
+// 原值 42*0.8=33.6px 会把激活态胶囊的实体硬阴影压掉下半截（视觉上「按钮被切」）。
+// 这里放宽到 44px，与竖屏 Header 一致，保证阴影完整可见。
+const HEADER_HEIGHT = Math.max(_HEADER_HEIGHT, 44)
 
 
 // const LeftTitle = () => {
@@ -50,46 +53,11 @@ const LeftHeader = () => {
 }
 
 
-// const RightTitle = () => {
-//   const id = useNavActiveId()
-//   const t = useI18n()
-
-//   return <Text style={styles.rightTitle} size={18}>{t(id)}</Text>
-// }
-const RightHeader = () => {
-  const t = useI18n()
-  const id = useNavActiveId()
-  const statusBarHeight = useStatusbarHeight()
-
-  return (
-    <View style={{
-      ...styles.container,
-      height: scaleSizeH(HEADER_HEIGHT) + statusBarHeight,
-      paddingTop: statusBarHeight,
-    }}>
-      <View style={styles.left}>
-        <Text style={styles.rightTitle} size={18}>{t(id)}</Text>
-      </View>
-      {headerComponents[id] ?? null}
-      {/* <TouchableOpacity style={styles.btn} onPress={openSetting}>
-        <Icon style={{ ...styles.btnText, color: theme['c-font'] }} name="setting" size={styles.btnText.fontSize} />
-      </TouchableOpacity> */}
-    </View>
-  )
-}
-
 const Header = () => {
-  const drawerLayoutPosition = useSettingValue('common.drawerLayoutPosition')
-
   return (
     <>
       <StatusBar />
-      {
-        drawerLayoutPosition == 'left'
-          ? <LeftHeader />
-          : <RightHeader />
-      }
-
+      <LeftHeader />
     </>
   )
 }

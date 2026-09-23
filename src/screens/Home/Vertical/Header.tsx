@@ -1,33 +1,49 @@
-import { View } from 'react-native'
-import { useTheme } from '@/store/theme/hook'
+import { View, StyleSheet } from 'react-native'
 import { useNavActiveId, useStatusbarHeight } from '@/store/common/hook'
 import { useI18n } from '@/lang'
-import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
 import StatusBar from '@/components/common/StatusBar'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT } from '@/config/constant'
 import { type InitState as CommonState } from '@/store/common/state'
 import SearchTypeSelector from '@/screens/Home/Views/Search/SearchTypeSelector'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 const headerComponents: Partial<Record<CommonState['navActiveId'], React.ReactNode>> = {
   nav_search: <SearchTypeSelector />,
 }
 
-// 现代化简洁标题栏：大标题 + 可选的搜索源选择器，去除汉堡抽屉按钮
+/**
+ * NeoHeader: 新粗野主义主页头部。
+ * - 纯黑 2px 底部分割线
+ * - 醒目的复古波普大标题（超粗黑体）
+ * - 漫画风贴纸徽章
+ */
 const MainHeader = () => {
-  const theme = useTheme()
   const id = useNavActiveId()
   const t = useI18n()
   const statusBarHeight = useStatusbarHeight()
 
   return (
-    <View style={{
-      ...styles.container,
-      height: scaleSizeH(HEADER_HEIGHT) + statusBarHeight,
-      paddingTop: statusBarHeight,
-    }}>
-      <Text style={styles.title} size={21} color={theme['c-font']}>{t(id)}</Text>
+    <View
+      style={[
+        styles.container,
+        {
+          height: scaleSizeH(HEADER_HEIGHT) + statusBarHeight,
+          paddingTop: statusBarHeight,
+        },
+      ]}
+    >
+      <View style={styles.titleRow}>
+        <Text style={styles.title} size={22}>
+          {t(id)}
+        </Text>
+        {/* 波普漫画风小徽章 */}
+        <View style={styles.popBadge}>
+          <Text style={styles.popBadgeText}>ANDY</Text>
+        </View>
+      </View>
+
       <View style={styles.right}>
         {headerComponents[id] ?? null}
       </View>
@@ -44,19 +60,40 @@ const Header = () => {
   )
 }
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
-    paddingRight: 12,
+    paddingRight: 16,
     paddingLeft: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: neoColors.white,
+    borderBottomWidth: neoBorders.regular,
+    borderBottomColor: neoColors.black,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   title: {
-    fontWeight: '700',
-    flexGrow: 0,
-    flexShrink: 1,
+    fontWeight: '900',
+    color: neoColors.black,
+    letterSpacing: -0.5,
+  },
+  popBadge: {
+    backgroundColor: neoColors.yellow,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    transform: [{ rotate: '-3deg' }],
+  },
+  popBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: neoColors.black,
   },
   right: {
     flexGrow: 1,
@@ -64,8 +101,9 @@ const styles = createStyle({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    // 不要在这里加 overflow:hidden —— 切换器的实体硬阴影需要溢出可见
+    overflow: 'visible',
   },
 })
-
 
 export default Header

@@ -44,6 +44,9 @@ export default ({ list, loading, onSetPath, toParentDir }: {
       renderItem={({ item }) => <ListItem item={item} rowInfo={rowInfo.current} onPress={onSetPath} />}
       keyExtractor={item => item.path + '/' + item.name}
       removeClippedSubviews={true}
+      // App 靠手指滑动浏览，隐藏 Web 滚动条
+      showsVerticalScrollIndicator={false}
+      showsHorizontalScrollIndicator={false}
     />
   ), [list, onSetPath])
 

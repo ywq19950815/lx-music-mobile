@@ -1,6 +1,5 @@
 import { memo } from 'react'
 
-import Theme from '../Theme'
 import Section from '../../components/Section'
 import Source from './Source'
 import SourceName from './SourceName'
@@ -16,7 +15,6 @@ import IsUseSystemFileSelector from './IsUseSystemFileSelector'
 import IsAlwaysKeepStatusbarHeight from './IsAlwaysKeepStatusbarHeight'
 import IsShowBackBtn from './IsShowBackBtn'
 import IsShowExitBtn from './IsShowExitBtn'
-import DrawerLayoutPosition from './DrawerLayoutPosition'
 import { useI18n } from '@/lang/i18n'
 
 export default memo(() => {
@@ -34,8 +32,6 @@ export default memo(() => {
       <IsAllowProgressBarSeek />
       <IsUseSystemFileSelector />
       <IsAlwaysKeepStatusbarHeight />
-      <Theme />
-      <DrawerLayoutPosition />
       <Language />
       <FontSize />
       <ShareType />

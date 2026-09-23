@@ -8,6 +8,7 @@ import Button from '../../components/Button'
 import { toast } from '@/utils/tools'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
+import { neoColors } from '@/theme/neobrutalism'
 import { clearLyric, clearOtherSource, getMetaCache } from '@/utils/data'
 
 export default memo(() => {
@@ -57,9 +58,9 @@ export default memo(() => {
     <>
       <SubTitle title={t('setting__other_meta_cache')}>
         <View style={styles.cacheSize}>
-          <Text>{cacheInfo.otherSourceKeys == null ? t('setting_other_cache_getting') : `${t('setting__other_other_source_label')}${cacheInfo.otherSourceKeys.length}`}</Text>
-          {/* <Text>{cacheInfo.musicUrlKeys == null ? t('setting_other_cache_getting') : `${t('setting__other_music_url_label')}${cacheInfo.musicUrlKeys.length}`}</Text> */}
-          <Text>{cacheInfo.lyricKeys == null ? t('setting_other_cache_getting') : `${t('setting__other_lyric_raw_label')}${cacheInfo.lyricKeys.length}`}</Text>
+          <Text style={styles.cacheSizeText}>{cacheInfo.otherSourceKeys == null ? t('setting_other_cache_getting') : `${t('setting__other_other_source_label')}${cacheInfo.otherSourceKeys.length}`}</Text>
+          {/* <Text style={styles.cacheSizeText}>{cacheInfo.musicUrlKeys == null ? t('setting_other_cache_getting') : `${t('setting__other_music_url_label')}${cacheInfo.musicUrlKeys.length}`}</Text> */}
+          <Text style={styles.cacheSizeText}>{cacheInfo.lyricKeys == null ? t('setting_other_cache_getting') : `${t('setting__other_lyric_raw_label')}${cacheInfo.lyricKeys.length}`}</Text>
         </View>
         <View style={styles.clearBtn}>
           <Button disabled={otherSourceCleaning} onPress={handleCleanOtherSourceCache}>{t('setting__other_other_source_clear_btn')}</Button>
@@ -74,6 +75,11 @@ export default memo(() => {
 const styles = StyleSheet.create({
   cacheSize: {
     marginBottom: 5,
+  },
+  // 显式指定深色：默认色在深色主题下是浅灰，落在纯白卡片上几乎不可见
+  cacheSizeText: {
+    color: neoColors.gray700,
+    fontWeight: '600',
   },
   clearBtn: {
     gap: 5,

@@ -1,14 +1,11 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity, View, StyleSheet } from 'react-native'
 import { type InitState } from '@/store/hotSearch/state'
-import Button from '@/components/common/Button'
 import Text from '@/components/common/Text'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import { clearHistoryList, getSearchHistory, removeHistoryWord } from '@/core/search/search'
 import { Icon } from '@/components/common/Icon'
-
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 export type List = NonNullable<InitState['sourceList'][keyof InitState['sourceList']]>
 
@@ -17,18 +14,19 @@ const ListItem = ({ keyword, onSearch, onRemove }: {
   onSearch: (keyword: string) => void
   onRemove: (keyword: string) => void
 }) => {
-  const theme = useTheme()
   return (
-    <Button
-      style={{ ...styles.button, backgroundColor: theme['c-button-background'] }}
+    <TouchableOpacity
+      style={styles.historyPill}
+      activeOpacity={0.7}
       onPress={() => { onSearch(keyword) }}
       onLongPress={() => { onRemove(keyword) }}
     >
-      <Text color={theme['c-button-font']} size={13}>{keyword}</Text>
-    </Button>
+      <Text style={styles.pillText} size={12} color={neoColors.black}>
+        {keyword}
+      </Text>
+    </TouchableOpacity>
   )
 }
-
 
 interface HistorySearchProps {
   onSearch: (keyword: string) => void
@@ -41,7 +39,6 @@ export default forwardRef<HistorySearchType, HistorySearchProps>((props, ref) =>
   const [list, setList] = useState<List>([])
   const isUnmountedRef = useRef(false)
   const t = useI18n()
-  const theme = useTheme()
 
   useEffect(() => {
     isUnmountedRef.current = false
@@ -77,16 +74,26 @@ export default forwardRef<HistorySearchType, HistorySearchProps>((props, ref) =>
   return (
     list.length
       ? (
-          <View>
+          <View style={styles.container}>
             <View style={styles.titleContent}>
-              <Text size={16}>{t('search_history_search')}</Text>
-              <TouchableOpacity onPress={handleClear} style={styles.titleBtn}>
-                <Icon name="eraser" color={theme['c-300']} size={14} />
+              <View style={styles.accentDot} />
+              <Text style={styles.title} size={15} color={neoColors.black}>
+                {t('search_history_search')}
+              </Text>
+              <TouchableOpacity onPress={handleClear} style={styles.clearBtn} activeOpacity={0.7}>
+                <Icon name="eraser" color={neoColors.black} size={12} />
               </TouchableOpacity>
             </View>
             <View style={styles.list}>
               {
-                list.map(keyword => <ListItem keyword={keyword} key={keyword} onSearch={props.onSearch} onRemove={handleRemove} />)
+                list.map(keyword => (
+                  <ListItem
+                    keyword={keyword}
+                    key={keyword}
+                    onSearch={props.onSearch}
+                    onRemove={handleRemove}
+                  />
+                ))
               }
             </View>
           </View>
@@ -95,36 +102,57 @@ export default forwardRef<HistorySearchType, HistorySearchProps>((props, ref) =>
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 12,
+    paddingTop: 14,
+    paddingBottom: 8,
+  },
   titleContent: {
-    paddingTop: 15,
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 10,
+  },
+  accentDot: {
+    width: 8,
+    height: 8,
+    backgroundColor: neoColors.cyan,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    marginRight: 6,
+    borderRadius: 2,
   },
   title: {
-    // paddingLeft: 15,
-    // paddingBottom: 5,
+    fontWeight: '900',
   },
-  titleBtn: {
+  clearBtn: {
     marginLeft: 10,
-    padding: 5,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...neoShadows.sm,
   },
   list: {
-    // paddingLeft: 15,
-    // paddingRight: 15,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    // paddingBottom: 15,
   },
-  button: {
-    textAlign: 'center',
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingTop: 5,
-    paddingBottom: 5,
-    borderRadius: 4,
-    marginRight: 10,
-    marginTop: 8,
+  historyPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: neoBorders.radiusPill,
+    borderWidth: 1.5,
+    borderColor: neoColors.black,
+    backgroundColor: neoColors.white,
+    marginRight: 8,
+    marginBottom: 8,
+    ...neoShadows.sm,
+  },
+  pillText: {
+    fontWeight: '700',
   },
 })

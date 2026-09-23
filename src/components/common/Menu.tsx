@@ -1,5 +1,5 @@
 import { useImperativeHandle, forwardRef, useMemo, useRef, useState, type Ref } from 'react'
-import { View, Animated, TouchableHighlight } from 'react-native'
+import { View, Animated, TouchableHighlight, StyleSheet } from 'react-native'
 import { useWindowSize } from '@/utils/hooks'
 
 import Modal, { type ModalType } from './Modal'
@@ -8,15 +8,16 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import Text from './Text'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
+import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 const menuItemHeight = scaleSizeH(40)
-const menuItemWidth = scaleSizeW(100)
+const menuItemWidth = scaleSizeW(115)
 
 export interface Position { w: number, h: number, x: number, y: number, menuWidth?: number, menuHeight?: number }
 export interface MenuSize { width?: number, height?: number }
 export type Menus = Readonly<Array<{ action: string, label: string, disabled?: boolean }>>
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   mask: {
     position: 'absolute',
     top: 0,
@@ -28,25 +29,26 @@ const styles = createStyle({
   },
   menu: {
     position: 'absolute',
-    // borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'lightgray',
-    borderRadius: 2,
-    backgroundColor: 'white',
-    elevation: 3,
+    borderWidth: 2.5,
+    borderColor: neoColors.black,
+    borderRadius: 10,
+    backgroundColor: neoColors.white,
+    // 经典波普零模糊物理硬阴影
+    shadowColor: neoColors.black,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 8,
+    overflow: 'hidden',
+    zIndex: 99999,
   },
   menuItem: {
-    paddingLeft: 10,
-    paddingRight: 10,
-    // height: menuItemHeight,
-    // width: menuItemWidth,
-    // alignItems: 'center',
+    paddingLeft: 14,
+    paddingRight: 14,
     justifyContent: 'center',
-    // backgroundColor: '#ccc',
+    borderBottomWidth: 1,
+    borderBottomColor: neoColors.gray200,
   },
-  // menuText: {
-  //   // textAlign: 'center',
-  //   fontSize: 14,
-  // },
 })
 
 interface Props<M extends Menus = Menus> {
@@ -87,16 +89,28 @@ const Menu = ({
   }, [menuSize, width, height])
 
   const menuStyle = useMemo(() => {
-    let menuHeight = menus.length * menuItemStyle.height
-    const topHeight = buttonPosition.y - 20
-    const bottomHeight = windowSize.height - buttonPosition.y - buttonPosition.h - 20
-    if (menuHeight > topHeight && menuHeight > bottomHeight) menuHeight = Math.max(topHeight, bottomHeight)
+    const itemHeight = menuItemStyle.height
+    const itemWidth = menuItemStyle.width
+    let menuHeight = menus.length * itemHeight
+    const maxAllowedHeight = Math.max(120, windowSize.height - 100)
+    if (menuHeight > maxAllowedHeight) menuHeight = maxAllowedHeight
 
-    const menuWidth = menuItemStyle.width
-    const bottomSpace = windowSize.height - buttonPosition.y - buttonPosition.h - 20
-    const rightSpace = windowSize.width - buttonPosition.x - menuWidth
-    const showInBottom = bottomSpace >= menuHeight
-    const showInRight = rightSpace >= menuWidth
+    // 坐标兜底保护：当 buttonPosition 异常为 0 时默认停靠在右侧偏上
+    const hasValidPos = (buttonPosition.x > 0 || buttonPosition.y > 0)
+    const btnX = hasValidPos ? buttonPosition.x : (windowSize.width - itemWidth - 16)
+    const btnY = hasValidPos ? buttonPosition.y : 160
+    const btnH = buttonPosition.h || 28
+    const btnW = buttonPosition.w || 28
+
+    const bottomSpace = windowSize.height - btnY - btnH - 16
+    const showInBottom = bottomSpace >= menuHeight || bottomSpace >= 150
+
+    let top = showInBottom ? btnY + btnH + 4 : btnY - menuHeight - 4
+    top = Math.max(12, Math.min(windowSize.height - menuHeight - 16, top))
+
+    const rightSpace = windowSize.width - btnX - itemWidth
+    const showInRight = rightSpace >= itemWidth
+
     const frameStyle: {
       height: number
       width: number
@@ -105,13 +119,14 @@ const Menu = ({
       right?: number
     } = {
       height: menuHeight,
-      top: showInBottom ? buttonPosition.y + buttonPosition.h : buttonPosition.y - menuHeight,
-      width: menuWidth,
+      top,
+      width: itemWidth,
     }
+
     if (showInRight) {
-      frameStyle.left = buttonPosition.x
+      frameStyle.left = Math.max(12, Math.min(windowSize.width - itemWidth - 12, btnX))
     } else {
-      frameStyle.right = windowSize.width - buttonPosition.x - buttonPosition.w
+      frameStyle.right = Math.max(12, Math.min(windowSize.width - itemWidth - 12, windowSize.width - btnX - btnW))
     }
     return frameStyle
   }, [menus.length, menuItemStyle, buttonPosition, windowSize])
@@ -122,45 +137,55 @@ const Menu = ({
     onHide()
   }
 
-  // console.log('render menu')
-  // console.log(activeId)
-  // console.log(menuStyle)
-  // console.log(menuItemStyle)
   return (
-    <View style={{ ...styles.menu, ...menuStyle, backgroundColor: theme['c-content-background'] }} onStartShouldSetResponder={() => true}>
-      <Animated.ScrollView keyboardShouldPersistTaps={'always'}>
+    <View style={[styles.menu, menuStyle]} onStartShouldSetResponder={() => true}>
+      <Animated.ScrollView keyboardShouldPersistTaps={'always'} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
         {
-          menus.map((menu, index) => (
-            menu.disabled
-              ? (
-                  <View
-                    key={menu.action}
-                    style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height, opacity: 0.4 }}
-                  >
-                    <Text style={{ textAlign: center ? 'center' : 'left' }} size={fontSize} numberOfLines={1}>{menu.label}</Text>
-                  </View>
-                )
-              : menu.action == activeId
-                ? (
-                    <View
-                      key={menu.action}
-                      style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height }}
-                    >
-                      <Text style={{ textAlign: center ? 'center' : 'left' }} color={theme['c-primary-font-active']} size={fontSize} numberOfLines={1}>{menu.label}</Text>
-                    </View>
-                  )
-                : (
-                    <TouchableHighlight
-                      key={menu.action}
-                      style={{ ...styles.menuItem, width: menuItemStyle.width, height: menuItemStyle.height }}
-                      underlayColor={theme['c-primary-background-active']}
-                      onPress={() => { menuPress(menu) }}
-                    >
-                      <Text style={{ textAlign: center ? 'center' : 'left' }} size={fontSize} numberOfLines={1}>{menu.label}</Text>
-                    </TouchableHighlight>
-                  )
-
-          ))
+          menus.map((menu, index) => {
+            const isLast = index === menus.length - 1
+            if (menu.disabled) {
+              return (
+                <View
+                  key={menu.action}
+                  style={[
+                    styles.menuItem,
+                    { width: menuItemStyle.width, height: menuItemStyle.height, opacity: 0.35 },
+                    isLast && { borderBottomWidth: 0 },
+                  ]}
+                >
+                  <Text style={{ textAlign: center ? 'center' : 'left', fontWeight: '700', color: neoColors.gray700 }} size={13.5} numberOfLines={1}>
+                    {menu.label}
+                  </Text>
+                </View>
+              )
+            }
+            const isActive = menu.action === activeId
+            return (
+              <TouchableHighlight
+                key={menu.action}
+                style={[
+                  styles.menuItem,
+                  { width: menuItemStyle.width, height: menuItemStyle.height },
+                  isActive && { backgroundColor: neoColors.yellow },
+                  isLast && { borderBottomWidth: 0 },
+                ]}
+                underlayColor={neoColors.yellow}
+                onPress={() => { menuPress(menu) }}
+              >
+                <Text
+                  style={{
+                    textAlign: center ? 'center' : 'left',
+                    fontWeight: '800',
+                    color: neoColors.black,
+                  }}
+                  size={13.5}
+                  numberOfLines={1}
+                >
+                  {menu.label}
+                </Text>
+              </TouchableHighlight>
+            )
+          })
         }
       </Animated.ScrollView>
     </View>
@@ -193,6 +218,7 @@ const Component = <M extends Menus>({ menus, width, height, activeId, onHide, on
   }
   useImperativeHandle(ref, () => ({
     show(newPosition, menuSize) {
+      console.log('--- [Menu] show called with position:', JSON.stringify(newPosition))
       setPosition(newPosition)
       if (menuSize) setMenuSize(menuSize)
       modalRef.current?.setVisible(true)

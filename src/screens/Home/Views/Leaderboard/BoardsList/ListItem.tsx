@@ -1,16 +1,11 @@
 import { useCallback, useRef } from 'react'
+import { StyleSheet } from 'react-native'
 import Text from '@/components/common/Text'
-import { useTheme } from '@/store/theme/hook'
 import Button, { type BtnType } from '@/components/common/Button'
-import { createStyle } from '@/utils/tools'
 import { type BoardItem } from '@/store/leaderboard/state'
 import { Icon } from '@/components/common/Icon'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
-// index={index}
-// longPressIndex={longPressIndex}
-// activeId={activeId}
-// showMenu={showMenu}
-// onBoundChange={handleBoundChange}
 export interface ListItemProps {
   item: BoardItem
   index: number
@@ -20,65 +15,79 @@ export interface ListItemProps {
   onBoundChange: (item: BoardItem) => void
 }
 
-export default ({ item, activeId, index, longPressIndex, onBoundChange, onShowMenu }: ListItemProps) => {
-  const theme = useTheme()
+export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemProps) => {
   const buttonRef = useRef<BtnType>(null)
 
   const setPosition = useCallback(() => {
     if (buttonRef.current?.measure) {
       buttonRef.current.measure((fx, fy, width, height, px, py) => {
-        // console.log(fx, fy, width, height, px, py)
         onShowMenu(item.id, item.name, index, { x: Math.ceil(px), y: Math.ceil(py), w: Math.ceil(width), h: Math.ceil(height) })
       })
     }
   }, [index, item, onShowMenu])
 
-  const active = activeId == item.id
+  const active = activeId === item.id
 
   return (
     <Button
       ref={buttonRef}
-      style={{
-        ...styles.button,
-        backgroundColor: active
-          ? (theme['c-primary-background-active'] ?? 'rgba(128, 128, 128, 0.1)')
-          : (index == longPressIndex ? theme['c-button-background-active'] : 'transparent'),
-        borderRadius: 8,
-        marginHorizontal: 4,
-        marginVertical: 2,
+      style={[
+        styles.button,
+        active ? styles.buttonActive : styles.buttonInactive,
+      ]}
+      key={item.id}
+      onLongPress={setPosition}
+      onPress={() => {
+        onBoundChange(item)
       }}
-      key={item.id} onLongPress={setPosition}
-      onPress={() => { onBoundChange(item) }}
     >
-      {
-        active
-          ? <Icon style={styles.listActiveIcon} name="chevron-right" size={12} color={theme['c-primary-font']} />
-          : null
-      }
-      <Text style={styles.listName} size={14} textBreakStrategy="simple" color={active ? (theme['c-primary-font-active'] ?? theme['c-primary']) : theme['c-font']} numberOfLines={1}>{item.name}</Text>
+      {active ? (
+        <Icon style={styles.listActiveIcon} name="chevron-right" size={13} color={neoColors.black} />
+      ) : null}
+      <Text
+        style={[styles.listName, active && styles.listNameActive]}
+        size={13}
+        numberOfLines={1}
+      >
+        {item.name}
+      </Text>
     </Button>
   )
 }
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   button: {
-    paddingLeft: 5,
-    paddingRight: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingLeft: 10,
+    paddingRight: 12,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: neoBorders.radiusPill,
+    marginHorizontal: 4,
+    marginVertical: 4,
+    borderWidth: 2,
+  },
+  buttonActive: {
+    backgroundColor: neoColors.yellow,
+    borderColor: neoColors.black,
+    shadowColor: neoColors.black,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+  },
+  buttonInactive: {
+    backgroundColor: neoColors.white,
+    borderColor: neoColors.black,
   },
   listActiveIcon: {
-    // width: 18,
-    marginLeft: 3,
-    // paddingRight: 5,
-    textAlign: 'center',
+    marginRight: 4,
   },
   listName: {
-    height: '100%',
-    justifyContent: 'center',
-    paddingLeft: 6,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+    fontWeight: '800',
+    color: neoColors.black,
+  },
+  listNameActive: {
+    fontWeight: '900',
   },
 })
