@@ -42,7 +42,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
-    backgroundColor: neoColors.bgCream,
+    // 修正笔误：主题里没有 bgCream，实际应是 cream（否则底色为 undefined → 透明）
+    backgroundColor: neoColors.cream,
     borderBottomWidth: 2.5,
     borderBottomColor: neoColors.black,
     zIndex: 2,

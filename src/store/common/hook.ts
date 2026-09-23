@@ -28,6 +28,24 @@ export const useStatusbarHeight = () => {
   return value
 }
 
+/**
+ * 底部导航栏 / 手势条（小白条）高度。
+ * 沉浸式（edge-to-edge）下页面底部内容会绘制到手势条下面，
+ * 底部菜单栏等贴底容器需要用它做 padding，避免被手势条盖住。
+ */
+export const useNavigationBarHeight = () => {
+  const [value, update] = useState(state.navigationBarHeight)
+
+  useEffect(() => {
+    global.state_event.on('navigationBarHeightUpdated', update)
+    return () => {
+      global.state_event.off('navigationBarHeightUpdated', update)
+    }
+  }, [])
+
+  return value
+}
+
 export const useComponentIds = () => {
   const [value, update] = useState(state.componentIds)
 

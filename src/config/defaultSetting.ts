@@ -71,11 +71,11 @@ const defaultSetting: LX.AppSetting = {
 
   'sync.enable': false,
 
-  // 'theme.id': 'blue_plus',
-  // 对齐汽水音乐的纯黑沉浸风：默认暗色主题
-  'theme.id': 'black',
+  // 新粗野主义（Neo-Brutalism）浅色高饱和波普基线：统一使用浅色主题
+  'theme.id': 'green',
   'theme.lightId': 'green',
-  'theme.darkId': 'black',
+  'theme.darkId': 'green',
+  'common.isAutoTheme': false,
 }
 
 // 使用新年皮肤（已按用户要求停用，避免主题被强制覆盖）

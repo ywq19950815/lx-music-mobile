@@ -107,28 +107,19 @@ export const buildActiveThemeColors = (theme: LX.Theme): LX.ActiveTheme => {
 // }
 // type IDS = LocalTheme['id']
 export const getTheme = async() => {
-  // fs.promises.readdir()
-  const shouldUseDarkColors = themeState.shouldUseDarkColors
-  // let themeId = settingState.setting['theme.id'] == 'auto'
-  //   ? shouldUseDarkColors
-  //     ? settingState.setting['theme.darkId']
-  //     : settingState.setting['theme.lightId']
-  //   // : 'china_ink'
-  //   : settingState.setting['theme.id']
-  let themeId = settingState.setting['common.isAutoTheme'] && shouldUseDarkColors
-    ? 'black'
-    : settingState.setting['theme.id']
-  // themeId = 'naruto'
-  // themeId = 'pink'
-  // themeId = 'black'
+  // Neo-Brutalism 新粗野主义浅色基线：全站锁定浅色系，严禁返回深黑主题（避免部分旧页面变黑割裂）
+  let themeId = settingState.setting['theme.id']
+  if (!themeId || themeId == 'black' || themeId == 'auto') {
+    themeId = 'green'
+  }
   let theme: LocalTheme | LX.Theme | undefined = themes.find(theme => theme.id == themeId)
   if (!theme) {
     userThemes = await getUserTheme()
     theme = userThemes.find(theme => theme.id == themeId)
-    if (!theme) {
-      themeId = settingState.setting['theme.id'] == 'auto' && shouldUseDarkColors ? 'black' : 'green'
-      theme = themes.find(theme => theme.id == themeId) as LX.Theme
-    }
+  }
+  if (!theme || theme.isDark) {
+    themeId = 'green'
+    theme = themes.find(theme => theme.id == 'green') as LX.Theme
   }
 
   return theme

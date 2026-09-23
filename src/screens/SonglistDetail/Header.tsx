@@ -168,7 +168,10 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     width: '100%',
-    backgroundColor: neoColors.offWhite,
+    // 与首页/播放页头部统一的签名亮黄；沉浸式下由它铺满顶部状态栏区域
+    backgroundColor: neoColors.yellow,
+    borderBottomWidth: 2.5,
+    borderBottomColor: neoColors.black,
   },
   navBar: {
     height: 48,
@@ -194,7 +197,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   navTitleBadge: {
-    backgroundColor: neoColors.yellow,
+    // 头部底改成亮黄后，黄色小铭牌会糊在一起，改用白底保持波普对比
+    backgroundColor: neoColors.white,
     borderWidth: 1.8,
     borderColor: neoColors.black,
     borderRadius: 8,

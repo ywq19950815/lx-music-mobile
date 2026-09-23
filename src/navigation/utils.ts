@@ -7,7 +7,18 @@ import {
 import themeState from '@/store/theme/state'
 
 
-export const getStatusBarStyle = (isDark: boolean) => isDark ? 'light' : 'dark'
+/**
+ * 状态栏图标明暗。
+ *
+ * ⚠️ 不要改回 `isDark ? 'light' : 'dark'`。
+ * 新粗野主义改版后，界面永远走浅色（米白 #FFFDF5 / 亮黄 #FFE600），与用户的
+ * 主题设置无关。若这里跟着主题返回 'light'，RNN 就会把状态栏图标设成白色，
+ * 于是深色主题下白图标落在亮黄头部上基本看不见。
+ */
+export const getStatusBarStyle = (isDark: boolean): 'light' | 'dark' => {
+  void isDark
+  return 'dark'
+}
 
 export const dismissOverlay = async(compId: string) => Navigation.dismissOverlay(compId)
 
@@ -36,7 +47,7 @@ export const showPactModal = () => {
         },
         navigationBar: {
           // visible: false,
-          backgroundColor: theme['c-content-background'],
+          backgroundColor: 'transparent',
         },
         // animations: {
 
@@ -85,7 +96,7 @@ export const showVersionModal = () => {
         },
         navigationBar: {
           // visible: false,
-          backgroundColor: theme['c-content-background'],
+          backgroundColor: 'transparent',
         },
         // animations: {
 
@@ -134,7 +145,7 @@ export const showSyncModeModal = () => {
         },
         navigationBar: {
           // visible: false,
-          backgroundColor: theme['c-content-background'],
+          backgroundColor: 'transparent',
         },
         // animations: {
 

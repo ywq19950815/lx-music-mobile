@@ -8,19 +8,21 @@ import StatusBar from '@/components/common/StatusBar'
 
 
 export default async(setting: LX.AppSetting) => {
-  if (getIsSupportedAutoTheme()) {
-    setShouldUseDarkColors(getAppearance() == 'dark')
+  // Neo-Brutalism 全局浅色高对比度基线：固定深色图标，不跟随系统夜间模式
+  setShouldUseDarkColors(false)
 
-    onAppearanceChange(color => {
-      setShouldUseDarkColors((color ?? 'light') == 'dark')
-      if (settingState.setting['common.isAutoTheme']) void getTheme().then(applyTheme)
+  if (getIsSupportedAutoTheme()) {
+    onAppearanceChange(() => {
+      // 保持全站浅色
+      setShouldUseDarkColors(false)
     })
   }
 
   applyTheme(await getTheme())
 
-  global.state_event.on('themeUpdated', (theme) => {
-    StatusBar.setBarStyle(theme.isDark ? 'light-content' : 'dark-content')
+  global.state_event.on('themeUpdated', () => {
+    // 界面永远走浅色波普底纸，状态栏图标固定深色（dark-content）
+    StatusBar.setBarStyle('dark-content')
   })
   // onDimensionChange(({ window }) => {
   //   let screenW = window.width

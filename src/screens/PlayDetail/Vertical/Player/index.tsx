@@ -8,10 +8,19 @@ import ControlBtn from './components/ControlBtn'
 import { createStyle } from '@/utils/tools'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import { neoColors } from '@/theme/neobrutalism'
+import { useNavigationBarHeight } from '@/store/common/hook'
+
+const BASE_PADDING_BOTTOM = 12
 
 export default memo(() => {
+  // 沉浸式下这一层直接贴到屏幕底部，必须让出底部手势条（小白条）的高度
+  const navigationBarHeight = useNavigationBarHeight()
+
   return (
-    <View style={styles.container} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_player}>
+    <View
+      style={[styles.container, { paddingBottom: BASE_PADDING_BOTTOM + navigationBarHeight }]}
+      nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_player}
+    >
       <PlayInfo />
       <ControlBtn />
       <MoreBtn />
@@ -27,7 +36,6 @@ const styles = createStyle({
     right: 0,
     width: '100%',
     paddingHorizontal: 15,
-    paddingBottom: 12,
     paddingTop: 8,
     backgroundColor: neoColors.offWhite,
     borderTopWidth: 2,

@@ -12,6 +12,7 @@ import { HEADER_HEIGHT as _HEADER_HEIGHT } from '@/config/constant'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import commonState from '@/store/common/state'
 import { useStatusbarHeight } from '@/store/common/hook'
+import { neoColors } from '@/theme/neobrutalism'
 
 const HEADER_HEIGHT = scaleSizeH(_HEADER_HEIGHT)
 
@@ -30,7 +31,7 @@ export default memo(({ musicInfo }: {
       <StatusBar />
       <View style={{ ...styles.container }}>
         <TouchableOpacity onPress={back} style={{ ...styles.button, width: HEADER_HEIGHT }}>
-          <Icon name="chevron-left" size={18} />
+          <Icon name="chevron-left" size={18} color={neoColors.black} />
         </TouchableOpacity>
         <Text numberOfLines={1} size={16} style={styles.title}>{t('comment_title', { name: musicInfo.name, singer: musicInfo.singer })}</Text>
         {/* <TouchableOpacity onPress={back} style={{ ...styles.button }}>
@@ -48,7 +49,10 @@ const styles = createStyle({
     alignItems: 'center',
     height: '100%',
     paddingRight: 40,
-    // backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    // 与全站头部统一的签名亮黄，沉浸式下铺满顶部状态栏区域
+    backgroundColor: neoColors.yellow,
+    borderBottomWidth: 2.5,
+    borderBottomColor: neoColors.black,
   },
   button: {
     // paddingLeft: 10,
@@ -60,6 +64,7 @@ const styles = createStyle({
   title: {
     flex: 1,
     textAlign: 'center',
+    color: neoColors.black,
   },
   icon: {
     paddingLeft: 4,

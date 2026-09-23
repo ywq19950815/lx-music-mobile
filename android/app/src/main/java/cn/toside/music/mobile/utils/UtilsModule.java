@@ -347,6 +347,30 @@ public class UtilsModule extends ReactContextBaseJavaModule {
     promise.resolve(params);
   }
 
+  /**
+   * 打开沉浸式系统栏（状态栏 + 底部手势条），并把两条系统栏的实际高度回传给 JS。
+   *
+   * 必须在 RNN 应用完页面 options 之后调用 —— RNN 会 setDecorFitsSystemWindows(true)
+   * 把窗口拉回非沉浸状态，只有后置调用才能抢回来。详见 {@link SystemBars}。
+   *
+   * @param darkIcons true = 系统栏图标用深色（浅色界面）
+   */
+  @ReactMethod
+  public void setImmersiveSystemBars(boolean darkIcons, Promise promise) {
+    final Activity activity = reactContext.getCurrentActivity();
+    if (activity == null) {
+      promise.resolve(SystemBars.getInsetsDp(null));
+      return;
+    }
+    activity.runOnUiThread(() -> {
+      SystemBars.applyImmersive(activity, darkIcons);
+      // 等这一帧的 inset 分发走完再读高度，否则拿到的可能是切换前的旧值
+      activity.getWindow().getDecorView().post(() -> {
+        promise.resolve(SystemBars.getInsetsDp(activity));
+      });
+    });
+  }
+
   @ReactMethod
   public void isIgnoringBatteryOptimization(Promise promise) {
     new Thread(() -> {

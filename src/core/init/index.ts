@@ -1,6 +1,7 @@
 import { initSetting } from '@/core/common'
 import registerPlaybackService from '@/plugins/player/service'
 import initTheme from './theme'
+import { initSystemBars } from '@/core/systemBars'
 import initI18n from './i18n'
 import initUserApi from './userApi'
 import initPlayer from './player'
@@ -33,6 +34,9 @@ export default async() => {
 
   await initTheme(setting)
   bootLog('Theme inited.')
+  // 沉浸式系统栏：让状态栏与底部手势条都透明、内容绘制到它们下面
+  initSystemBars()
+  bootLog('System bars inited.')
   await initI18n(setting)
   bootLog('I18n inited.')
 

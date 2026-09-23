@@ -4,6 +4,26 @@
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+
+        <!--
+          ===== 沉浸式系统栏（状态栏 / 底部导航栏「小白条」）=====
+          这里只是「静态兜底」：真正生效的切换在
+          cn.toside.music.mobile.utils.SystemBars 里（RNN 会在应用页面 options 时
+          把窗口重新拉回非沉浸，必须在它之后重新打开 edge-to-edge）。
+          - statusBarColor / navigationBarColor 透明：内容才能透上来
+          - windowLightStatusBar / windowLightNavigationBar：亮底用深色图标
+          - enforceXxxBarContrast=false：关掉 Android 10+ 自动给透明系统栏加的灰蒙层
+          - windowDrawsSystemBarBackgrounds=true：允许系统栏被绘制/覆盖
+          低版本系统会忽略它不认识的属性，不需要额外建 values-vXX。
+        -->
+        <item name="android:windowBackground">@color/neo_window_background</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
     </style>
 
 </resources>

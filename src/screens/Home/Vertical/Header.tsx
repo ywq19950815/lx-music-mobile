@@ -15,7 +15,9 @@ const headerComponents: Partial<Record<CommonState['navActiveId'], React.ReactNo
 
 /**
  * NeoHeader: 新粗野主义主页头部。
- * - 纯黑 2px 底部分割线
+ * - 签名亮黄底色：向上延伸进手机状态栏区域，实现真正的状态栏沉浸
+ *   （窗口已 edge-to-edge，容器 paddingTop = 状态栏高度，同一底色铺满）
+ * - 纯黑 2.5px 底部分割线
  * - 醒目的复古波普大标题（超粗黑体）
  * - 漫画风贴纸徽章
  */
@@ -67,7 +69,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: neoColors.white,
+    // 签名亮黄：向上铺进状态栏区域，状态栏图标本身透明，看起来就是「状态栏也是黄色的」
+    backgroundColor: neoColors.yellow,
     borderBottomWidth: neoBorders.regular,
     borderBottomColor: neoColors.black,
   },
@@ -82,7 +85,8 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   popBadge: {
-    backgroundColor: neoColors.yellow,
+    // 黄底上再用黄徽章会糊成一片，改成黑底黄字反而更跳
+    backgroundColor: neoColors.black,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -93,7 +97,7 @@ const styles = StyleSheet.create({
   popBadgeText: {
     fontSize: 10,
     fontWeight: '900',
-    color: neoColors.black,
+    color: neoColors.yellow,
   },
   right: {
     flexGrow: 1,

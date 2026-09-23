@@ -1,0 +1,12 @@
+<resources>
+
+    <!--
+      沉浸式（edge-to-edge）基础底色。
+      新粗野主义界面统一是浅色（米白 #FFFDF5），而 AppTheme 继承自
+      Theme.AppCompat.DayNight.NoActionBar —— 系统处于深色模式时 windowBackground
+      会变成深灰。两条系统栏一旦透明，就会露出这层深灰，与浅色界面严重割裂。
+      所以这里把窗口底色固定为米白，保证任何系统主题下都不会出现深色缝隙。
+    -->
+    <color name="neo_window_background">#FFFDF5</color>
+
+</resources>

@@ -9,10 +9,12 @@ import Title from './components/Title'
 import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { useSettingValue } from '@/store/setting/hook'
+import { useNavigationBarHeight } from '@/store/common/hook'
 import { neoColors, neoBorders } from '@/theme/neobrutalism'
 import { scaleSizeH } from '@/utils/pixelRatio'
 
 const BAR_HEIGHT = scaleSizeH(64)
+const BASE_PADDING_BOTTOM = 8
 
 /**
  * NeoPlayerBar: 新粗野主义悬浮全局播放条。
@@ -20,10 +22,14 @@ const BAR_HEIGHT = scaleSizeH(64)
  * - 纯黑硬边物理投影（Hard Offset Shadow）
  * - 亮黄/电光粉波普强调色
  * - 定高胶囊设计，根绝 Yoga 引擎在百分比高度下的布局爆展
+ *
+ * isHome=true 时它坐在底部 TabBar 之上（TabBar 已负责让出手势条高度），
+ * 其余场景（歌单详情页等）它就是页面最底部，必须自己让出底部系统栏高度。
  */
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const { keyboardShown } = useKeyboard()
   const autoHidePlayBar = useSettingValue('common.autoHidePlayBar')
+  const navigationBarHeight = useNavigationBarHeight()
 
   if (autoHidePlayBar && keyboardShown) return null
 
@@ -36,7 +42,12 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
   }
 
   return (
-    <View style={styles.outerWrapper}>
+    <View
+      style={[
+        styles.outerWrapper,
+        { paddingBottom: BASE_PADDING_BOTTOM + (isHome ? 0 : navigationBarHeight) },
+      ]}
+    >
       <View style={styles.barBox}>
         {/* 背后纯黑实体硬投影底座：严格对齐卡片宽高，偏移 (+3, +3) */}
         <View style={styles.hardShadowUnderlay} />
@@ -72,8 +83,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     // 上方留白：与页面内容拉开距离，避免播放条与列表最后一项贴死
     paddingTop: 4,
-    // 下方留白：与底部导航之间留出呼吸空间
-    paddingBottom: 8,
+    // 下方留白（含底部系统栏高度）按场景动态计算，见组件内的 paddingBottom
   },
   barBox: {
     width: '100%',

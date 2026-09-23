@@ -93,7 +93,8 @@ export default memo(() => {
 
 const styles = StyleSheet.create({
   headerWrapper: {
-    backgroundColor: neoColors.white,
+    // 与首页头部/底部菜单统一的签名亮黄，沉浸式下由它铺满状态栏区域
+    backgroundColor: neoColors.yellow,
     borderBottomWidth: 2.5,
     borderBottomColor: neoColors.black,
     position: 'relative',
@@ -166,13 +167,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '700',
   },
-  // 底部波普明黄点缀细条
+  // 底部波普黑色分隔粗线（黄底上黄色点缀会糊掉，改用黑色强化外框）
   bottomAccentBar: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: -2.5,
     height: 2.5,
-    backgroundColor: neoColors.yellow,
+    backgroundColor: neoColors.black,
   },
 })

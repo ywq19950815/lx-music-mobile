@@ -10,6 +10,7 @@ import StatusBar from '@/components/common/StatusBar'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT as _HEADER_HEIGHT } from '@/config/constant'
 import { type InitState as CommonState } from '@/store/common/state'
+import { neoColors, neoBorders } from '@/theme/neobrutalism'
 import SearchTypeSelector from '@/screens/Home/Views/Search/SearchTypeSelector'
 
 const headerComponents: Partial<Record<CommonState['navActiveId'], React.ReactNode>> = {
@@ -70,7 +71,10 @@ const styles = createStyle({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+    // 与竖屏头部统一：签名亮黄向上铺进状态栏区域，底部 2.5px 纯黑粗边
+    backgroundColor: neoColors.yellow,
+    borderBottomWidth: neoBorders.regular,
+    borderBottomColor: neoColors.black,
     zIndex: 10,
   },
   left: {

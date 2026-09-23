@@ -10,9 +10,13 @@ import Pic from './Pic'
 import Lyric from './Lyric'
 import { screenkeepAwake, screenUnkeepAwake } from '@/utils/nativeModules/utils'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
+import { useNavigationBarHeight } from '@/store/common/hook'
 import { createStyle } from '@/utils/tools'
 import { neoColors } from '@/theme/neobrutalism'
 // import { useTheme } from '@/store/theme/hook'
+
+// 封面/歌词区域要给底部播放控制条让出的高度（沉浸式下还要再加系统手势条高度）
+const PAGER_BOTTOM_PADDING = 155
 
 const LyricPage = ({ activeIndex }: { activeIndex: number }) => {
   const initedRef = useRef(false)
@@ -33,6 +37,9 @@ export default memo(({ componentId }: { componentId: string }) => {
   // const theme = useTheme()
   const [pageIndex, setPageIndex] = useState(0)
   const showLyricRef = useRef(false)
+  // 底部播放控制条会再让出底部手势条的高度，PagerView 的底部留白要同步长高，
+  // 否则封面/歌词会被控制条盖住
+  const navigationBarHeight = useNavigationBarHeight()
 
   const onPageSelected = ({ nativeEvent }: PagerViewOnPageSelectedEvent) => {
     setPageIndex(nativeEvent.position)
@@ -77,7 +84,7 @@ export default memo(({ componentId }: { componentId: string }) => {
       <View style={styles.container}>
         <PagerView
           onPageSelected={onPageSelected}
-          style={styles.pagerView}
+          style={[styles.pagerView, { paddingBottom: PAGER_BOTTOM_PADDING + navigationBarHeight }]}
         >
           <View collapsable={false} style={{ flex: 1, minHeight: 0 }}>
             <Pic componentId={componentId} />
@@ -109,7 +116,6 @@ const styles = createStyle({
     flex: 1,
     minHeight: 0,
     overflow: 'hidden',
-    paddingBottom: 155,
   },
   // pageIndicator: {
   //   flex: 0,

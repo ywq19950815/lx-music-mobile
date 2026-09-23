@@ -5,6 +5,7 @@ import { FlatList, type FlatListProps, RefreshControl, View } from 'react-native
 import CommentFloor from './CommentFloor'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
+import { useNavigationBarHeight } from '@/store/common/hook'
 import { type Comment } from '../utils'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
@@ -28,6 +29,7 @@ const List = forwardRef<ListType, ListProps>(({
 }, ref) => {
   // const t = useI18n()
   const theme = useTheme()
+  const navigationBarHeight = useNavigationBarHeight()
   const flatListRef = useRef<FlatList>(null)
   const [currentList, setList] = useState<Comment[]>([])
   const [status, setStatus] = useState<Status>('idle')
@@ -86,6 +88,9 @@ const List = forwardRef<ListType, ListProps>(({
     <FlatList
       ref={flatListRef}
       style={styles.list}
+      // 沉浸式下列表会铺到屏幕底部，最后一条评论会压在系统手势条下面，
+      // 这里让出底部系统栏的高度
+      contentContainerStyle={{ paddingBottom: navigationBarHeight }}
       data={currentList}
       onEndReachedThreshold={0.5}
       // App 靠手指滑动浏览，隐藏 Web 滚动条并保持滚动跟手
