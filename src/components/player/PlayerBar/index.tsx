@@ -10,12 +10,16 @@ import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { useSettingValue } from '@/store/setting/hook'
 import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { scaleSizeH } from '@/utils/pixelRatio'
+
+const BAR_HEIGHT = scaleSizeH(64)
 
 /**
  * NeoPlayerBar: 新粗野主义悬浮全局播放条。
  * - 纯黑 2.5px 实体边框
  * - 纯黑硬边物理投影（Hard Offset Shadow）
  * - 亮黄/电光粉波普强调色
+ * - 定高胶囊设计，根绝 Yoga 引擎在百分比高度下的布局爆展
  */
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const { keyboardShown } = useKeyboard()
@@ -33,27 +37,29 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
 
   return (
     <View style={styles.outerWrapper}>
-      {/* 背后纯黑实体硬投影底座 */}
-      <View style={styles.hardShadowUnderlay} />
+      <View style={styles.barBox}>
+        {/* 背后纯黑实体硬投影底座：严格对齐卡片宽高，偏移 (+3, +3) */}
+        <View style={styles.hardShadowUnderlay} />
 
-      {/* 悬浮前台卡片 */}
-      <View style={styles.cardContainer}>
-        {/* 左侧及中间主要区域：点击整条区域均可直接打开全屏播放详情页 */}
-        <TouchableOpacity
-          testID="player-bar-card"
-          style={styles.clickableArea}
-          onPress={handleOpenPlayDetail}
-          activeOpacity={0.75}
-        >
-          <Pic isHome={isHome} />
-          <View style={styles.center}>
-            <Title isHome={isHome} />
-            <PlayInfo isHome={isHome} />
+        {/* 悬浮前台卡片 */}
+        <View style={styles.cardContainer}>
+          {/* 左侧及中间主要区域：点击整条区域均可直接打开全屏播放详情页 */}
+          <TouchableOpacity
+            testID="player-bar-card"
+            style={styles.clickableArea}
+            onPress={handleOpenPlayDetail}
+            activeOpacity={0.75}
+          >
+            <Pic isHome={isHome} />
+            <View style={styles.center}>
+              <Title isHome={isHome} />
+              <PlayInfo isHome={isHome} />
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.right}>
+            <ControlBtn />
           </View>
-        </TouchableOpacity>
-
-        <View style={styles.right}>
-          <ControlBtn />
         </View>
       </View>
     </View>
@@ -65,28 +71,34 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 12,
     // 上方留白：与页面内容拉开距离，避免播放条与列表最后一项贴死
-    paddingTop: 6,
-    // 下方留白：与底部导航之间留出呼吸空间，避免两条黑边紧贴显得拥挤
-    paddingBottom: 10,
+    paddingTop: 4,
+    // 下方留白：与底部导航之间留出呼吸空间
+    paddingBottom: 8,
+  },
+  barBox: {
+    width: '100%',
+    height: BAR_HEIGHT,
     position: 'relative',
   },
-  // 纯黑硬投影底座
+  // 纯黑硬投影底座：严格对齐卡片宽高，偏移 (+3, +3)
   hardShadowUnderlay: {
     position: 'absolute',
-    left: 15,
-    right: 9,
-    top: 9,
-    bottom: 7,
+    left: 3,
+    top: 3,
+    right: 0,
+    bottom: 0,
     backgroundColor: neoColors.black,
     borderRadius: neoBorders.radiusMd,
     zIndex: 0,
   },
-  // 前景主体卡片
+  // 前景主体卡片：左上基准 (0, 0)，宽高与投影完全一致
   cardContainer: {
-    width: '100%',
-    paddingVertical: 7,
-    paddingLeft: 8,
-    paddingRight: 8,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    right: 3,
+    bottom: 3,
+    paddingHorizontal: 8,
     borderRadius: neoBorders.radiusMd,
     backgroundColor: neoColors.white,
     borderWidth: neoBorders.regular,
@@ -94,22 +106,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
-    position: 'relative',
     zIndex: 1,
   },
   clickableArea: {
     flex: 1,
+    height: '100%',
     minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
   },
   center: {
+    flex: 1,
+    minWidth: 0,
     flexDirection: 'column',
-    flexGrow: 1,
-    flexShrink: 1,
-    paddingLeft: 10,
-    height: '100%',
     justifyContent: 'center',
+    paddingLeft: 10,
   },
   right: {
     flexDirection: 'row',

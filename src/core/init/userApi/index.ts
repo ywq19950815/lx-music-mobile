@@ -6,6 +6,7 @@ import { fetchData } from './request'
 import { getUserApiList } from '@/utils/data'
 import { confirmDialog, openUrl, tipDialog } from '@/utils/tools'
 import { ensureDefaultSource } from '@/core/defaultSource'
+import { isDefaultSourceName } from '@/config/defaultSource'
 import { updateSetting } from '@/core/common'
 
 
@@ -56,7 +57,7 @@ export default async(setting: LX.AppSetting) => {
           if (!target) return
           userApiRequestMap.delete(data.requestKey)
           target.reject(new Error('request timeout'))
-        }, 20_000),
+        }, 8_000),
       })
       sendAction('request', data)
     }).finally(() => {
@@ -257,16 +258,21 @@ export default async(setting: LX.AppSetting) => {
   })
 
   /**
-   * 首次启动自动安装内置默认音源（ghproxy 加速的独家音源）。
-   * 目的：用户装完 App 即开即听，不需要自己去网上找源再手动导入。
+   * 首次启动自动安装内置默认音源（全豆要[聚合音源] v9.3 特供版）。
+   * 目的：用户装完 App 即开即听，无需手动找源。
    * 失败时静默降级，不阻断启动流程。
    */
   const setupDefaultSource = async() => {
     try {
       const installedId = await ensureDefaultSource()
       if (!installedId) return
-      // 当前没有可用音源时，自动把内置源设为默认音源
-      if (!setting['common.apiSource']) {
+      // 检查当前音源配置：若未设置，或者指向的是已被清理的旧音源/内置音源，自动切换到新内置音源
+      const currentApiSource = setting['common.apiSource']
+      const userApis = await getUserApiList()
+      const currentApi = userApis.find(api => api.id === currentApiSource)
+      const needSwitch = !currentApiSource || !currentApi || isDefaultSourceName(currentApi.name)
+
+      if (needSwitch && currentApiSource !== installedId) {
         setting['common.apiSource'] = installedId
         updateSetting({ 'common.apiSource': installedId })
         log.info(`[defaultSource] 已自动切换默认音源: ${installedId}`)
