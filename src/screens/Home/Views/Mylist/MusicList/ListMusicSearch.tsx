@@ -9,7 +9,7 @@ import { StyleSheet, View } from 'react-native'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { getListMusics } from '@/core/list'
 import listState from '@/store/list/state'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 type SearchTipListProps = _SearchTipListProps<LX.Music.MusicInfo>
 interface ListMusicSearchProps {
@@ -23,10 +23,8 @@ export interface ListMusicSearchType {
 }
 
 export const debounceSearchList = debounce((text: string, list: LX.List.ListMusics, callback: (list: LX.List.ListMusics) => void) => {
-  // console.log(reslutList)
   callback(searchListMusic(list, text))
 }, 200)
-
 
 export default forwardRef<ListMusicSearchType, ListMusicSearchProps>(({ onScrollToInfo }, ref) => {
   const searchTipListRef = useRef<SearchTipListType<LX.Music.MusicInfo>>(null)
@@ -34,13 +32,10 @@ export default forwardRef<ListMusicSearchType, ListMusicSearchProps>(({ onScroll
   const visibleRef = useRef(false)
   const currentListIdRef = useRef('')
   const currentKeywordRef = useRef('')
-  // 待处理的首屏搜索请求：SearchTipList 挂载完成前 ref 为空，
-  // 直接调用会丢数据导致「搜了没反应」，先缓存下来等挂载后再执行
   const pendingRef = useRef<{ keyword: string, height: number } | null>(null)
 
   const handleShowList = useCallback((keyword: string, height: number) => {
     const tipList = searchTipListRef.current
-    // SearchTipList 尚未挂载（首次搜索），暂存请求，等它的 ref 就绪后再处理
     if (!tipList) {
       pendingRef.current = { keyword, height }
       return
@@ -60,8 +55,6 @@ export default forwardRef<ListMusicSearchType, ListMusicSearchProps>(({ onScroll
     }
   }, [])
 
-  // SearchTipList 挂载后，补执行期间缓存的搜索请求。
-  // 首次搜索时 SearchTipList 还没 commit，ref 为 null，直接调用会丢数据。
   useEffect(() => {
     if (!visible) return
     const pending = pendingRef.current
@@ -72,7 +65,6 @@ export default forwardRef<ListMusicSearchType, ListMusicSearchProps>(({ onScroll
 
   useImperativeHandle(ref, () => ({
     search(keyword, height) {
-      // 用 ref 记录可见态，避免让 useImperativeHandle 依赖 state 引发无意义重建
       if (!visibleRef.current) {
         visibleRef.current = true
         setVisible(true)
@@ -118,9 +110,9 @@ export default forwardRef<ListMusicSearchType, ListMusicSearchProps>(({ onScroll
       <Button style={styles.item} onPress={() => { onScrollToInfo(item) }} key={index}>
         <View style={styles.itemName}>
           <Text numberOfLines={1} style={styles.name}>{item.name}</Text>
-          <Text style={styles.subName} numberOfLines={1} size={12} color={neoColors.gray700}>{item.singer} ({item.meta.albumName})</Text>
+          <Text style={styles.subName} numberOfLines={1} size={12} color={colors.inkSecondary}>{item.singer} ({item.meta.albumName})</Text>
         </View>
-        <Text style={styles.itemSource} size={11}>{item.source?.toUpperCase()}</Text>
+        <Text style={styles.itemSource} size={10}>{item.source?.toUpperCase()}</Text>
       </Button>
     )
   }
@@ -142,7 +134,6 @@ export default forwardRef<ListMusicSearchType, ListMusicSearchProps>(({ onScroll
   )
 })
 
-
 const styles = createStyle({
   item: {
     height: ITEM_HEIGHT,
@@ -151,7 +142,7 @@ const styles = createStyle({
     paddingLeft: 15,
     paddingRight: 15,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: neoColors.gray200,
+    borderBottomColor: '#ECEEF1',
   },
   itemName: {
     flexGrow: 1,
@@ -159,8 +150,8 @@ const styles = createStyle({
     minWidth: 0,
   },
   name: {
-    fontWeight: '800',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.ink,
   },
   subName: {
     marginTop: 2,
@@ -169,14 +160,12 @@ const styles = createStyle({
     flexGrow: 0,
     flexShrink: 0,
     marginLeft: 8,
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     paddingVertical: 1,
-    fontWeight: '900',
-    color: neoColors.black,
-    backgroundColor: neoColors.cyan,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusPill,
+    fontWeight: '600',
+    color: colors.inkTertiary,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 4,
     overflow: 'hidden',
   },
 })

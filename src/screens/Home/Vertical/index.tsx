@@ -2,7 +2,7 @@ import { View, StyleSheet } from 'react-native'
 import Content from './Content'
 import PlayerBar from '@/components/player/PlayerBar'
 import TabBar from './TabBar'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export default () => {
   return (
@@ -17,6 +17,6 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: neoColors.offWhite,
+    backgroundColor: colors.canvas,
   },
 })

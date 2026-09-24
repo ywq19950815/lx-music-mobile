@@ -2,16 +2,14 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { View, PanResponder } from 'react-native'
 import { useDrag } from '@/utils/hooks'
 import { createStyle } from '@/utils/tools'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 const DefaultBar = memo(() => {
   return (
     <View
       style={{
         ...styles.progressBar,
-        backgroundColor: neoColors.gray200,
-        borderColor: neoColors.black,
-        borderWidth: 1.5,
+        backgroundColor: '#ECEEF1',
         position: 'absolute',
         width: '100%',
         left: 0,
@@ -26,7 +24,7 @@ const BufferedBar = memo(({ progress }: { progress: number }) => {
     <View
       style={{
         ...styles.progressBar,
-        backgroundColor: '#D5D3CC',
+        backgroundColor: '#DFE2E6',
         position: 'absolute',
         width: `${Math.max(0, Math.min(100, progress * 100))}%`,
         left: 0,
@@ -134,7 +132,7 @@ const Progress = ({ progress, duration, buffered, paddingTop }: {
   )
 }
 
-const TRACK_HEIGHT = 6
+const TRACK_HEIGHT = 4
 
 const styles = createStyle({
   progress: {
@@ -155,13 +153,13 @@ const styles = createStyle({
     borderRadius: 999,
   },
   activeBar: {
-    backgroundColor: neoColors.yellow,
+    backgroundColor: colors.brand,
     position: 'absolute',
     left: 0,
     top: 0,
   },
   dragBar: {
-    backgroundColor: neoColors.pink,
+    backgroundColor: colors.brandDeep,
     position: 'absolute',
     left: 0,
     top: 0,

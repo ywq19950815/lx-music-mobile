@@ -9,7 +9,7 @@ import { useSettingValue } from '@/store/setting/hook'
 import { AnimatedColorText } from '@/components/common/Text'
 import Text from '@/components/common/Text'
 import { useStatusText } from '@/store/player/hook'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 import { setSpText } from '@/utils/pixelRatio'
 import playerState from '@/store/player/state'
 import { scrollTo } from '@/utils/scroll'
@@ -332,14 +332,13 @@ const styles = createStyle({
     justifyContent: 'center',
   },
   emptyCard: {
-    backgroundColor: neoColors.yellow,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusMd,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: radius.lg,
+    paddingHorizontal: 22,
+    paddingVertical: 16,
     alignItems: 'center',
-    ...neoShadows.sm,
   },
   emptyIcon: {
     fontSize: 26,
@@ -347,8 +346,8 @@ const styles = createStyle({
   },
   emptyText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   line: {
     paddingTop: 10,

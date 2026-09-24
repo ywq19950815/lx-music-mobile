@@ -1,6 +1,5 @@
 import { memo, useRef } from 'react'
 import TimeoutExitEditModal, { type TimeoutExitEditModalType, useTimeInfo } from '@/components/TimeoutExitEditModal'
-import { neoColors } from '@/theme/neobrutalism'
 import Btn from './Btn'
 
 export default memo(() => {
@@ -15,8 +14,8 @@ export default memo(() => {
     <>
       <Btn
         icon="music_time"
-        bg={timeInfo.active ? neoColors.pink : neoColors.white}
-        color={neoColors.black}
+        bg={timeInfo.active ? '#F5A623' : undefined}
+        color={timeInfo.active ? '#FFFFFF' : undefined}
         onPress={handleShow}
       />
       <TimeoutExitEditModal ref={modalRef} timeInfo={timeInfo} />

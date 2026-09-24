@@ -5,7 +5,7 @@ import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import { clearHistoryList, getSearchHistory, removeHistoryWord } from '@/core/search/search'
 import { Icon } from '@/components/common/Icon'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export type List = NonNullable<InitState['sourceList'][keyof InitState['sourceList']]>
 
@@ -21,7 +21,7 @@ const ListItem = ({ keyword, onSearch, onRemove }: {
       onPress={() => { onSearch(keyword) }}
       onLongPress={() => { onRemove(keyword) }}
     >
-      <Text style={styles.pillText} size={12} color={neoColors.black}>
+      <Text style={styles.pillText} size={12}>
         {keyword}
       </Text>
     </TouchableOpacity>
@@ -76,12 +76,12 @@ export default forwardRef<HistorySearchType, HistorySearchProps>((props, ref) =>
       ? (
           <View style={styles.container}>
             <View style={styles.titleContent}>
-              <View style={styles.accentDot} />
-              <Text style={styles.title} size={15} color={neoColors.black}>
+              <View style={styles.accentBar} />
+              <Text style={styles.title} size={14}>
                 {t('search_history_search')}
               </Text>
               <TouchableOpacity onPress={handleClear} style={styles.clearBtn} activeOpacity={0.7}>
-                <Icon name="eraser" color={neoColors.black} size={12} />
+                <Icon name="eraser" color={colors.inkTertiary} size={13} />
               </TouchableOpacity>
             </View>
             <View style={styles.list}>
@@ -113,46 +113,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  accentDot: {
-    width: 8,
-    height: 8,
-    backgroundColor: neoColors.cyan,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    marginRight: 6,
+  accentBar: {
+    width: 3.5,
+    height: 13,
+    backgroundColor: '#F5A623',
+    marginRight: 8,
     borderRadius: 2,
   },
   title: {
-    fontWeight: '900',
+    fontWeight: '700',
+    color: colors.ink,
   },
   clearBtn: {
     marginLeft: 10,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
   },
   list: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   historyPill: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 5,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
     marginRight: 8,
     marginBottom: 8,
-    ...neoShadows.sm,
   },
   pillText: {
-    fontWeight: '700',
+    fontWeight: '500',
+    color: colors.ink,
   },
 })

@@ -7,7 +7,7 @@ import { useI18n } from '@/lang'
 import { useSettingValue } from '@/store/setting/hook'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 import { setDesktopLyricTextSize } from '@/core/desktopLyric'
 import { updateSetting } from '@/core/common'
 
@@ -61,7 +61,7 @@ const styles = createStyle({
     alignItems: 'center',
   },
   valueText: {
-    color: neoColors.black,
-    fontWeight: '800',
+    color: colors.ink,
+    fontWeight: '700',
   },
 })

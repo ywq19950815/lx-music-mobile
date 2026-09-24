@@ -4,7 +4,6 @@ import { View, FlatList, type FlatListProps, type LayoutChangeEvent, type Native
 import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
 import { createStyle } from '@/utils/tools'
 // import { useComponentIds } from '@/store/common/hook'
-import { useTheme } from '@/store/theme/hook'
 import { useSettingValue } from '@/store/setting/hook'
 import { AnimatedColorText } from '@/components/common/Text'
 import Text from '@/components/common/Text'
@@ -13,7 +12,6 @@ import { setSpText } from '@/utils/pixelRatio'
 import playerState from '@/store/player/state'
 import { scrollTo } from '@/utils/scroll'
 import PlayLine, { type PlayLineType } from '../components/PlayLine'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 // import { screenkeepAwake } from '@/utils/nativeModules/utils'
 // import { log } from '@/utils/log'
 // import { toast } from '@/utils/tools'
@@ -66,7 +64,6 @@ interface LineProps {
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
-  const theme = useTheme()
   const lrcFontSize = useSettingValue('playDetail.vertical.style.lrcFontSize')
   const textAlign = useSettingValue('playDetail.style.align')
   const active = activeLine == lineNum
@@ -75,16 +72,17 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
   const lineHeight = setSpText(size) * 1.38
 
   const colors = useMemo(() => {
+    // 播放页固定深色沉浸：当前行品牌金，非当前行半透明白
     return active ? [
-      theme['c-primary-font'] ?? theme['c-primary'],
-      theme['c-primary-alpha-200'] ?? theme['c-primary'],
+      '#F5A623',
+      'rgba(245,166,35,0.75)',
       1,
     ] as const : [
-      theme['c-font-label'] ?? theme['c-350'],
-      theme['c-font-label'] ?? theme['c-300'],
+      'rgba(255,255,255,0.62)',
+      'rgba(255,255,255,0.42)',
       0.7,
     ] as const
-  }, [active, theme])
+  }, [active])
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
@@ -100,16 +98,16 @@ const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
           ...styles.lineText,
           textAlign,
           lineHeight,
-          fontWeight: active ? '900' : '600',
-        }} textBreakStrategy="simple" color={active ? neoColors.black : colors[0]} opacity={active ? 1 : colors[2]} size={size}>{line.text}</AnimatedColorText>
+          fontWeight: active ? '700' : '500',
+        }} textBreakStrategy="simple" color={colors[0]} opacity={colors[2]} size={size}>{line.text}</AnimatedColorText>
         {
           line.extendedLyrics.map((lrc, index) => {
             return (<AnimatedColorText style={{
               ...styles.lineTranslationText,
               textAlign,
               lineHeight: lineHeight * 0.8,
-              fontWeight: active ? '800' : 'normal',
-            }} textBreakStrategy="simple" key={index} color={active ? neoColors.black : colors[1]} opacity={active ? 0.85 : colors[2]} size={size * 0.8}>{lrc}</AnimatedColorText>)
+              fontWeight: active ? '600' : 'normal',
+            }} textBreakStrategy="simple" key={index} color={colors[1]} opacity={colors[2]} size={size * 0.8}>{lrc}</AnimatedColorText>)
           })
         }
       </View>
@@ -377,14 +375,11 @@ const styles = createStyle({
     justifyContent: 'center',
   },
   emptyCard: {
-    backgroundColor: neoColors.yellow,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusMd,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 14,
     alignItems: 'center',
-    ...neoShadows.sm,
   },
   emptyIcon: {
     fontSize: 26,
@@ -392,8 +387,8 @@ const styles = createStyle({
   },
   emptyText: {
     fontSize: 14,
-    fontWeight: '800',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.9)',
   },
   line: {
     paddingTop: 8,
@@ -405,15 +400,7 @@ const styles = createStyle({
     paddingBottom: 12,
     alignItems: 'center',
   },
-  activeLineCard: {
-    backgroundColor: neoColors.yellow,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusMd,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    ...neoShadows.sm,
-  },
+  activeLineCard: {},
   lineText: {
     textAlign: 'center',
     // fontSize: 16,

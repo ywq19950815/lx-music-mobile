@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { View } from 'react-native'
 import { createStyle } from '@/utils/tools'
 
@@ -7,10 +7,11 @@ import { getLeaderboardSetting, saveLeaderboardSetting } from '@/utils/data'
 import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/common/DrawerLayoutFixed'
 import HeaderBar, { type HeaderBarType, type HeaderBarProps } from './HeaderBar'
 import BoardsList, { type BoardsListType, type BoardsListProps } from '../BoardsList'
+import BoardGallery from './BoardGallery'
 import type { InitState as CommonState } from '@/store/common/state'
 import { getBoardsList } from '@/core/leaderboard'
 import { handleCollect, handlePlay } from '../listAction'
-import boardState from '@/store/leaderboard/state'
+import boardState, { type BoardItem } from '@/store/leaderboard/state'
 
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
@@ -19,49 +20,79 @@ export default () => {
   const boardsListRef = useRef<BoardsListType>(null)
   const headerBarRef = useRef<HeaderBarType>(null)
   const boundInfo = useRef<{ source: LX.OnlineSource, id: string | null }>({ source: 'kw', id: null })
-  // const [width, setWidth] = useState(0)
+
+  // 视图状态：默认 false 展示大三联复合卡片流；true 展示某个榜单的歌曲详情
+  const [isDetailView, setIsDetailView] = useState(false)
+  const [boards, setBoards] = useState<BoardItem[]>([])
+  const [activeBoardId, setActiveBoardId] = useState<string>('')
 
   const handleBoundChange = (source: LX.OnlineSource, id: string) => {
+    setActiveBoardId(id)
     musicListRef.current?.loadList(source, id)
     void saveLeaderboardSetting({
       source,
       boardId: id,
     })
   }
+
   const onBoundChange: BoardsListProps['onBoundChange'] = (id) => {
     boundInfo.current.id = id
+    setActiveBoardId(id)
     void getBoardsList(boundInfo.current.source).then(list => {
+      setBoards(list)
       requestAnimationFrame(() => {
         const bound = list.find(l => l.id == id)
         headerBarRef.current?.setBound(boundInfo.current.source, id, bound?.name ?? 'Unknown')
       })
     })
     handleBoundChange(boundInfo.current.source, id)
+    setIsDetailView(true)
     requestAnimationFrame(() => {
       drawer.current?.closeDrawer()
     })
   }
+
+  // 大三联卡片被点击
+  const handleSelectBoardFromGallery = useCallback((board: BoardItem) => {
+    boundInfo.current.id = board.id
+    setActiveBoardId(board.id)
+    headerBarRef.current?.setBound(boundInfo.current.source, board.id, board.name ?? 'Unknown')
+    handleBoundChange(boundInfo.current.source, board.id)
+    setIsDetailView(true)
+  }, [])
+
+  // 从单榜单歌曲详情返回大三联卡片大盘
+  const handleBackToGallery = useCallback(() => {
+    setIsDetailView(false)
+  }, [])
+
   const onPlay: BoardsListProps['onPlay'] = (id) => {
     boundInfo.current.id = id
     void handlePlay(id, boardState.listDetailInfo.list)
   }
+
   const onCollect: BoardsListProps['onCollect'] = (id, name) => {
     boundInfo.current.id = id
     void handleCollect(id, name, boundInfo.current.source)
   }
+
   const onShowBound = () => {
     void getBoardsList(boundInfo.current.source).then(list => {
+      setBoards(list)
       boardsListRef.current?.setList(list, boundInfo.current.id || list[0]?.id)
       requestAnimationFrame(() => {
         drawer.current?.openDrawer()
       })
     })
   }
+
   const onSourceChange: HeaderBarProps['onSourceChange'] = (source) => {
     boundInfo.current.source = source
     void getBoardsList(source).then(list => {
+      setBoards(list)
       const id = list[0].id
       const name = list[0].name
+      setActiveBoardId(id)
       requestAnimationFrame(() => {
         boardsListRef.current?.setList(list, id)
         headerBarRef.current?.setBound(source, id, name ?? 'Unknown')
@@ -83,24 +114,24 @@ export default () => {
     )
   }
 
-  // const theme = useTheme()
-
-
   useEffect(() => {
     const handleFixDrawer = (id: CommonState['navActiveId']) => {
       if (id == 'nav_top') drawer.current?.fixWidth()
     }
     global.state_event.on('navActiveIdUpdated', handleFixDrawer)
 
-
     isUnmountedRef.current = false
     void getLeaderboardSetting().then(({ source, boardId }) => {
       boundInfo.current.source = source
       boundInfo.current.id = boardId
+      setActiveBoardId(boardId)
       void getBoardsList(source).then(list => {
-        const bound = list.find(l => l.id == boardId)
-        boardsListRef.current?.setList(list, boardId)
-        headerBarRef.current?.setBound(source, boardId, bound?.name ?? 'Unknown')
+        if (!isUnmountedRef.current) {
+          setBoards(list)
+          const bound = list.find(l => l.id == boardId)
+          boardsListRef.current?.setList(list, boardId)
+          headerBarRef.current?.setBound(source, boardId, bound?.name ?? 'Unknown')
+        }
       })
       musicListRef.current?.loadList(source, boardId)
     })
@@ -111,7 +142,6 @@ export default () => {
     }
   }, [])
 
-
   return (
     <DrawerLayoutFixed
       ref={drawer}
@@ -119,8 +149,23 @@ export default () => {
       renderNavigationView={navigationView}
     >
       <View style={styles.container}>
-        <HeaderBar ref={headerBarRef} onShowBound={onShowBound} onSourceChange={onSourceChange} />
-        <MusicList ref={musicListRef} />
+        <HeaderBar
+          ref={headerBarRef}
+          onShowBound={onShowBound}
+          onSourceChange={onSourceChange}
+          isDetailView={isDetailView}
+          onBackToGallery={handleBackToGallery}
+        />
+
+        {isDetailView ? (
+          <MusicList ref={musicListRef} />
+        ) : (
+          <BoardGallery
+            list={boards}
+            activeId={activeBoardId}
+            onSelectBoard={handleSelectBoardFromGallery}
+          />
+        )}
       </View>
     </DrawerLayoutFixed>
   )
@@ -131,9 +176,5 @@ const styles = createStyle({
     width: '100%',
     flex: 1,
     flexDirection: 'column',
-    // borderTopWidth: BorderWidths.normal,
   },
-  // content: {
-  //   flex: 1,
-  // },
 })

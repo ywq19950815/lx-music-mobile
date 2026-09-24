@@ -6,7 +6,7 @@ import { type RowInfo } from '@/utils/tools'
 import { useAssertApiSupport } from '@/store/common/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import Text from '@/components/common/Text'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT) + 4
 
@@ -90,10 +90,10 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
           onLongPress={() => onLongPress(item, index)}
           activeOpacity={0.7}
         >
-          {/* 波普风序号徽章 */}
+          {/* 精致序号徽章 */}
           <View style={[styles.indexBadge, active && styles.indexBadgeActive]}>
             {active ? (
-              <Icon name="play" size={12} color={neoColors.black} />
+              <Icon name="play" size={11} color="#FFFFFF" />
             ) : (
               <Text style={styles.indexText}>{index + 1}</Text>
             )}
@@ -105,7 +105,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
               {item.name}
             </Text>
             <View style={styles.metaRow}>
-              {/* 波普来源标签 */}
+              {/* 来源标签 */}
               <View style={styles.sourceTag}>
                 <Text style={styles.sourceText}>{item.source.toUpperCase()}</Text>
               </View>
@@ -123,14 +123,14 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
           ) : null}
         </TouchableOpacity>
 
-        {/* 右侧波普操作按键 */}
+        {/* 右侧更多操作按键 */}
         <TouchableOpacity
           ref={moreButtonRef}
           onPress={handleShowMenu}
           style={styles.moreBtn}
           activeOpacity={0.6}
         >
-          <Icon name="dots-vertical" color={neoColors.black} size={15} />
+          <Icon name="dots-vertical" color={colors.inkSecondary} size={15} />
         </TouchableOpacity>
       </View>
     </View>
@@ -157,26 +157,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 10,
-    backgroundColor: neoColors.white,
-    borderRadius: neoBorders.radiusMd,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    // 微硬阴影
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    shadowColor: '#171A1F',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  // 正在播放激活态：高饱和亮黄色背景 + 纯黑描边
+  // 正在播放激活态：浅金微透背景 + 金细边
   cardActive: {
-    backgroundColor: neoColors.yellow,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    shadowOffset: { width: 3, height: 3 },
+    backgroundColor: 'rgba(245, 166, 35, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 166, 35, 0.35)',
   },
   cardSelected: {
-    backgroundColor: neoColors.cyan,
+    backgroundColor: 'rgba(245, 166, 35, 0.15)',
   },
   contentLeft: {
     flex: 1,
@@ -185,75 +181,68 @@ const styles = StyleSheet.create({
   },
   // 序号徽章
   indexBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
-    backgroundColor: neoColors.gray100,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
   },
   indexBadgeActive: {
-    backgroundColor: neoColors.white,
+    backgroundColor: '#F5A623',
   },
   indexText: {
     fontSize: 11,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
   infoCol: {
     flex: 1,
     justifyContent: 'center',
   },
   title: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: neoColors.black,
-    letterSpacing: -0.2,
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: colors.ink,
   },
   titleActive: {
-    fontWeight: '900',
+    fontWeight: '700',
+    color: '#B36B00',
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 3,
+    marginTop: 2,
     gap: 6,
   },
   sourceTag: {
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.cyan,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 3,
+    backgroundColor: '#F3F4F6',
   },
   sourceText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontSize: 9.5,
+    fontWeight: '600',
+    color: colors.inkTertiary,
   },
   singerText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: neoColors.gray700,
+    fontSize: 11.5,
+    fontWeight: '400',
+    color: colors.inkSecondary,
     flexShrink: 1,
   },
   intervalText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: neoColors.gray700,
+    fontWeight: '500',
+    color: colors.inkTertiary,
     marginRight: 8,
   },
   moreBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 4,

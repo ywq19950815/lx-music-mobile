@@ -11,7 +11,7 @@ import { getCacheSize, clearCache } from '@/plugins/player/utils'
 import { sizeFormate } from '@/utils'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 import { clearMusicUrl } from '@/utils/data'
 
 export default memo(() => {
@@ -75,10 +75,9 @@ const styles = StyleSheet.create({
   cacheSize: {
     marginBottom: 5,
   },
-  // 显式指定深色：默认色在深色主题下是浅灰，落在纯白卡片上几乎不可见
   cacheSizeText: {
-    color: neoColors.gray700,
-    fontWeight: '600',
+    color: colors.inkSecondary,
+    fontWeight: '500',
   },
   clearBtn: {
     flexDirection: 'row',

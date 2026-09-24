@@ -176,20 +176,24 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
                   },
                 },
               ],
-              // content: {
-              //   translationX: {
-              //     from: windowSizeTools.getSize().width,
-              //     to: 0,
-              //     duration: 300,
-              //   },
-              // },
+              // QQ 音乐式入场：整页自底部滑入，配合封面共享元素飞行
+              content: {
+                translationY: {
+                  from: windowSizeTools.getSize().height,
+                  to: 0,
+                  duration: 360,
+                  interpolation: 'decelerate',
+                },
+              },
             },
             pop: {
+              // 下滑退出：与入场对称，回落到底部
               content: {
-                translationX: {
+                translationY: {
                   from: 0,
-                  to: windowSizeTools.getSize().width,
+                  to: windowSizeTools.getSize().height,
                   duration: 300,
+                  interpolation: 'accelerate',
                 },
               },
             },

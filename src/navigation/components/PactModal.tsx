@@ -11,7 +11,7 @@ import { updateSetting } from '@/core/common'
 import { checkUpdate } from '@/core/version'
 import { initDeeplink } from '@/core/init/deeplink'
 import settingState from '@/store/setting/state'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 const Content = () => {
   return (
@@ -123,7 +123,7 @@ const Footer = ({ componentId }: { componentId: string }) => {
             activeOpacity={0.75}
             onPress={handleRejct}
           >
-            <Text style={styles.btnText} color={neoColors.black} size={13}>
+            <Text style={styles.cancelBtnText} size={13}>
               拒绝并退出
             </Text>
           </TouchableOpacity>
@@ -134,7 +134,7 @@ const Footer = ({ componentId }: { componentId: string }) => {
           activeOpacity={0.75}
           onPress={handleConfirm}
         >
-          <Text style={styles.btnText} color={neoColors.black} size={13}>
+          <Text style={styles.confirmBtnText} size={13}>
             {confirmBtn.text}
           </Text>
         </TouchableOpacity>
@@ -154,72 +154,76 @@ const PactModal = ({ componentId }: { componentId: string }) => {
 
 const styles = StyleSheet.create({
   main: {
-    paddingHorizontal: 16,
-    paddingTop: 14,
+    paddingHorizontal: 18,
+    paddingTop: 16,
     paddingBottom: 8,
   },
   content: {
     maxHeight: 280,
   },
   title: {
-    fontWeight: '900',
-    color: neoColors.black,
-    marginBottom: 12,
+    fontWeight: '700',
+    color: colors.ink,
+    marginBottom: 14,
     textAlign: 'center',
   },
   text: {
     fontSize: 13,
-    lineHeight: 19,
-    marginBottom: 6,
-    color: neoColors.gray700,
+    lineHeight: 20,
+    marginBottom: 8,
+    color: colors.inkSecondary,
   },
   bold: {
     fontSize: 13,
-    fontWeight: '800',
-    color: neoColors.black,
-    marginTop: 4,
-    marginBottom: 2,
+    fontWeight: '600',
+    color: colors.ink,
+    marginTop: 6,
+    marginBottom: 4,
   },
   tip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingBottom: 10,
-    color: neoColors.gray600,
-    lineHeight: 16,
+    color: colors.inkTertiary,
+    lineHeight: 18,
   },
   btns: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
+    paddingHorizontal: 18,
+    paddingBottom: 16,
     gap: 10,
   },
   cancelBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+  },
+  cancelBtnText: {
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
   confirmBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.yellow,
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  confirmBtnText: {
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   btnDisabled: {
     opacity: 0.45,
-  },
-  btnText: {
-    fontWeight: '900',
   },
 })
 

@@ -250,9 +250,11 @@ const Main = () => {
   useEffect(() => {
     const handleUpdate = (id: CommonState['navActiveId']) => {
       const index = viewMap[id]
-      if (activeIndexRef.current == index) return
       activeIndexRef.current = index
       pagerViewRef.current?.setPageWithoutAnimation(index)
+      requestAnimationFrame(() => {
+        pagerViewRef.current?.setPageWithoutAnimation(index)
+      })
     }
     const handleConfigUpdate = (keys: Array<keyof LX.AppSetting>, setting: Partial<LX.AppSetting>) => {
       if (!keys.includes('common.homePageScroll')) return

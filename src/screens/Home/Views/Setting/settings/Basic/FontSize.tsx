@@ -9,7 +9,7 @@ import { setFontSize } from '@/core/common'
 import { useFontSize } from '@/store/common/hook'
 import Text from '@/components/common/Text'
 import { getTextSize } from '@/utils/pixelRatio'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 const LIST = [
   {
@@ -50,9 +50,7 @@ const SizeText = () => {
   const size = getTextSize(14) * useFontSize()
   const t = useI18n()
 
-  // 不用 theme['c-primary']：主题主色是浅绿 rgb(77,175,124)，落在纯白卡片上对比度仅 1.86:1，
-  // 作为「字体大小预览」几乎看不清，反而失去了预览的意义。改用纯黑加粗。
-  return <Text style={{ fontSize: size, color: neoColors.black, fontWeight: '800' }}>{t('setting_basic_font_size_preview')}</Text>
+  return <Text style={{ fontSize: size, color: colors.ink, fontWeight: '700' }}>{t('setting_basic_font_size_preview')}</Text>
 }
 
 const Item = ({ size, label }: {

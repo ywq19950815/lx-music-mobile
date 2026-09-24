@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { TouchableOpacity, View, StyleSheet } from 'react-native'
+import { useRef, useCallback } from 'react'
+import { TouchableOpacity, View, StyleSheet, Animated } from 'react-native'
 import { Icon } from '@/components/common/Icon'
 import { useIsPlay, usePlayerMusicInfo } from '@/store/player/hook'
 import { playNext, playPrev, togglePlay, playList } from '@/core/player/player'
 import { useHorizontalMode } from '@/utils/hooks'
-import { neoColors } from '@/theme/neobrutalism'
+import { motion } from '@/theme/tokens'
 import listState from '@/store/list/state'
 import { getListMusics } from '@/core/list'
 import { LIST_IDS } from '@/config/constant'
@@ -18,65 +18,67 @@ const handlePlayNext = () => {
   globalThis.player_event?.emit('playNext')
 }
 
-/**
- * NeoPlayNextBtn: Neo-Brutalism 实体波普下一曲按钮
- * - 纯黑硬实体阴影底座
- * - 纯白/荧光青高反差按键 + 2px 纯黑厚边框
- * - 物理按压下沉位移 (translateX/Y 2px)
- */
+/** 按压弹簧缩放 Hook（迷你条按钮共用） */
+const usePressSpring = () => {
+  const scale = useRef(new Animated.Value(1)).current
+  const onPressIn = useCallback(() => {
+    Animated.spring(scale, {
+      toValue: 0.88,
+      friction: motion.spring.friction,
+      tension: motion.spring.tension,
+      useNativeDriver: true,
+    }).start()
+  }, [scale])
+  const onPressOut = useCallback(() => {
+    Animated.spring(scale, {
+      toValue: 1,
+      friction: motion.spring.friction,
+      tension: motion.spring.tension,
+      useNativeDriver: true,
+    }).start()
+  }, [scale])
+  return { scale, onPressIn, onPressOut }
+}
+
 const PlayNextBtn = () => {
-  const [isPressed, setIsPressed] = useState(false)
+  const { scale, onPressIn, onPressOut } = usePressSpring()
   return (
-    <View style={styles.btnWrapper}>
-      <View style={styles.btnShadow} />
+    <Animated.View style={[styles.btnWrapper, { transform: [{ scale }] }]}>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.6}
         onPress={handlePlayNext}
-        onPressIn={() => setIsPressed(true)}
-        onPressOut={() => setIsPressed(false)}
-        style={[
-          styles.nextBtn,
-          isPressed && styles.btnPressed,
-        ]}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        style={styles.sideBtn}
       >
-        <Icon name="nextMusic" color={neoColors.black} size={16} />
+        <Icon name="nextMusic" color="#5A616B" size={16} />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   )
 }
 
-/**
- * NeoPlayPrevBtn: Neo-Brutalism 实体波普上一曲按钮
- */
 const PlayPrevBtn = () => {
-  const [isPressed, setIsPressed] = useState(false)
+  const { scale, onPressIn, onPressOut } = usePressSpring()
   return (
-    <View style={styles.btnWrapper}>
-      <View style={styles.btnShadow} />
+    <Animated.View style={[styles.btnWrapper, { transform: [{ scale }] }]}>
       <TouchableOpacity
-        activeOpacity={1}
+        activeOpacity={0.6}
         onPress={handlePlayPrev}
-        onPressIn={() => setIsPressed(true)}
-        onPressOut={() => setIsPressed(false)}
-        style={[
-          styles.nextBtn,
-          isPressed && styles.btnPressed,
-        ]}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        style={styles.sideBtn}
       >
-        <Icon name="prevMusic" color={neoColors.black} size={16} />
+        <Icon name="prevMusic" color="#5A616B" size={16} />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   )
 }
 
-/**
- * NeoTogglePlayBtn: 核心波普按键。
- * 亮黄/电光粉高饱和底色 + 2px 纯黑厚边框 + 实体硬阴影与按压下沉位移。
- */
+/** 主控播放/暂停键：品牌金圆钮，弹簧按压 */
 const TogglePlayBtn = () => {
   const isPlay = useIsPlay()
   const musicInfo = usePlayerMusicInfo()
-  const [isPressed, setIsPressed] = useState(false)
+  const { scale, onPressIn, onPressOut } = usePressSpring()
 
   const handleToggle = () => {
     if (!musicInfo.id) {
@@ -94,27 +96,21 @@ const TogglePlayBtn = () => {
   }
 
   return (
-    <View style={styles.btnWrapper}>
-      {/* 背后纯黑硬阴影 */}
-      <View style={styles.btnShadow} />
+    <Animated.View style={[styles.btnWrapper, { transform: [{ scale }] }]}>
       <TouchableOpacity
         activeOpacity={1}
         onPress={handleToggle}
-        onPressIn={() => setIsPressed(true)}
-        onPressOut={() => setIsPressed(false)}
-        style={[
-          styles.toggleBtn,
-          { backgroundColor: isPlay ? neoColors.pink : neoColors.yellow },
-          isPressed && styles.btnPressed,
-        ]}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        style={[styles.toggleBtn, { backgroundColor: isPlay ? '#F5A623' : '#E08C0F' }]}
       >
         <Icon
           name={isPlay ? 'pause' : 'play'}
-          color={neoColors.black}
+          color="#FFFFFF"
           size={18}
         />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   )
 }
 
@@ -136,48 +132,23 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   btnWrapper: {
-    position: 'relative',
     width: 39,
     height: 39,
-  },
-  btnShadow: {
-    position: 'absolute',
-    top: 2.5,
-    left: 2.5,
-    width: 35,
-    height: 35,
-    borderRadius: 18,
-    backgroundColor: neoColors.black,
-    zIndex: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   toggleBtn: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
     width: 35,
     height: 35,
     borderRadius: 18,
-    borderWidth: 2,
-    borderColor: neoColors.black,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
   },
-  nextBtn: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
+  sideBtn: {
     width: 35,
     height: 35,
     borderRadius: 18,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
-  },
-  btnPressed: {
-    transform: [{ translateX: 2 }, { translateY: 2 }],
   },
 })

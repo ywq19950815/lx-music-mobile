@@ -6,7 +6,7 @@ import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export interface OpenListType {
   setInfo: (source: Source) => void
@@ -60,14 +60,12 @@ const styles = StyleSheet.create({
   },
   pill: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.pink,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
   },
   text: {
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.ink,
   },
 })

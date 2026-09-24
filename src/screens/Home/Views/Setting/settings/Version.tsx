@@ -4,17 +4,10 @@ import { StyleSheet, View } from 'react-native'
 import Section from '../components/Section'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 const currentVer = process.versions.app
 
-/**
- * 版本信息（Neo-Brutalism）
- *
- * 本应用版本体系已从 v0.x 重新开始，且不再对外请求任何第三方版本信息，
- * 因此这里只展示本地当前版本，并固定提示「已是最新版本」，
- * 不再显示来源不明的「最新版本」号，也不提供在线升级入口。
- */
 export default memo(() => {
   const t = useI18n()
 
@@ -38,13 +31,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: neoColors.offWhite,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusMd,
-    boxShadow: neoShadows.sm.boxShadow,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius.md,
   },
   left: {
     flexGrow: 1,
@@ -52,15 +44,15 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   label: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    color: neoColors.gray700,
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.inkTertiary,
   },
   version: {
     marginTop: 2,
     fontSize: 18,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '700',
+    color: colors.ink,
     letterSpacing: -0.4,
   },
   badge: {
@@ -69,14 +61,12 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    backgroundColor: neoColors.green,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusPill,
+    backgroundColor: 'rgba(52, 199, 89, 0.12)',
+    borderRadius: radius.pill,
   },
   badgeText: {
     fontSize: 11.5,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: '#15803D',
   },
 })

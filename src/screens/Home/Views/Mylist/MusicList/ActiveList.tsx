@@ -9,23 +9,21 @@ import Text from '@/components/common/Text'
 import { LIST_IDS } from '@/config/constant'
 import Loading from '@/components/common/Loading'
 import { useSettingValue } from '@/store/setting/hook'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export interface ActiveListProps {
   onShowSearchBar: () => void
   onScrollToTop: () => void
+  onBackToDashboard?: () => void
 }
 export interface ActiveListType {
   setVisibleBar: (visible: boolean) => void
 }
 
 /**
- * NeoActiveList: 新粗野主义风格的当前歌单切换与搜索条。
- * - 纯黑 2px 底边
- * - 亮黄色波普胶囊指示器
- * - 粗黑大字号
+ * 歌单列表切换与搜索条：现代精炼胶囊设计。
  */
-export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, onScrollToTop }, ref) => {
+export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, onScrollToTop, onBackToDashboard }, ref) => {
   const currentListId = useActiveListId()
   const fetching = useListFetching(currentListId)
   const langId = useSettingValue('common.langId')
@@ -64,6 +62,17 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
 
   return (
     <View style={styles.container}>
+      {onBackToDashboard ? (
+        <TouchableOpacity
+          onPress={onBackToDashboard}
+          style={styles.backBtn}
+          activeOpacity={0.7}
+        >
+          <Icon name="chevron-left" size={15} color={colors.ink} />
+          <Text style={styles.backBtnText}>主页</Text>
+        </TouchableOpacity>
+      ) : null}
+
       <TouchableOpacity
         onPress={showList}
         onLongPress={onScrollToTop}
@@ -71,8 +80,8 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
         activeOpacity={0.7}
       >
         <View style={styles.pillTag}>
-          <Icon name="chevron-right" size={14} color={neoColors.black} />
-          {fetching ? <Loading color={neoColors.black} style={styles.loading} /> : null}
+          <Icon name="chevron-right" size={13} color={colors.inkSecondary} />
+          {fetching ? <Loading color={colors.ink} style={styles.loading} /> : null}
           <Text style={styles.listTitle} numberOfLines={1}>
             {currentListName}
           </Text>
@@ -85,7 +94,7 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
         onPress={onShowSearchBar}
         activeOpacity={0.6}
       >
-        <Icon color={neoColors.black} name="search-2" size={16} />
+        <Icon color={colors.inkSecondary} name="search-2" size={16} />
       </TouchableOpacity>
     </View>
   )
@@ -98,9 +107,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: neoColors.white,
-    borderBottomWidth: neoBorders.regular,
-    borderBottomColor: neoColors.black,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ECEEF1',
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    marginRight: 8,
+  },
+  backBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.ink,
   },
   pillBtn: {
     flex: 1,
@@ -110,30 +134,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: neoBorders.radiusPill,
-    backgroundColor: neoColors.yellow,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    gap: 5,
   },
   loading: {
     marginRight: 4,
   },
   listTitle: {
     fontSize: 13,
-    fontWeight: '900',
-    color: neoColors.black,
-    letterSpacing: -0.2,
+    fontWeight: '700',
+    color: colors.ink,
   },
   searchBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: neoColors.white,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
   },

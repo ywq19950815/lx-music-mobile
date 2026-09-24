@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   View,
   TouchableOpacity,
@@ -7,7 +7,7 @@ import {
   type StyleProp,
   type GestureResponderEvent,
 } from 'react-native'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 export interface NeoCardProps {
   children?: React.ReactNode
@@ -26,45 +26,33 @@ export interface NeoCardProps {
 }
 
 /**
- * NeoCard: 具有硬边物理偏移阴影（Hard Offset Shadow）的新粗野主义卡片。
- * 原生与 Web 100% 像素级一致，按压时产生物理位移下沉反馈。
+ * NeoCard (兼容层): 现代柔和高质感卡片组件。
+ * 纯净白表面 + 极细边框 + 弥散软阴影。
  */
 export const NeoCard: React.FC<NeoCardProps> = ({
   children,
   style,
   contentStyle,
-  backgroundColor = neoColors.white,
-  borderColor = neoBorders.color,
-  borderWidth = neoBorders.regular,
-  borderRadius = neoBorders.radiusMd,
-  shadowColor = neoColors.black,
-  shadowOffset = 4,
+  backgroundColor = colors.surface,
+  borderColor = colors.hairline,
+  borderWidth = StyleSheet.hairlineWidth,
+  borderRadius = radius.lg,
   pressable = false,
   disabled = false,
   onPress,
   onLongPress,
 }) => {
-  const [isPressed, setIsPressed] = useState(false)
-
   const isInteractive = (pressable || !!onPress) && !disabled
-  const activeOffset = isPressed ? 1.5 : shadowOffset
-
-  // 前景卡片的位移量：按下时向右下平移，呈现压扁阴影的打击手感
-  const translateDelta = isPressed ? shadowOffset - activeOffset : 0
 
   const cardContent = (
     <View
       style={[
-        styles.front,
+        styles.card,
         {
           backgroundColor,
           borderColor,
           borderWidth,
           borderRadius,
-          transform: [
-            { translateX: translateDelta },
-            { translateY: translateDelta },
-          ],
         },
         contentStyle,
       ]}
@@ -73,55 +61,32 @@ export const NeoCard: React.FC<NeoCardProps> = ({
     </View>
   )
 
-  return (
-    <View style={[styles.wrapper, { paddingRight: shadowOffset, paddingBottom: shadowOffset }, style]}>
-      {/* 背后实体纯黑硬阴影层 */}
-      {shadowOffset > 0 && (
-        <View
-          style={[
-            styles.shadowUnderlay,
-            {
-              backgroundColor: shadowColor,
-              borderRadius,
-              top: shadowOffset,
-              left: shadowOffset,
-            },
-          ]}
-        />
-      )}
+  if (isInteractive) {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        disabled={disabled}
+        onPress={onPress}
+        onLongPress={onLongPress}
+        style={[styles.wrapper, style]}
+      >
+        {cardContent}
+      </TouchableOpacity>
+    )
+  }
 
-      {/* 前景卡片 */}
-      {isInteractive ? (
-        <TouchableOpacity
-          activeOpacity={1}
-          disabled={disabled}
-          onPress={onPress}
-          onLongPress={onLongPress}
-          onPressIn={() => setIsPressed(true)}
-          onPressOut={() => setIsPressed(false)}
-        >
-          {cardContent}
-        </TouchableOpacity>
-      ) : (
-        cardContent
-      )}
-    </View>
-  )
+  return <View style={[styles.wrapper, style]}>{cardContent}</View>
 }
 
 const styles = StyleSheet.create({
   wrapper: {
-    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  shadowUnderlay: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
-  },
-  front: {
-    position: 'relative',
-    zIndex: 1,
+  card: {
     overflow: 'hidden',
   },
 })

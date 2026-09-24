@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, memo } from 'react'
 import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 
 import { compareVer, sizeFormate } from '@/utils'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import { type VersionInfo } from '@/store/version/state'
@@ -171,7 +171,7 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
   return (
     <ModalContent>
       <Content title={title} newVersionInfo={versionInfo.newVersion} />
-      { tip.length ? <Text style={styles.tip} color={neoColors.black}>{tip}</Text> : null }
+      { tip.length ? <Text style={styles.tip}>{tip}</Text> : null }
       <View style={styles.btns}>
         {
           ignoreBtn.show
@@ -182,7 +182,7 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
                   activeOpacity={0.75}
                   onPress={handleIgnore}
                 >
-                  <Text style={styles.btnText} color={neoColors.black} size={13}>{ignoreBtn.text}</Text>
+                  <Text style={styles.cancelBtnText} size={13}>{ignoreBtn.text}</Text>
                 </TouchableOpacity>
               )
             : null
@@ -192,7 +192,7 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
           activeOpacity={0.75}
           onPress={handleCancel}
         >
-          <Text style={styles.btnText} color={neoColors.black} size={13}>{closeBtnText}</Text>
+          <Text style={styles.cancelBtnText} size={13}>{closeBtnText}</Text>
         </TouchableOpacity>
         {
           confirmBtn.show
@@ -203,7 +203,7 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
                   activeOpacity={0.75}
                   onPress={handleConfirm}
                 >
-                  <Text style={styles.btnText} color={neoColors.black} size={13}>{confirmBtn.text}</Text>
+                  <Text style={styles.confirmBtnText} size={13}>{confirmBtn.text}</Text>
                 </TouchableOpacity>
               )
             : null
@@ -215,7 +215,7 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
 
 const styles = StyleSheet.create({
   main: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingTop: 16,
     paddingBottom: 8,
   },
@@ -224,8 +224,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 17,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '700',
+    color: colors.ink,
     textAlign: 'center',
     marginBottom: 14,
   },
@@ -237,55 +237,60 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13.5,
-    fontWeight: '800',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.ink,
     marginBottom: 3,
   },
   desc: {
     fontSize: 12.5,
-    lineHeight: 18,
-    color: neoColors.gray700,
+    lineHeight: 19,
+    color: colors.inkSecondary,
   },
   tip: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingBottom: 10,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '500',
+    color: colors.brandDeep,
   },
   btns: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
+    paddingHorizontal: 18,
+    paddingBottom: 16,
     gap: 10,
   },
   cancelBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    paddingVertical: 9,
+    paddingHorizontal: 16,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+  },
+  cancelBtnText: {
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
   confirmBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 18,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.yellow,
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  confirmBtnText: {
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   btnDisabled: {
     opacity: 0.45,
-  },
-  btnText: {
-    fontWeight: '900',
   },
 })
 

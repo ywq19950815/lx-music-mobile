@@ -8,7 +8,7 @@ import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import Text from './Text'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 const menuItemHeight = scaleSizeH(40)
 const menuItemWidth = scaleSizeW(115)
@@ -29,15 +29,14 @@ const styles = StyleSheet.create({
   },
   menu: {
     position: 'absolute',
-    borderWidth: 2.5,
-    borderColor: neoColors.black,
-    borderRadius: 10,
-    backgroundColor: neoColors.white,
-    // 经典波普零模糊物理硬阴影
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
     elevation: 8,
     overflow: 'hidden',
     zIndex: 99999,
@@ -46,8 +45,8 @@ const styles = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 14,
     justifyContent: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: neoColors.gray200,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
   },
 })
 
@@ -153,7 +152,7 @@ const Menu = ({
                     isLast && { borderBottomWidth: 0 },
                   ]}
                 >
-                  <Text style={{ textAlign: center ? 'center' : 'left', fontWeight: '700', color: neoColors.gray700 }} size={13.5} numberOfLines={1}>
+                  <Text style={{ textAlign: center ? 'center' : 'left', fontWeight: '500', color: colors.inkTertiary }} size={13.5} numberOfLines={1}>
                     {menu.label}
                   </Text>
                 </View>
@@ -166,17 +165,17 @@ const Menu = ({
                 style={[
                   styles.menuItem,
                   { width: menuItemStyle.width, height: menuItemStyle.height },
-                  isActive && { backgroundColor: neoColors.yellow },
+                  isActive && { backgroundColor: 'rgba(245, 166, 35, 0.10)' },
                   isLast && { borderBottomWidth: 0 },
                 ]}
-                underlayColor={neoColors.yellow}
+                underlayColor={'rgba(245, 166, 35, 0.08)'}
                 onPress={() => { menuPress(menu) }}
               >
                 <Text
                   style={{
                     textAlign: center ? 'center' : 'left',
-                    fontWeight: '800',
-                    color: neoColors.black,
+                    fontWeight: isActive ? '700' : '500',
+                    color: isActive ? '#B36B00' : colors.ink,
                   }}
                   size={13.5}
                   numberOfLines={1}

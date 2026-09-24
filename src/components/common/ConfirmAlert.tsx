@@ -3,7 +3,7 @@ import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import Dialog, { type DialogType } from './Dialog'
 import { useI18n } from '@/lang/index'
 import Text from './Text'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 export interface ConfirmAlertProps {
   onCancel?: () => void
@@ -76,7 +76,7 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
         <ScrollView style={styles.content} keyboardShouldPersistTaps={'always'}
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}>
-          {children ?? <Text style={styles.textBody} size={13} color={neoColors.black}>{text}</Text>}
+          {children ?? <Text style={styles.textBody} size={13} color={colors.inkSecondary}>{text}</Text>}
         </ScrollView>
       </View>
       <View style={[styles.btns, reverseBtn && styles.btnsReversed]}>
@@ -86,7 +86,7 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
             activeOpacity={0.7}
             onPress={handleCancel}
           >
-            <Text style={styles.btnText} size={13} color={neoColors.black}>
+            <Text style={styles.cancelBtnText} size={13}>
               {cancelText || t('cancel')}
             </Text>
           </TouchableOpacity>
@@ -98,7 +98,7 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
             onPress={handleConfirm}
             disabled={disabledConfirm}
           >
-            <Text style={styles.btnText} size={13} color={neoColors.black}>
+            <Text style={styles.confirmBtnText} size={13}>
               {confirmText || btnText || t('confirm')}
             </Text>
           </TouchableOpacity>
@@ -115,51 +115,52 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   content: {
-    // ⚠️ 限高别卡太紧。内容一旦超过 maxHeight，末行会被 ScrollView 裁掉
-    // （症状：文字下面被切一半、读不到最后一行）。
-    // 抬高到 260 并配合子内容的自适应行高，常见文案（歌单打开的 4 条提示）可完整显示。
     maxHeight: 260,
   },
   textBody: {
-    lineHeight: 20,
-    fontWeight: '600',
+    lineHeight: 22,
+    fontWeight: '400',
   },
   btns: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 14,
-    paddingBottom: 14,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     gap: 10,
   },
   btnsReversed: {
     flexDirection: 'row-reverse',
   },
   cancelBtn: {
-    paddingVertical: 8,
+    paddingVertical: 7,
     paddingHorizontal: 16,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+  },
+  cancelBtnText: {
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
   confirmBtn: {
-    paddingVertical: 8,
+    paddingVertical: 7,
     paddingHorizontal: 18,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.yellow,
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  confirmBtnText: {
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   disabledBtn: {
-    opacity: 0.5,
-  },
-  btnText: {
-    fontWeight: '800',
+    opacity: 0.45,
   },
 })

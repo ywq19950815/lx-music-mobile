@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useMemo, forwardRef, useImperativeHandle, type Ref } from 'react'
 import { StyleSheet, View, Animated, Dimensions } from 'react-native'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 import List, { type ItemT, type ListProps, type ListType } from './List'
 // import InsetShadow from 'react-native-inset-shadow'
 
@@ -111,7 +111,7 @@ const Component = <T extends ItemT<T>>({ onPressBg = noop, ...props }: SearchTip
           { scaleY },
         ],
       }}>
-      <View style={{ ...styles.container, backgroundColor: neoColors.offWhite }}>
+      <View style={{ ...styles.container, backgroundColor: colors.surface }}>
         <List ref={listRef} {...props} />
       </View>
       <View style={styles.blank} onTouchStart={onPressBg}></View>
@@ -134,21 +134,21 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   container: {
-    // 注意：不要写 flex: 0。RN 里 flex:0 表示「不伸缩」，RN Web 会展开成
-    // flex-basis:0%，把容器高度压成 0，导致搜索结果算出来但看不见。
     flexGrow: 0,
     flexShrink: 0,
     flexBasis: 'auto',
-    elevation: 2,
     maxHeight: '80%',
-    // 全宽 + 底部黑边，与 Neo-Brutalism 顶栏呼应
-    borderBottomWidth: neoBorders.regular,
-    borderBottomColor: neoColors.black,
+    backgroundColor: colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   blank: {
     flex: 1,
     flexGrow: 1,
-    // backgroundColor: 'transparent',
-    // backgroundColor: 'rgba(0,0,0,0.2)',
   },
 })

@@ -7,7 +7,7 @@ import SourceSelector, {
 import SearchInput, { type SearchInputType, type SearchInputProps } from './SearchInput'
 import { type Source as MusicSource } from '@/store/search/music/state'
 import { type Source as SonglistSource } from '@/store/search/songlist/state'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 type Sources = Readonly<Array<MusicSource | SonglistSource>>
 type SourceSelectorProps = _SourceSelectorProps<Sources>
@@ -63,12 +63,12 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 44,
+    height: 48,
     zIndex: 2,
-    paddingRight: 10,
-    backgroundColor: neoColors.offWhite,
-    borderBottomWidth: 2.5,
-    borderBottomColor: neoColors.black,
+    paddingRight: 12,
+    backgroundColor: colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
   },
   selector: {
     justifyContent: 'center',

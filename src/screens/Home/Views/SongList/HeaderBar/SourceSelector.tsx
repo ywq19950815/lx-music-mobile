@@ -5,7 +5,6 @@ import SourceSelector, {
   type SourceSelectorProps as _SourceSelectorProps,
 } from '@/components/SourceSelector'
 import songlistState, { type Source, type InitState } from '@/store/songlist/state'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
 
 type Sources = Readonly<InitState['sources']>
 type SourceSelectorCommonProps = _SourceSelectorProps<Sources>

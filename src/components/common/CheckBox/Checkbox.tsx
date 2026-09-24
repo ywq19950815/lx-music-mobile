@@ -42,7 +42,7 @@ const BOX_SIZE = 22
  * Neo-Brutalism 风格复选框：
  * - 纯黑 2px 粗实描边
  * - 零模糊 1.5px 实体物理硬阴影
- * - 选中态高饱和波普明黄 (#FFE600) + 纯黑加粗勾选标记
+ * - 选中态高饱和波普明黄 (#F5A623) + 纯黑加粗勾选标记
  * - 实体按压反馈与流畅弹性微动画
  */
 const Checkbox = ({
@@ -136,7 +136,7 @@ const styles = createStyle({
     backgroundColor: '#FFFFFF',
   },
   boxChecked: {
-    backgroundColor: '#FFE600', // 高饱和波普黄
+    backgroundColor: '#F5A623', // 高饱和波普黄
   },
   boxDisabled: {
     backgroundColor: '#E8E8E8',

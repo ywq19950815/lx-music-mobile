@@ -4,7 +4,7 @@ import { type SearchType } from '@/store/search/state'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
 import { getSearchSetting } from '@/utils/data'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 const SEARCH_TYPE_LIST = [
   'music',
@@ -48,7 +48,6 @@ export default () => {
               >
                 <Text
                   style={[styles.tabText, active && styles.tabTextActive]}
-                  color={neoColors.black}
                   size={12}
                 >
                   {t.label}
@@ -63,18 +62,11 @@ export default () => {
 }
 
 const styles = StyleSheet.create({
-  // 外层容器：给硬阴影留出溢出空间。
-  // 关键坑：ScrollView 在 Web 端必然带 overflow-y:hidden，而激活态胶囊的
-  // neoShadows.sm 是「右下 2.5px 实体硬阴影」，阴影会溢出按钮盒 2.5px。
-  // 若 ScrollView 高度恰好等于按钮高度（height:'100%'），阴影的下沿就会被裁掉，
-  // 视觉上就是「按钮底部被切了一块」。所以这里显式加 paddingBottom 让阴影有落脚处。
   container: {
     flexGrow: 0,
     flexShrink: 1,
-    // 上下各留够阴影的高度（neoShadows.sm = 2.5px），避免 ScrollView 的
-    // overflow-y:hidden 把实体硬阴影切掉。留 4px 比 2.5px 略宽，防止小数取整误差。
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingTop: 2,
+    paddingBottom: 2,
   },
   tabsRow: {
     flexDirection: 'row',
@@ -83,24 +75,25 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: neoBorders.radiusPill,
+    paddingVertical: 4.5,
+    borderRadius: 14,
     marginRight: 8,
-    borderWidth: 1.5,
+    borderWidth: 1,
   },
   tabActive: {
-    backgroundColor: neoColors.yellow,
-    borderColor: neoColors.black,
-    ...neoShadows.sm,
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    borderColor: '#F5A623',
   },
   tabInactive: {
-    backgroundColor: neoColors.white,
-    borderColor: neoColors.black,
+    backgroundColor: '#F3F4F6',
+    borderColor: 'transparent',
   },
   tabText: {
-    fontWeight: '700',
+    fontWeight: '500',
+    color: '#5A616B',
   },
   tabTextActive: {
-    fontWeight: '900',
+    fontWeight: '700',
+    color: '#B36B00',
   },
 })

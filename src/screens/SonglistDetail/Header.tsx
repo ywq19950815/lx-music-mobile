@@ -9,7 +9,7 @@ import { Icon } from '@/components/common/Icon'
 import Image from '@/components/common/Image'
 import { useListInfo } from './state'
 import { useStatusbarHeight } from '@/store/common/hook'
-import { neoColors } from '@/theme/neobrutalism'
+import { softShadow } from '@/theme/tokens'
 
 const cleanHtmlText = (str?: string): string => {
   if (!str) return ''
@@ -118,30 +118,25 @@ export default forwardRef<HeaderType, HeaderProps>(({ componentId }: { component
 
   return (
     <View style={[styles.container, { paddingTop: statusBarHeight }]}>
-      {/* 顶部新粗野主义导航栏 */}
+      {/* 顶部导航栏 */}
       <View style={styles.navBar}>
         <TouchableOpacity
           style={styles.backBtn}
-          activeOpacity={0.7}
+          activeOpacity={0.6}
           onPress={handleBack}
         >
-          <Icon name="chevron-left" size={17} color={neoColors.black} />
+          <Icon name="chevron-left" size={17} color="#1A1C20" />
         </TouchableOpacity>
 
-        <View style={styles.navTitleBadge}>
-          <Text style={styles.navTitleText}>💿 歌单详情</Text>
-        </View>
+        <Text style={styles.navTitleText}>歌单详情</Text>
 
         <View style={styles.sourceBadge}>
           <Text style={styles.sourceBadgeText}>{info.source?.toUpperCase() || 'NET'}</Text>
         </View>
       </View>
 
-      {/* 歌单主卡片：波普黑边白底硬阴影卡片 */}
+      {/* 歌单主卡片：白面圆角 + 弥散软阴影 */}
       <View style={styles.cardContainer}>
-        {/* 硬阴影底座 */}
-        <View style={styles.cardShadow} />
-        {/* 卡片实体 */}
         <View style={styles.cardFront}>
           <View style={styles.infoRow}>
             <Pic componentId={componentId} playCount={detailInfo.playCount} imgUrl={detailInfo.imgUrl} />
@@ -168,10 +163,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'column',
     width: '100%',
-    // 与首页/播放页头部统一的签名亮黄；沉浸式下由它铺满顶部状态栏区域
-    backgroundColor: neoColors.yellow,
-    borderBottomWidth: 2.5,
-    borderBottomColor: neoColors.black,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ECEEF1',
   },
   navBar: {
     height: 48,
@@ -185,72 +179,36 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: neoColors.white,
-    borderWidth: 2,
-    borderColor: neoColors.black,
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
-  },
-  navTitleBadge: {
-    // 头部底改成亮黄后，黄色小铭牌会糊在一起，改用白底保持波普对比
-    backgroundColor: neoColors.white,
-    borderWidth: 1.8,
-    borderColor: neoColors.black,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 1.5, height: 1.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
   },
   navTitleText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1C20',
   },
   sourceBadge: {
-    backgroundColor: neoColors.cyan,
-    borderWidth: 1.8,
-    borderColor: neoColors.black,
-    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 1.5, height: 1.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
   },
   sourceBadgeText: {
     fontSize: 11,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: '#5A616B',
   },
   cardContainer: {
     marginHorizontal: 12,
     marginBottom: 8,
     position: 'relative',
   },
-  cardShadow: {
-    position: 'absolute',
-    left: 4,
-    top: 4,
-    right: -4,
-    bottom: -4,
-    backgroundColor: neoColors.black,
-    borderRadius: 14,
-  },
   cardFront: {
-    backgroundColor: neoColors.white,
-    borderWidth: 2.5,
-    borderColor: neoColors.black,
-    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 12,
+    ...softShadow('md'),
   },
   infoRow: {
     flexDirection: 'row',
@@ -264,10 +222,8 @@ const styles = StyleSheet.create({
   coverBox: {
     width: 86,
     height: 86,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    backgroundColor: '#F0EFEA',
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
     overflow: 'hidden',
     position: 'relative',
   },
@@ -280,15 +236,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.72)',
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
     paddingVertical: 2,
     paddingHorizontal: 4,
     alignItems: 'center',
   },
   playCountText: {
     fontSize: 10,
-    fontWeight: '800',
-    color: neoColors.yellow,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   infoCol: {
     flex: 1,
@@ -297,15 +253,15 @@ const styles = StyleSheet.create({
   },
   titleText: {
     fontSize: 15,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '700',
+    color: '#1A1C20',
     lineHeight: 20,
     marginBottom: 4,
   },
   descText: {
     fontSize: 11.5,
-    color: '#4A4A4A',
+    color: '#5A616B',
     lineHeight: 16,
-    fontWeight: '500',
+    fontWeight: '400',
   },
 })

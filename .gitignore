@@ -36,6 +36,7 @@ keystore.properties
 # node.js
 #
 node_modules/
+node_modules_broken/
 npm-debug.log
 yarn-error.log
 
@@ -70,3 +71,17 @@ buck-out/
 # WorkBuddy
 .workbuddy/
 release/
+
+# Local preview/debug screenshots & temp probe files
+/01_tab1_discover_home.png
+/02_tab2_songlist_square.png
+/03_tab3_leaderboard_gallery.png
+/04_tab4_mylist_dashboard.png
+/05_tab5_setting_center.png
+/06_tab4_love_detail.png
+/07_tab3_board_detail.png
+/shot_home.png
+/shot_playdetail.png
+/shot_playing.png
+/preview/*.png
+/preview/*.txt

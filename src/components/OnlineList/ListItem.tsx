@@ -8,7 +8,7 @@ import { useI18n } from '@/lang'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { LIST_ITEM_HEIGHT } from '@/config/constant'
 import { type RowInfo } from '@/utils/tools'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT + 6)
 
@@ -80,38 +80,39 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
 
   const singer = `${item.singer}${isShowAlbumName && item.meta.albumName ? ` · ${item.meta.albumName}` : ''}`
 
-  // 波普前三名贴纸背景色
-  const topBadgeBg = index === 0 ? neoColors.yellow : (index === 1 ? neoColors.cyan : (index === 2 ? neoColors.pink : neoColors.white))
-
   return (
     <View style={[
       styles.cardWrapper,
       { width: rowInfo.rowWidth, height: ITEM_HEIGHT },
     ]}>
-      {/* 实体硬阴影底座 */}
-      <View style={styles.cardShadow} />
-      {/* 实体卡片前景 */}
+      {/* 现代柔和列表单行卡片 */}
       <View style={[
         styles.cardFront,
         isSelected && styles.cardSelected,
       ]}>
         <TouchableOpacity
           style={styles.listItemLeft}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
           onPress={() => { onPress(item, index) }}
           onLongPress={() => { onLongPress(item, index) }}
         >
-          {/* 波普方块序号徽章 */}
+          {/* 精致序号徽章 */}
           <View style={[
             styles.snBox,
-            index < 3 ? [styles.topSnBox, { backgroundColor: topBadgeBg }] : null,
+            index === 0 && styles.snGold,
+            index === 1 && styles.snSoftGold,
+            index === 2 && styles.snGray,
           ]}>
-            <Text style={[styles.snText, index < 3 && styles.topSnText]} size={11} color={neoColors.black}>
+            <Text
+              style={[styles.snText, index < 3 && styles.topSnText]}
+              size={11}
+              color={index === 0 ? '#FFFFFF' : (index === 1 ? '#B36B00' : colors.inkSecondary)}
+            >
               {index + 1}
             </Text>
           </View>
 
-          {/* 波普黑边封面 */}
+          {/* 圆角封面 */}
           <View style={styles.coverWrapper}>
             <Image
               url={item.meta.picUrl}
@@ -121,13 +122,13 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
           </View>
 
           <View style={styles.itemInfo}>
-            <Text numberOfLines={1} style={styles.musicTitle} color={neoColors.black}>
+            <Text numberOfLines={1} style={styles.musicTitle} color={colors.ink}>
               {item.name}
             </Text>
             <View style={styles.listItemSingle}>
               { tagInfo.type ? <Badge type={tagInfo.type}>{tagInfo.text}</Badge> : null }
               { showSource ? <Badge type="tertiary">{item.source}</Badge> : null }
-              <Text style={styles.singerText} size={11} color={neoColors.black} numberOfLines={1}>
+              <Text style={styles.singerText} size={11} color={colors.inkSecondary} numberOfLines={1}>
                 {singer}
               </Text>
             </View>
@@ -135,16 +136,16 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
 
           {
             isShowInterval ? (
-              <Text size={11} style={styles.intervalText} color={neoColors.black} numberOfLines={1}>
+              <Text size={11} style={styles.intervalText} color={colors.inkTertiary} numberOfLines={1}>
                 {item.interval}
               </Text>
             ) : null
           }
         </TouchableOpacity>
 
-        {/* 更多菜单按钮：带黑边的圆形波普按键 */}
+        {/* 更多菜单按钮 */}
         <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton} activeOpacity={0.7}>
-          <Icon name="dots-vertical" size={14} color={neoColors.black} />
+          <Icon name="dots-vertical" size={15} color={colors.inkSecondary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -162,30 +163,23 @@ const styles = StyleSheet.create({
   cardWrapper: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    position: 'relative',
-  },
-  cardShadow: {
-    position: 'absolute',
-    top: 5,
-    bottom: 1,
-    left: 10,
-    right: 6,
-    backgroundColor: neoColors.black,
-    borderRadius: neoBorders.radiusMd,
   },
   cardFront: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: neoColors.white,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusMd,
-    paddingRight: 6,
-    paddingLeft: 6,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    paddingRight: 8,
+    paddingLeft: 8,
+    shadowColor: '#171A1F',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardSelected: {
-    backgroundColor: neoColors.yellow,
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
   },
   listItemLeft: {
     flex: 1,
@@ -198,28 +192,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 6,
-    borderRadius: 4,
+    borderRadius: 5,
   },
-  topSnBox: {
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    ...neoShadows.sm,
+  snGold: {
+    backgroundColor: '#F5A623',
+  },
+  snSoftGold: {
+    backgroundColor: 'rgba(245, 166, 35, 0.18)',
+  },
+  snGray: {
+    backgroundColor: '#F3F4F6',
   },
   snText: {
-    fontWeight: '700',
+    fontWeight: '600',
     textAlign: 'center',
   },
   topSnText: {
-    fontWeight: '900',
+    fontWeight: '700',
   },
   coverWrapper: {
     width: 38,
     height: 38,
     borderRadius: 6,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
     overflow: 'hidden',
-    backgroundColor: neoColors.offWhite,
+    backgroundColor: '#F3F4F6',
     marginRight: 8,
   },
   cover: {
@@ -231,8 +227,8 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
   musicTitle: {
-    fontWeight: '900',
-    fontSize: 13,
+    fontWeight: '600',
+    fontSize: 13.5,
   },
   listItemSingle: {
     paddingTop: 2,
@@ -240,23 +236,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   singerText: {
-    fontWeight: '600',
-    opacity: 0.8,
+    fontWeight: '400',
   },
   intervalText: {
-    fontWeight: '700',
+    fontWeight: '500',
     marginRight: 6,
-    opacity: 0.6,
   },
   moreButton: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.offWhite,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
   },
 })

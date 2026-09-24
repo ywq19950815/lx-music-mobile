@@ -1,7 +1,7 @@
 const defaultSetting: LX.AppSetting = {
   version: '2.0',
   'common.isAutoTheme': false,
-  'common.langId': null,
+  'common.langId': 'zh_cn',
   'common.apiSource': '',
   'common.sourceNameType': 'alias',
   'common.isAgreePact': true,

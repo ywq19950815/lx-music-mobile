@@ -1,14 +1,14 @@
 import { View, StyleSheet } from 'react-native'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
-const HEADER_HEIGHT = 32
+const HEADER_HEIGHT = 38
 
 interface Props {
   children: React.ReactNode
 }
 
 /**
- * RNN 全屏 Overlay 弹窗的 Neo-Brutalism 容器
+ * RNN 全屏 Overlay 弹窗的现代容器
  * 供 PactModal、VersionModal、SyncModeModal 等全屏浮层使用
  */
 export default ({ children }: Props) => {
@@ -16,11 +16,7 @@ export default ({ children }: Props) => {
     <View style={styles.centeredView}>
       <View style={styles.modalView}>
         <View style={styles.header}>
-          <View style={styles.headerDots}>
-            <View style={[styles.dot, { backgroundColor: neoColors.black }]} />
-            <View style={[styles.dot, { backgroundColor: neoColors.black }]} />
-            <View style={[styles.dot, { backgroundColor: neoColors.black }]} />
-          </View>
+          <View style={styles.brandBar} />
         </View>
         <View style={styles.body}>
           {children}
@@ -35,18 +31,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     paddingHorizontal: 20,
   },
   modalView: {
     width: '100%',
     maxWidth: 340,
     maxHeight: '82%',
-    backgroundColor: neoColors.offWhite,
-    borderRadius: neoBorders.radiusMd,
-    borderWidth: 2.5,
-    borderColor: neoColors.black,
-    ...neoShadows.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 10,
     overflow: 'hidden',
   },
   header: {
@@ -54,24 +54,19 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingHorizontal: 12,
-    backgroundColor: neoColors.yellow,
-    borderBottomWidth: 2,
-    borderBottomColor: neoColors.black,
+    paddingHorizontal: 16,
+    backgroundColor: colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
     height: HEADER_HEIGHT,
   },
-  headerDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+  brandBar: {
+    width: 3.5,
+    height: 12,
+    borderRadius: 2,
+    backgroundColor: colors.brand,
   },
   body: {
-    backgroundColor: neoColors.offWhite,
+    backgroundColor: colors.surface,
   },
 })

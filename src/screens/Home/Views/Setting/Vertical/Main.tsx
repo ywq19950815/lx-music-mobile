@@ -11,7 +11,7 @@ import Other from '../settings/Other'
 import Version from '../settings/Version'
 import About from '../settings/About'
 import Text from '@/components/common/Text'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 const SettingHeaderBanner = () => {
   return (
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     height: '100%',
-    backgroundColor: '#FFFDF5', // 复古波普米奶底纸
+    backgroundColor: colors.canvas,
   },
   list: {
     flexGrow: 1,
@@ -71,25 +71,25 @@ const styles = StyleSheet.create({
     paddingLeft: 12,
     paddingRight: 12,
     paddingTop: 12,
-    paddingBottom: 160, // 充足底部安全内边距，彻底杜绝 PlayerBar 与 TabBar 遮挡
+    paddingBottom: 160,
     flex: 0,
   },
   banner: {
-    backgroundColor: neoColors.yellow,
-    borderWidth: 2.5,
-    borderColor: '#000000',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000000',
-    shadowOffset: { width: 3.5, height: 3.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   bannerLeft: {
     flex: 1,
@@ -100,50 +100,40 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   bannerTitle: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#000000',
-    letterSpacing: -0.5,
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.ink,
+    letterSpacing: -0.3,
   },
   bannerBadge: {
-    backgroundColor: '#000000',
-    borderRadius: 6,
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    transform: [{ rotate: '2deg' }],
   },
   bannerBadgeText: {
-    color: neoColors.yellow,
+    color: '#B36B00',
     fontSize: 10,
-    fontWeight: '900',
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
   bannerSubtitle: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#333333',
+    fontWeight: '400',
+    color: colors.inkTertiary,
     marginTop: 4,
   },
   bannerIconBox: {
     width: 36,
     height: 36,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
   },
   bannerIconText: {
-    fontSize: 18,
-    // ⚠️ 必须显式给色：默认色走主题的 c-font，深色主题下是浅灰 rgb(219,219,219)，
-    // 落在纯白图标框上对比度仅 1.38:1，几乎看不见。
-    color: '#000000',
+    fontSize: 16,
+    color: colors.ink,
   },
 })
 

@@ -13,7 +13,7 @@ import { storageDataPrefix } from '@/config/constant'
 import { saveData } from '@/plugins/storage'
 import { throttle } from '@/utils/common'
 import { getSelectedManagedFolder, saveFontSize, saveViewPrevState, setSelectedManagedFolder } from '@/utils/data'
-import { showPactModal as handleShowPactModal } from '@/navigation'
+import { showPactModal as handleShowPactModal } from '@/navigation/utils'
 import { hideDesktopLyricView } from '@/utils/nativeModules/lyricDesktop'
 import { getPersistedUriList, selectManagedFolder } from '@/utils/fs'
 

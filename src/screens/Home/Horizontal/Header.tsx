@@ -10,7 +10,8 @@ import StatusBar from '@/components/common/StatusBar'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { HEADER_HEIGHT as _HEADER_HEIGHT } from '@/config/constant'
 import { type InitState as CommonState } from '@/store/common/state'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
+import { StyleSheet } from 'react-native'
 import SearchTypeSelector from '@/screens/Home/Views/Search/SearchTypeSelector'
 
 const headerComponents: Partial<Record<CommonState['navActiveId'], React.ReactNode>> = {
@@ -66,15 +67,13 @@ const Header = () => {
 
 const styles = createStyle({
   container: {
-    // width: '100%',
     paddingRight: 5,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    // 与竖屏头部统一：签名亮黄向上铺进状态栏区域，底部 2.5px 纯黑粗边
-    backgroundColor: neoColors.yellow,
-    borderBottomWidth: neoBorders.regular,
-    borderBottomColor: neoColors.black,
+    backgroundColor: colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
     zIndex: 10,
   },
   left: {
@@ -83,25 +82,23 @@ const styles = createStyle({
     paddingLeft: 5,
     alignItems: 'center',
     height: '100%',
-    // backgroundColor: 'rgba(0,0,0,0.1)',
   },
   btn: {
-    // flex: 1,
     width: HEADER_HEIGHT,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',
   },
   titleBtn: {
     flex: 1,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
     height: '100%',
     justifyContent: 'center',
   },
   leftTitle: {
     paddingLeft: 10,
     paddingRight: 16,
+    color: colors.ink,
+    fontWeight: '700',
   },
   rightTitle: {
     paddingLeft: 16,

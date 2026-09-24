@@ -21,7 +21,7 @@ import {
 } from '@/config/defaultSource'
 import { findInstalledDefaultSource, installAllBuiltinSources } from '@/core/defaultSource'
 import { refreshUserApiList } from '@/core/userApi'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 const apiSourceList = apiSourceInfo.map(api => ({
   id: api.id,
@@ -231,20 +231,14 @@ const styles = createStyle({
     marginTop: 10,
     flexDirection: 'row',
   },
-  // ===== 内置音源库卡片（Neo-Brutalism） =====
+  // ===== 内置音源库卡片（现代柔和高质感） =====
   defaultCard: {
     marginBottom: 12,
-    padding: 12,
-    borderWidth: 2,
-    borderColor: '#141414',
-    borderRadius: 6,
-    backgroundColor: '#FFE600',
-    // 纯黑实体硬阴影
-    shadowColor: '#141414',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 166, 35, 0.25)',
+    borderRadius: radius.md,
+    backgroundColor: 'rgba(245, 166, 35, 0.06)',
   },
   defaultCardHeader: {
     flexDirection: 'row',
@@ -253,26 +247,24 @@ const styles = createStyle({
     marginBottom: 6,
   },
   defaultCardTitle: {
-    fontWeight: '900',
-    color: '#141414',
+    fontWeight: '700',
+    color: colors.ink,
     flexShrink: 1,
   },
   defaultCardBadge: {
     marginLeft: 8,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderWidth: 1.5,
-    borderColor: '#141414',
-    borderRadius: 3,
-    backgroundColor: '#141414',
-    color: '#FFE600',
-    fontWeight: '900',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(245, 166, 35, 0.16)',
+    color: '#B36B00',
+    fontWeight: '600',
     overflow: 'hidden',
   },
   defaultCardDesc: {
-    color: '#141414',
-    marginBottom: 10,
-    lineHeight: 16,
+    color: colors.inkSecondary,
+    marginBottom: 12,
+    lineHeight: 18,
   },
   defaultCardBtns: {
     flexDirection: 'row',
@@ -280,41 +272,46 @@ const styles = createStyle({
   },
   defaultBtn: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 2,
-    borderColor: '#141414',
-    borderRadius: 4,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
   defaultBtnPrimary: {
-    backgroundColor: '#141414',
+    backgroundColor: colors.brand,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
   },
   defaultBtnGhost: {
-    backgroundColor: 'transparent',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.hairline,
   },
   defaultBtnText: {
-    color: '#FFE600',
-    fontWeight: '900',
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   defaultBtnGhostText: {
-    color: '#141414',
-    fontWeight: '900',
+    color: colors.inkSecondary,
+    fontWeight: '600',
   },
   sourceLabel: {
-    color: neoColors.black,
-    fontWeight: '700',
+    color: colors.ink,
+    fontWeight: '600',
   },
   sourceDesc: {
-    color: neoColors.gray700,
-    fontWeight: '600',
+    color: colors.inkTertiary,
+    fontWeight: '400',
   },
   sourceStatus: {
-    color: neoColors.gray700,
-    fontWeight: '600',
+    color: colors.brandDeep,
+    fontWeight: '500',
   },
   builtinTag: {
-    color: '#00875A', // 翠绿醒目标识
-    fontWeight: '800',
+    color: '#10B981',
+    fontWeight: '600',
   },
 })

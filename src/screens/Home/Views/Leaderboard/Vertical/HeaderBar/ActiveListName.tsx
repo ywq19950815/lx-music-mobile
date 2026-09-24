@@ -2,7 +2,7 @@ import { forwardRef, useImperativeHandle, useState } from 'react'
 import { TouchableOpacity, StyleSheet, View } from 'react-native'
 
 import Text from '@/components/common/Text'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 export interface ActiveListNameProps {
   onShowBound: () => void
@@ -42,17 +42,10 @@ const styles = StyleSheet.create({
   badgeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: neoColors.cyan,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusPill,
+    backgroundColor: '#F3F4F6',
+    borderRadius: radius.pill,
     paddingHorizontal: 12,
     paddingVertical: 5,
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
   },
   trophy: {
     fontSize: 13,
@@ -60,20 +53,20 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 13,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.ink,
     maxWidth: 130,
   },
   chevronWrap: {
     marginLeft: 6,
     paddingHorizontal: 5,
     paddingVertical: 2,
-    backgroundColor: neoColors.black,
+    backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 6,
   },
   chevron: {
     fontSize: 10,
-    fontWeight: '900',
-    color: neoColors.white,
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
 })

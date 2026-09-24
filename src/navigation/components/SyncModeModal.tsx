@@ -10,65 +10,58 @@ import ModalContent from './ModalContent'
 import syncState from '@/store/sync/state'
 import CheckBox from '@/components/common/CheckBox'
 import { setSyncModeComponentId } from '@/core/sync'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 
 const styles = createStyle({
   main: {
-    // flexGrow: 0,
     flexShrink: 1,
-    marginTop: 15,
-    marginLeft: 15,
-    // marginRight: 15,
-    marginBottom: 15,
+    marginTop: 16,
+    marginLeft: 16,
+    marginRight: 16,
+    marginBottom: 16,
   },
   content: {
     flexGrow: 0,
   },
   title: {
     textAlign: 'center',
-    marginBottom: 10,
-    marginRight: 15,
+    marginBottom: 12,
+    fontWeight: '700',
+    color: colors.ink,
   },
   btnGroup: {
-    marginTop: 10,
+    marginTop: 12,
   },
   btns: {
     flexDirection: 'row',
-    // justifyContent: 'center',
     justifyContent: 'flex-start',
-    marginTop: 5,
-    marginBottom: 5,
-    // paddingBottom: 15,
-    // paddingLeft: 15,
-    // paddingRight: 15,
+    marginTop: 6,
+    marginBottom: 6,
   },
   btn: {
     paddingTop: 8,
     paddingBottom: 8,
-    paddingLeft: 12,
-    paddingRight: 12,
+    paddingLeft: 14,
+    paddingRight: 14,
     alignItems: 'center',
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.yellow,
-    marginRight: 12,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
+    marginRight: 10,
     minWidth: 90,
-    ...neoShadows.sm,
   },
   tips: {
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingBottom: 10,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 12,
   },
   tipTitle: {
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: colors.ink,
   },
   tip: {
-    // paddingLeft: 15,
-    // paddingRight: 15,
     paddingBottom: 5,
+    color: colors.inkTertiary,
   },
 })
 

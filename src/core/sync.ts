@@ -1,4 +1,5 @@
-import { dismissOverlay, onModalDismissed, showSyncModeModal } from '@/navigation'
+import { dismissOverlay, showSyncModeModal } from '@/navigation/utils'
+import { onModalDismissed } from '@/navigation/event'
 import syncState from '@/store/sync/state'
 import syncActions from '@/store/sync/action'
 

@@ -7,7 +7,7 @@ import playerState from '@/store/player/state'
 import Text from '@/components/common/Text'
 import { LIST_IDS } from '@/config/constant'
 import { formatMusicName } from '@/utils/tools'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export default ({ isHome }: { isHome: boolean }) => {
   const musicInfo = usePlayerMusicInfo()
@@ -28,8 +28,8 @@ export default ({ isHome }: { isHome: boolean }) => {
   }
 
   const hasTrack = !!musicInfo.id
-  const songName = hasTrack ? musicInfo.name : 'NEO PLAYLIST'
-  const singer = hasTrack ? (musicInfo.singer || '安迪音乐') : '点击选择歌曲播放'
+  const songName = hasTrack ? musicInfo.name : '暂无播放歌曲'
+  const singer = hasTrack ? (musicInfo.singer || '未知歌手') : '点击选择歌曲播放'
 
   return (
     <TouchableOpacity
@@ -54,15 +54,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: neoColors.black,
-    fontWeight: '900',
+    color: colors.ink,
+    fontWeight: '700',
     fontSize: 13,
-    letterSpacing: -0.3,
   },
   subtitle: {
-    color: neoColors.gray700,
-    fontWeight: '700',
+    color: colors.inkTertiary,
+    fontWeight: '500',
     fontSize: 11,
-    marginTop: 1,
+    marginTop: 2,
   },
 })

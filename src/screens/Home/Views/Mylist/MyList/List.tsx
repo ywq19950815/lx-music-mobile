@@ -10,17 +10,17 @@ import Text from '@/components/common/Text'
 import { type Position } from './ListMenu'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import Loading from '@/components/common/Loading'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 type FlatListType = FlatListProps<LX.List.MyListInfo>
 
 const ITEM_HEIGHT = scaleSizeH(56)
 
 /**
- * NeoPlaylistItem: 新粗野主义风格的歌单选择卡片。
- * - 纯黑 2px 边框
- * - 纯黑 3px 硬阴影
- * - 选中态为亮黄色实体卡片
+ * 现代轻量化歌单选择卡片：
+ * - 柔和微圆角与极浅边框
+ * - 选中态微透暖金背景与品牌色图标
+ * - 移除硬阴影与粗黑描边
  */
 const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
   onPress: (item: LX.List.MyListInfo) => void
@@ -47,24 +47,20 @@ const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
 
   return (
     <View style={styles.itemWrapper}>
-      {/* 背后纯黑实体硬投影底座 */}
-      <View style={styles.cardShadow} />
-
-      {/* 前台波普卡片 */}
       <TouchableOpacity
         style={[styles.cardBody, active ? styles.cardActive : styles.cardDefault]}
         onPress={handlePress}
         activeOpacity={0.8}
       >
-        <View style={styles.leftIconBox}>
+        <View style={[styles.leftIconBox, active ? styles.leftIconBoxActive : styles.leftIconBoxDefault]}>
           <Icon
             name={active ? 'play' : 'album'}
-            size={16}
-            color={neoColors.black}
+            size={14}
+            color={active ? '#FFFFFF' : colors.inkSecondary}
           />
         </View>
 
-        {fetching ? <Loading color={neoColors.black} style={styles.loading} /> : null}
+        {fetching ? <Loading color={colors.brand} style={styles.loading} /> : null}
 
         <View style={styles.nameBox}>
           <Text
@@ -81,7 +77,7 @@ const ListItem = memo(({ item, index, activeId, onPress, onShowMenu }: {
           style={styles.moreBtn}
           activeOpacity={0.6}
         >
-          <Icon name="dots-vertical" color={neoColors.black} size={14} />
+          <Icon name="dots-vertical" color={colors.inkTertiary} size={15} />
         </TouchableOpacity>
       </TouchableOpacity>
     </View>
@@ -167,49 +163,46 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingVertical: 6,
-    paddingHorizontal: 4,
+    paddingHorizontal: 8,
   },
   itemWrapper: {
-    position: 'relative',
-    marginVertical: 4,
+    marginVertical: 3,
     height: 48,
-  },
-  cardShadow: {
-    position: 'absolute',
-    left: 2,
-    right: -2,
-    top: 2,
-    bottom: -2,
-    backgroundColor: neoColors.black,
-    borderRadius: neoBorders.radiusSm,
-    zIndex: 0,
   },
   cardBody: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    borderRadius: neoBorders.radiusSm,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    zIndex: 1,
+    paddingHorizontal: 12,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   cardActive: {
-    backgroundColor: neoColors.yellow,
+    backgroundColor: 'rgba(245, 166, 35, 0.08)',
+    borderColor: 'rgba(245, 166, 35, 0.35)',
   },
   cardDefault: {
-    backgroundColor: neoColors.white,
+    backgroundColor: colors.surface,
+    borderColor: colors.hairline,
   },
   leftIconBox: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: neoColors.offWhite,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 10,
+  },
+  leftIconBoxActive: {
+    backgroundColor: colors.brand,
+  },
+  leftIconBoxDefault: {
+    backgroundColor: '#F3F4F6',
   },
   loading: {
     marginRight: 6,
@@ -220,23 +213,19 @@ const styles = StyleSheet.create({
   },
   listNameText: {
     fontSize: 14,
-    letterSpacing: -0.2,
   },
   listNameActive: {
-    color: neoColors.black,
-    fontWeight: '900',
+    color: '#B36B00',
+    fontWeight: '700',
   },
   listNameDefault: {
-    color: neoColors.black,
-    fontWeight: '700',
+    color: colors.ink,
+    fontWeight: '600',
   },
   moreBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: neoColors.offWhite,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
     justifyContent: 'center',
     alignItems: 'center',
   },

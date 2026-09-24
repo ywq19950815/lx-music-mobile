@@ -13,10 +13,18 @@ export const getWindowSize = async() => {
 }
 
 export const windowSizeTools = {
-  size: {
-    width: 0,
-    height: 0,
-  },
+  // 模块加载时先用 Dimensions 同步兜底，避免早于 init() 的消费方拿到 0 尺寸
+  size: (() => {
+    try {
+      const window = Dimensions.get('window')
+      return {
+        width: Math.round(window.width),
+        height: Math.round(window.height) + (StatusBar.currentHeight ?? 0),
+      }
+    } catch {
+      return { width: 0, height: 0 }
+    }
+  })(),
   listeners: [] as SizeHandler[],
   getSize() {
     return this.size

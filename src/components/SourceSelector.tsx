@@ -15,7 +15,7 @@ import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import { useI18n } from '@/lang'
 import { useSettingValue } from '@/store/setting/hook'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 type Sources = Readonly<Array<LX.OnlineSource | 'all'>>
 
@@ -47,21 +47,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingLeft: 10,
     paddingRight: 8,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: 8,
-    backgroundColor: neoColors.yellow,
-    ...neoShadows.sm,
+    borderWidth: 1,
+    borderColor: '#E6E8EC',
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
   },
   sourceMenuText: {
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.ink,
     textAlign: 'center',
   },
   arrowIcon: {
     fontSize: 11,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.inkSecondary,
     marginLeft: 3,
   },
   // 底部抽屉遮罩
@@ -72,29 +71,24 @@ const styles = StyleSheet.create({
   },
   // 抽屉面板容器
   sheetContainer: {
-    backgroundColor: '#F8F6EE',
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    borderTopWidth: 2.5,
-    borderLeftWidth: 2.5,
-    borderRightWidth: 2.5,
-    borderBottomWidth: 0,
-    borderColor: neoColors.black,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 28,
     maxHeight: '75%',
-    shadowColor: neoColors.black,
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 0,
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
     elevation: 20,
   },
   dragHandle: {
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: neoColors.black,
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E4E6EB',
     alignSelf: 'center',
     marginBottom: 12,
   },
@@ -111,29 +105,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerTitle: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.ink,
   },
   closeBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: neoColors.white,
-    borderWidth: 2,
-    borderColor: neoColors.black,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
-    ...neoShadows.sm,
   },
   // 提示条
   tipBar: {
-    backgroundColor: neoColors.white,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
+    backgroundColor: '#F8F9FA',
     borderRadius: 8,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 7,
     marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -141,8 +130,8 @@ const styles = StyleSheet.create({
   },
   tipText: {
     fontSize: 11.5,
-    color: neoColors.gray700,
-    fontWeight: '600',
+    color: colors.inkSecondary,
+    fontWeight: '500',
     flex: 1,
   },
   // 2 列卡片网格
@@ -154,23 +143,22 @@ const styles = StyleSheet.create({
   },
   sourceCard: {
     width: '48.3%',
-    height: 54,
+    height: 52,
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: neoColors.black,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...neoShadows.sm,
   },
   sourceCardActive: {
-    backgroundColor: neoColors.yellow,
-    shadowOffset: { width: 1, height: 1 },
-    transform: [{ translateX: 1 }, { translateY: 1 }],
+    backgroundColor: 'rgba(245, 166, 35, 0.10)',
+    borderWidth: 1.5,
+    borderColor: '#F5A623',
   },
   sourceCardInactive: {
-    backgroundColor: neoColors.white,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#EAECEF',
   },
   sourceLeft: {
     flexDirection: 'row',
@@ -179,36 +167,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   indicatorDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   indicatorDotActive: {
-    backgroundColor: neoColors.black,
+    backgroundColor: '#F5A623',
   },
   indicatorDotInactive: {
-    backgroundColor: 'transparent',
+    backgroundColor: '#D1D5DB',
   },
   sourceLabel: {
-    fontSize: 13.5,
-    fontWeight: '800',
-    color: neoColors.black,
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.ink,
     flexShrink: 1,
   },
   activeBadge: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#2E7D32',
-    borderWidth: 1,
+    backgroundColor: '#F5A623',
     borderRadius: 4,
     paddingHorizontal: 5,
-    paddingVertical: 2,
+    paddingVertical: 1.5,
   },
   activeBadgeText: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#2E7D32',
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 })
 
@@ -305,7 +289,7 @@ const Component = <S extends Sources>(
                 {/* 标题栏 */}
                 <View style={styles.headerRow}>
                   <View style={styles.headerTitleWrap}>
-                    <Icon name="slider" size={17} color={neoColors.black} />
+                    <Icon name="slider" size={17} color={colors.ink} />
                     <Text style={styles.headerTitle}>切换音乐源</Text>
                   </View>
                   <TouchableOpacity
@@ -314,13 +298,13 @@ const Component = <S extends Sources>(
                     onPress={hideSheet}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Icon name="close" size={12} color={neoColors.black} />
+                    <Icon name="close" size={12} color={colors.inkSecondary} />
                   </TouchableOpacity>
                 </View>
 
                 {/* 说明小提示 */}
                 <View style={styles.tipBar}>
-                  <Icon name="help" size={13} color={neoColors.gray700} />
+                  <Icon name="help" size={13} color={colors.inkSecondary} />
                   <Text style={styles.tipText} numberOfLines={1}>
                     不同音源拥有不同版权曲库，切换将刷新当前列表
                   </Text>

@@ -7,7 +7,7 @@ import songlistState from '@/store/songlist/state'
 import listState from '@/store/list/state'
 import { useI18n } from '@/lang'
 import { useListInfo } from './state'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export default memo(() => {
   const t = useI18n()
@@ -34,7 +34,7 @@ export default memo(() => {
         activeOpacity={0.8}
         onPress={handlePlayAll}
       >
-        <Icon name="play" size={14} color={neoColors.black} />
+        <Icon name="play" size={14} color="#FFFFFF" />
         <Text style={styles.playAllText}>
           {t('play_all')}
           {songCount ? ` (${songCount})` : ''}
@@ -53,7 +53,7 @@ export default memo(() => {
         <Icon
           name="love"
           size={14}
-          color={isCollected ? '#D81E5B' : neoColors.black}
+          color={isCollected ? '#E0245E' : colors.inkSecondary}
         />
         <Text style={[styles.collectText, isCollected && styles.collectedText]}>
           {isCollected ? '已收藏' : t('collect_songlist')}
@@ -71,47 +71,44 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   btn: {
-    height: 40,
+    height: 38,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 2.5, height: 2.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    borderRadius: 19,
   },
   playAllBtn: {
-    flex: 1.5,
-    backgroundColor: neoColors.yellow,
-    paddingHorizontal: 12,
+    flex: 1.4,
+    backgroundColor: colors.brand,
+    paddingHorizontal: 14,
     marginRight: 10,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 2,
   },
   playAllText: {
     fontSize: 13.5,
-    fontWeight: '900',
-    color: '#000000',
+    fontWeight: '600',
+    color: '#FFFFFF',
     marginLeft: 6,
   },
   collectBtn: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 10,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 12,
   },
   collectedBtn: {
-    backgroundColor: '#FFF0F5',
-    borderColor: '#000000',
+    backgroundColor: '#FDECEC',
   },
   collectText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#000000',
+    fontWeight: '600',
+    color: colors.ink,
     marginLeft: 5,
   },
   collectedText: {
-    color: '#D81E5B',
+    color: '#E0245E',
   },
 })

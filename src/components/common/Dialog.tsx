@@ -4,9 +4,9 @@ import Modal, { type ModalType } from './Modal'
 import { Icon } from '@/components/common/Icon'
 import { useKeyboard } from '@/utils/hooks'
 import Text from './Text'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
-const HEADER_HEIGHT = 34
+const HEADER_HEIGHT = 42
 
 export interface DialogProps {
   onHide?: () => void
@@ -48,7 +48,7 @@ export default forwardRef<DialogType, DialogProps>(({
             activeOpacity={0.7}
             onPress={() => modalRef.current?.setVisible(false)}
           >
-            <Icon name="close" color={neoColors.black} size={14} />
+            <Icon name="close" color={colors.inkSecondary} size={14} />
           </TouchableOpacity>
         )
       : null
@@ -61,7 +61,7 @@ export default forwardRef<DialogType, DialogProps>(({
           <View style={styles.header}>
             <View style={styles.headerTitleBox}>
               <View style={styles.headerDot} />
-              <Text style={styles.title} size={14} color={neoColors.black} numberOfLines={1}>
+              <Text style={styles.title} size={14} color={colors.ink} numberOfLines={1}>
                 {title}
               </Text>
             </View>
@@ -87,22 +87,26 @@ const styles = StyleSheet.create({
     maxWidth: '92%',
     minWidth: '75%',
     maxHeight: '82%',
-    backgroundColor: neoColors.white,
-    borderRadius: neoBorders.radiusMd,
-    borderWidth: 2.5,
-    borderColor: neoColors.black,
-    ...neoShadows.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 10,
     overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: neoColors.yellow,
-    borderBottomWidth: 2,
-    borderBottomColor: neoColors.black,
+    backgroundColor: colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
     height: HEADER_HEIGHT,
-    paddingHorizontal: 10,
+    paddingHorizontal: 14,
   },
   headerTitleBox: {
     flexDirection: 'row',
@@ -110,27 +114,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: neoColors.black,
-    marginRight: 6,
+    width: 3.5,
+    height: 13,
+    borderRadius: 2,
+    backgroundColor: colors.brand,
+    marginRight: 8,
   },
   title: {
-    fontWeight: '900',
+    fontWeight: '700',
   },
   closeBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
   },
   body: {
-    backgroundColor: neoColors.offWhite,
+    backgroundColor: colors.surface,
   },
 })

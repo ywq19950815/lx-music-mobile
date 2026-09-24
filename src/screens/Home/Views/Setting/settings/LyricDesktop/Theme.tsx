@@ -6,7 +6,7 @@ import { StyleSheet, View, TouchableOpacity } from 'react-native'
 
 import SubTitle from '../../components/SubTitle'
 import { useSettingValue } from '@/store/setting/hook'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 const themes = [
   // 第一个色卡与 config/defaultSetting.ts 的默认值 rgba(7,197,86,1) 保持一致，
@@ -48,8 +48,8 @@ const ThemeItem = ({ color, active, change }: {
   active: boolean
   change: (color: Theme) => void
 }) => {
-  // 纯黑主题用白色对勾，其余用黑色，保证任何色块上勾都清晰
-  const checkColor = color[0] === '#000000' ? neoColors.white : neoColors.black
+  // 纯黑主题用白色对勾，其余用深色或白色
+  const checkColor = color[0] === '#000000' || color[0] === '#019ce4' || color[0] === '#ff1222' || color[0] === '#c851d4' ? '#FFFFFF' : '#1A1C20'
 
   return (
     <TouchableOpacity
@@ -60,8 +60,7 @@ const ThemeItem = ({ color, active, change }: {
       accessibilityState={{ selected: active }}
     >
       <View style={[styles.swatch, { backgroundColor: color[0] }, active ? styles.swatchActive : null]}>
-        {/* 对勾用纯 View 画（图标字体里没有 check-bold 字形），颜色跟随该主题的对比色 */}
-        {active ? <View style={[styles.checkMark, { width: 12, height: 7, borderColor: checkColor }]} /> : null}
+        {active ? <View style={[styles.checkMark, { width: 11, height: 6, borderColor: checkColor }]} /> : null}
       </View>
     </TouchableOpacity>
   )
@@ -103,40 +102,38 @@ const styles = StyleSheet.create({
   list: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
   item: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   swatch: {
-    width: 30,
-    height: 30,
-    borderRadius: 9,
-    borderWidth: neoBorders.regular,
-    borderColor: neoColors.black,
+    width: 32,
+    height: 32,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  // 选中：物理按下去，阴影收起，与全局实体按键的按压语言一致
   swatchActive: {
-    transform: [{ translateX: 2 }, { translateY: 2 }],
-    shadowOpacity: 0,
-    elevation: 0,
+    borderWidth: 2.5,
+    borderColor: colors.brand,
+    transform: [{ scale: 1.08 }],
   },
-  // 纯 View 对勾：左下边框 + -45° 旋转 = ✓
   checkMark: {
-    borderLeftWidth: 2.5,
-    borderBottomWidth: 2.5,
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
     borderStyle: 'solid',
     transform: [{ rotate: '-45deg' }],
-    marginTop: -3,
+    marginTop: -2,
   },
 })

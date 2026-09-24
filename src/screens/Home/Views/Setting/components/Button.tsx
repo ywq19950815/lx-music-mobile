@@ -2,7 +2,7 @@ import { memo } from 'react'
 import { Pressable, StyleSheet } from 'react-native'
 import type { BtnProps } from '@/components/common/Button'
 import Text from '@/components/common/Text'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 type ButtonProps = BtnProps
 
@@ -17,42 +17,31 @@ export default memo(({ disabled, onPress, children }: ButtonProps) => {
       onPress={onPress}
       disabled={disabled}
     >
-      <Text size={13.5} style={styles.text}>{children}</Text>
+      <Text size={13} style={styles.text}>{children}</Text>
     </Pressable>
   )
 })
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: neoColors.yellow,
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+    borderRadius: radius.pill,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    shadowColor: '#000000',
-    shadowOffset: { width: 2.5, height: 2.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
     marginRight: 10,
     alignSelf: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   disabled: {
-    backgroundColor: '#E5E5DE',
-    borderColor: '#888888',
-    shadowOpacity: 0,
-    elevation: 0,
-    opacity: 0.6,
+    opacity: 0.45,
   },
   pressed: {
-    transform: [{ translateX: 2 }, { translateY: 2 }],
-    shadowOffset: { width: 0.5, height: 0.5 },
+    opacity: 0.75,
   },
   text: {
-    fontWeight: '800',
-    color: '#000000',
-    letterSpacing: -0.2,
+    fontWeight: '600',
+    color: colors.ink,
   },
 })
 

@@ -7,11 +7,11 @@ const { createThemeColors } = require('./utils')
 const defaultThemes = [
   {
     id: 'green',
-    name: '绿意盎然',
+    name: '流金岁月',
     isDark: false,
     config: {
-      primary: 'rgb(77, 175, 124)',
-      font: 'rgb(33, 33, 33)',
+      primary: 'rgb(245, 166, 35)',
+      font: 'rgb(26, 28, 32)',
       'c-app-background': 'var(c-primary-light-600-alpha-700)',
       'c-main-background': 'rgba(255, 255, 255, 1)',
       'bg-image': '',

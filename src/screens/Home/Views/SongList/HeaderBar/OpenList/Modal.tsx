@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import Input, { type InputType } from '@/components/common/Input'
 import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 import { useI18n } from '@/lang'
 // import SourceSelector, { type SourceSelectorProps, type SourceSelectorType } from '../SourceSelector'
 import { type Source } from '@/store/songlist/state'
@@ -101,7 +101,7 @@ export default forwardRef<ModalType, ModalProps>(({ onOpenId }, ref) => {
               {/* <SourceSelector style={{ ...styles.selector, backgroundColor: theme['c-primary-input-background'] }} ref={sourceSelectorRef} onSourceChange={onSourceChange} /> */}
               <IdInput ref={inputRef} />
             </View>
-            <Text style={styles.inputTipText} size={13} color={neoColors.gray700}>{t('songlist_open_input_tip')}</Text>
+            <Text style={styles.inputTipText} size={13} color={colors.inkSecondary}>{t('songlist_open_input_tip')}</Text>
           </View>
         </ConfirmAlert>
       : null

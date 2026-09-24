@@ -1,7 +1,7 @@
 import versionActions from '@/store/version/action'
 import versionState, { type InitState } from '@/store/version/state'
 import { saveIgnoreVersion } from '@/utils/data'
-import { showVersionModal } from '@/navigation'
+import { showVersionModal } from '@/navigation/utils'
 import { Navigation } from 'react-native-navigation'
 import { toast } from '@/utils/tools'
 

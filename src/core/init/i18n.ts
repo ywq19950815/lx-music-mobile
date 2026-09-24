@@ -10,11 +10,11 @@ export default async(setting: LX.AppSetting) => {
   global.i18n = createI18n()
 
   if (!lang || !global.i18n.availableLocales.includes(lang)) {
-    const deviceLanguage = (await getDeviceLanguage()).toLowerCase()
+    let deviceLanguage = (await getDeviceLanguage()).toLowerCase().replace(/-/g, '_')
     if (typeof deviceLanguage == 'string' && global.i18n.availableLocales.includes(deviceLanguage as I18n['locale'])) {
       lang = deviceLanguage as I18n['locale']
     } else {
-      lang = 'en_us'
+      lang = 'zh_cn'
     }
     updateSetting({ 'common.langId': lang })
   }

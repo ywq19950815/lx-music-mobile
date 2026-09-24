@@ -4,7 +4,7 @@ import Text from '@/components/common/Text'
 import Button, { type BtnType } from '@/components/common/Button'
 import { type BoardItem } from '@/store/leaderboard/state'
 import { Icon } from '@/components/common/Icon'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 export interface ListItemProps {
   item: BoardItem
@@ -42,7 +42,7 @@ export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemPr
       }}
     >
       {active ? (
-        <Icon style={styles.listActiveIcon} name="chevron-right" size={13} color={neoColors.black} />
+        <Icon style={styles.listActiveIcon} name="chevron-right" size={13} color={colors.brand} />
       ) : null}
       <Text
         style={[styles.listName, active && styles.listNameActive]}
@@ -57,37 +57,34 @@ export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemPr
 
 const styles = StyleSheet.create({
   button: {
-    paddingLeft: 10,
+    paddingLeft: 12,
     paddingRight: 12,
-    paddingVertical: 8,
+    paddingVertical: 7,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: neoBorders.radiusPill,
+    borderRadius: radius.pill,
     marginHorizontal: 4,
-    marginVertical: 4,
-    borderWidth: 2,
+    marginVertical: 3,
   },
   buttonActive: {
-    backgroundColor: neoColors.yellow,
-    borderColor: neoColors.black,
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    borderWidth: 1,
+    borderColor: colors.brand,
   },
   buttonInactive: {
-    backgroundColor: neoColors.white,
-    borderColor: neoColors.black,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   listActiveIcon: {
     marginRight: 4,
   },
   listName: {
-    fontWeight: '800',
-    color: neoColors.black,
+    fontWeight: '500',
+    color: colors.inkSecondary,
   },
   listNameActive: {
-    fontWeight: '900',
+    fontWeight: '700',
+    color: '#B36B00',
   },
 })

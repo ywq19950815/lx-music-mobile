@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { View, ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import Dialog, { type DialogType } from './Dialog'
 import Text from './Text'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 import { type GlobalAlertOptions, type GlobalAlertAction } from '@/event/appEvent'
 
 /**
@@ -117,34 +117,42 @@ export default () => {
           showsVerticalScrollIndicator={false}
           showsHorizontalScrollIndicator={false}
         >
-          <Text style={styles.textBody} size={13.5} color={neoColors.black}>
+          <Text style={styles.textBody} size={13.5} color={colors.inkSecondary}>
             {config.message}
           </Text>
         </ScrollView>
       </View>
       {actions ? (
         <View style={styles.actionsCol}>
-          {actions.map((action, index) => (
-            <TouchableOpacity
-              key={`${action.text}-${index}`}
-              style={[
-                styles.actionBtn,
-                action.style === 'primary'
-                  ? styles.actionBtnPrimary
-                  : action.style === 'danger' ? styles.actionBtnDanger : styles.actionBtnDefault,
-              ]}
-              activeOpacity={0.75}
-              onPress={() => handleAction(action)}
-            >
-              <Text
-                style={styles.btnText}
-                size={13}
-                color={action.style === 'danger' ? neoColors.coral : neoColors.black}
+          {actions.map((action, index) => {
+            const isPrimary = action.style === 'primary'
+            const isDanger = action.style === 'danger'
+            let textColor = colors.inkSecondary
+            if (isPrimary) textColor = '#FFFFFF'
+            else if (isDanger) textColor = '#DC2626'
+
+            return (
+              <TouchableOpacity
+                key={`${action.text}-${index}`}
+                style={[
+                  styles.actionBtn,
+                  isPrimary
+                    ? styles.actionBtnPrimary
+                    : isDanger ? styles.actionBtnDanger : styles.actionBtnDefault,
+                ]}
+                activeOpacity={0.75}
+                onPress={() => handleAction(action)}
               >
-                {action.text}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={styles.btnText}
+                  size={13}
+                  color={textColor}
+                >
+                  {action.text}
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
         </View>
       ) : (
         <View style={styles.btns}>
@@ -154,7 +162,7 @@ export default () => {
               activeOpacity={0.75}
               onPress={handleCancel}
             >
-              <Text style={styles.btnText} size={13} color={neoColors.black}>
+              <Text style={styles.cancelBtnText} size={13}>
                 {config.cancelButtonText || '取消'}
               </Text>
             </TouchableOpacity>
@@ -164,7 +172,7 @@ export default () => {
             activeOpacity={0.75}
             onPress={handleConfirm}
           >
-            <Text style={styles.btnText} size={13} color={neoColors.black}>
+            <Text style={styles.confirmBtnText} size={13}>
               {config.confirmButtonText || '确定'}
             </Text>
           </TouchableOpacity>
@@ -184,42 +192,48 @@ const styles = StyleSheet.create({
     maxHeight: 260,
   },
   textBody: {
-    lineHeight: 21,
-    fontWeight: '600',
+    lineHeight: 22,
+    fontWeight: '400',
   },
   btns: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 14,
-    paddingBottom: 14,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     gap: 10,
   },
   cancelBtn: {
     paddingVertical: 7.5,
     paddingHorizontal: 16,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+  },
+  cancelBtnText: {
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
   confirmBtn: {
     paddingVertical: 7.5,
     paddingHorizontal: 18,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.yellow,
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  confirmBtnText: {
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   btnText: {
-    fontWeight: '800',
+    fontWeight: '600',
   },
-  // ---- 多按钮纵向列表（通知权限 / 电池优化等原生多选项弹窗）----
   actionsCol: {
     paddingHorizontal: 14,
     paddingBottom: 14,
@@ -228,20 +242,17 @@ const styles = StyleSheet.create({
   actionBtn: {
     width: '100%',
     paddingVertical: 10,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
+    borderRadius: radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
   },
   actionBtnDefault: {
-    backgroundColor: neoColors.white,
+    backgroundColor: '#F3F4F6',
   },
   actionBtnPrimary: {
-    backgroundColor: neoColors.yellow,
+    backgroundColor: colors.brand,
   },
   actionBtnDanger: {
-    backgroundColor: '#FFE3E3',
+    backgroundColor: '#FEE2E2',
   },
 })

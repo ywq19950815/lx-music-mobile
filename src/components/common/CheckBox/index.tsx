@@ -130,7 +130,7 @@ const styles = createStyle({
     marginTop: 0,
   },
   helpBtn: {
-    backgroundColor: '#FFE600',
+    backgroundColor: '#F5A623',
     borderWidth: 1.5,
     borderColor: '#000000',
     borderRadius: 6,

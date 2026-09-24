@@ -1,19 +1,21 @@
 import { memo } from 'react'
 import { View } from 'react-native'
 
-// import Title from './components/Title'
 import MoreBtn from './components/MoreBtn'
 import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { createStyle } from '@/utils/tools'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
-import { neoColors } from '@/theme/neobrutalism'
 import { useNavigationBarHeight } from '@/store/common/hook'
 
 const BASE_PADDING_BOTTOM = 12
 
+/**
+ * 播放页底部控制面板：深色沉浸。
+ * - 与深空底同色 + 顶部 hairline 微光分隔
+ * - 进度条 / 时间 / 主控 / 更多按钮自上而下
+ */
 export default memo(() => {
-  // 沉浸式下这一层直接贴到屏幕底部，必须让出底部手势条（小白条）的高度
   const navigationBarHeight = useNavigationBarHeight()
 
   return (
@@ -35,19 +37,12 @@ const styles = createStyle({
     left: 0,
     right: 0,
     width: '100%',
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
     paddingTop: 8,
-    backgroundColor: neoColors.offWhite,
-    borderTopWidth: 2,
-    borderTopColor: neoColors.black,
+    backgroundColor: '#131419',
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(255,255,255,0.06)',
     flexDirection: 'column',
     zIndex: 30,
-  },
-  status: {
-    marginTop: 10,
-    flexDirection: 'column',
-    flex: 0,
-    paddingLeft: 5,
-    justifyContent: 'space-evenly',
   },
 })

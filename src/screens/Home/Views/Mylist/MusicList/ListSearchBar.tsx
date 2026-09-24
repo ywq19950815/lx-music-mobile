@@ -6,7 +6,7 @@ import Input, { type InputType } from '@/components/common/Input'
 import { Icon } from '@/components/common/Icon'
 
 import { useI18n } from '@/lang'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 interface SearchInputProps {
   onSearch: (keywork: string) => void
@@ -45,11 +45,7 @@ export interface ListSearchBarType {
 }
 
 /**
- * NeoListSearchBar: 新粗野主义风格的歌单搜索条。
- * - 复古浅黄底纸顶栏 + 2.5px 纯黑底边
- * - 白色胶囊输入框（1.5px 黑描边）+ 放大镜图标
- * - 取消按钮为亮黄描边小胶囊，带纯黑硬阴影
- * - 父容器已给定高度，浮层不再被裁切成细线
+ * 歌单搜索条：现代沉浸风格。
  */
 export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, onExitSearch }, ref) => {
   const t = useI18n()
@@ -118,7 +114,7 @@ export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, on
 
   const animaStyle = useMemo(() => ({
     ...styles.container,
-    opacity: animFade, // Bind opacity to animated value
+    opacity: animFade,
     transform: [
       { translateY: animTranslateY },
     ],
@@ -128,7 +124,7 @@ export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, on
     return (
       <Animated.View style={animaStyle}>
         <View style={styles.field}>
-          <Icon name="search-2" size={15} color={neoColors.black} style={styles.searchIcon} />
+          <Icon name="search-2" size={15} color={colors.inkTertiary} style={styles.searchIcon} />
           <SearchInput
             ref={searchInputRef}
             onSearch={onSearch}
@@ -156,25 +152,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingLeft: 12,
-    // 右侧多留 4px：给「取消」按钮的 2.5px 硬阴影让位，避免被容器裁掉
-    paddingRight: 16,
-    backgroundColor: neoColors.offWhite,
-    borderBottomWidth: neoBorders.regular,
-    borderBottomColor: neoColors.black,
+    paddingRight: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ECEEF1',
   },
   field: {
     flexDirection: 'row',
     alignItems: 'center',
     flexGrow: 1,
     flexShrink: 1,
-    // RNW 下 flex 子项默认 min-width:auto，会被长 placeholder 撑开而溢出
     minWidth: 0,
     height: 34,
-    paddingHorizontal: 9,
-    backgroundColor: neoColors.white,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusPill,
+    paddingHorizontal: 10,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E6E8EC',
+    borderRadius: 17,
   },
   searchIcon: {
     marginRight: 4,
@@ -184,7 +178,8 @@ const styles = StyleSheet.create({
   input: {
     height: 30,
     paddingLeft: 0,
-    fontWeight: '700',
+    fontWeight: '500',
+    color: colors.ink,
   },
   btn: {
     flexGrow: 0,
@@ -194,16 +189,12 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: neoColors.yellow,
-    borderWidth: neoBorders.thin,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusPill,
-    // Neo-Brutalism 硬阴影（RN Web 直接透传为 box-shadow）
-    boxShadow: '2.5px 2.5px 0px #000000',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
   },
   btnText: {
     fontSize: 13,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
 })

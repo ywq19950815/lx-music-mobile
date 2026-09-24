@@ -1,11 +1,13 @@
 import { TouchableOpacity, StyleSheet, View } from 'react-native'
 import { Icon } from '@/components/common/Icon'
 import { scaleSizeW } from '@/utils/pixelRatio'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 export const BTN_WIDTH = scaleSizeW(36)
 export const BTN_ICON_SIZE = 20
 
+/**
+ * 播放页更多操作钮：幽灵样式（半透明白底白图标），深色沉浸专用。
+ */
 export default ({ icon, color, onPress, onLongPress }: {
   icon: string
   color?: string
@@ -16,11 +18,11 @@ export default ({ icon, color, onPress, onLongPress }: {
     <View style={styles.btnWrapper}>
       <TouchableOpacity
         style={styles.controlBtn}
-        activeOpacity={0.7}
+        activeOpacity={0.6}
         onPress={onPress}
         onLongPress={onLongPress}
       >
-        <Icon name={icon} color={color ?? neoColors.black} size={BTN_ICON_SIZE} />
+        <Icon name={icon} color={color ?? 'rgba(255,255,255,0.75)'} size={BTN_ICON_SIZE} />
       </TouchableOpacity>
     </View>
   )
@@ -36,11 +38,10 @@ const styles = StyleSheet.create({
     width: BTN_WIDTH,
     height: BTN_WIDTH,
     borderRadius: BTN_WIDTH / 2,
-    backgroundColor: neoColors.white,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
     justifyContent: 'center',
     alignItems: 'center',
-    ...neoShadows.sm,
   },
 })

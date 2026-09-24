@@ -7,7 +7,7 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 export type NeoBadgeColor = 'yellow' | 'pink' | 'cyan' | 'green' | 'purple' | 'white' | 'dark'
 
@@ -21,23 +21,21 @@ export interface NeoBadgeProps {
 }
 
 const colorMap: Record<NeoBadgeColor, { bg: string; text: string }> = {
-  yellow: { bg: neoColors.yellow, text: neoColors.black },
-  pink: { bg: neoColors.pink, text: neoColors.black },
-  cyan: { bg: neoColors.cyan, text: neoColors.black },
-  green: { bg: neoColors.green, text: neoColors.black },
-  purple: { bg: neoColors.purple, text: neoColors.black },
-  white: { bg: neoColors.white, text: neoColors.black },
-  dark: { bg: neoColors.black, text: neoColors.yellow },
+  yellow: { bg: 'rgba(245, 166, 35, 0.12)', text: '#B36B00' },
+  pink: { bg: '#FEE2E2', text: '#DC2626' },
+  cyan: { bg: 'rgba(0, 180, 216, 0.12)', text: '#0077B6' },
+  green: { bg: 'rgba(52, 199, 89, 0.12)', text: '#15803D' },
+  purple: { bg: 'rgba(123, 97, 255, 0.12)', text: '#5E35B1' },
+  white: { bg: '#F3F4F6', text: colors.inkSecondary },
+  dark: { bg: colors.ink, text: '#FFFFFF' },
 }
 
 /**
- * NeoBadge: 波普风贴纸胶囊 / 徽章。
- * 黑边描边 + 微倾斜 + 高饱和色块。
+ * NeoBadge (兼容层): 现代圆角微透胶囊徽章。
  */
 export const NeoBadge: React.FC<NeoBadgeProps> = ({
   label,
   color = 'yellow',
-  rotate = 0,
   size = 'sm',
   style,
   textStyle,
@@ -53,7 +51,7 @@ export const NeoBadge: React.FC<NeoBadgeProps> = ({
           backgroundColor: c.bg,
           paddingHorizontal: isSm ? 6 : 10,
           paddingVertical: isSm ? 2 : 4,
-          transform: rotate ? [{ rotate: `${rotate}deg` }] : undefined,
+          borderRadius: radius.pill,
         },
         style,
       ]}
@@ -76,16 +74,12 @@ export const NeoBadge: React.FC<NeoBadgeProps> = ({
 
 const styles = StyleSheet.create({
   badge: {
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    borderRadius: neoBorders.radiusPill,
     alignSelf: 'flex-start',
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    fontWeight: '900',
-    letterSpacing: -0.2,
+    fontWeight: '600',
   },
 })
 

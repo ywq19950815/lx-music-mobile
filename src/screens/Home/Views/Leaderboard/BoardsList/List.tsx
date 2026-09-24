@@ -6,7 +6,7 @@ import { type Position } from './ListMenu'
 import ListItem, { type ListItemProps } from './ListItem'
 import boardState, { type BoardItem } from '@/store/leaderboard/state'
 import { getBoardsList } from '@/core/leaderboard'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export interface ListProps {
   onBoundChange: (listId: string) => void
@@ -98,24 +98,24 @@ export default forwardRef<ListType, ListProps>(({ onBoundChange, onShowMenu }, r
 const styles = StyleSheet.create({
   scrollView: {
     flexShrink: 1,
-    backgroundColor: neoColors.bgCream,
+    backgroundColor: colors.surface,
   },
   drawerHeader: {
     paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     marginBottom: 6,
-    borderBottomWidth: 2,
-    borderBottomColor: neoColors.black,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
   },
   drawerTitle: {
-    fontSize: 14,
-    fontWeight: '900',
-    color: neoColors.black,
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.ink,
   },
   drawerSub: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: neoColors.gray700,
+    fontSize: 11,
+    fontWeight: '500',
+    color: colors.inkTertiary,
     marginTop: 2,
   },
 })

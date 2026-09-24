@@ -11,26 +11,26 @@ import SettingPopup, { type SettingPopupType } from '../../components/SettingPop
 import { useStatusbarHeight } from '@/store/common/hook'
 import Btn from './Btn'
 import TimeoutExitBtn from './TimeoutExitBtn'
-import { neoColors } from '@/theme/neobrutalism'
 
 export const HEADER_HEIGHT = Math.max(scaleSizeH(_HEADER_HEIGHT), 52)
 
 /**
- * Title: Neo-Brutalism 实体波普居中黑胶铭牌
- * - 歌名 900 极粗黑体
- * - 歌手包裹在精致的波普圆角胶囊标签内（配粉色发光小圆点）
+ * 播放页头部：深色沉浸式。
+ * - 透明背景直接融入深空底
+ * - 白色歌名 + 半透明歌手幽灵胶囊 + 品牌金点
+ * - 无描边、无贴纸装饰
  */
 const Title = () => {
   const musicInfo = usePlayerMusicInfo()
 
   return (
     <View style={styles.titleContainer}>
-      <Text numberOfLines={1} style={styles.titleText} size={15.5} color={neoColors.black}>
+      <Text numberOfLines={1} style={styles.titleText} size={15.5} color="rgba(255,255,255,0.95)">
         {musicInfo.name || '安迪音乐'}
       </Text>
       <View style={styles.singerBadge}>
         <View style={styles.singerDot} />
-        <Text numberOfLines={1} style={styles.singerText} size={11} color={neoColors.black}>
+        <Text numberOfLines={1} style={styles.singerText} size={11} color="rgba(255,255,255,0.68)">
           {musicInfo.singer || 'Andy Music'}
         </Text>
       </View>
@@ -64,27 +64,23 @@ export default memo(() => {
     >
       <StatusBar />
 
-      {/* 主操作栏内容 */}
       <View style={styles.container}>
         {/* 左侧：返回/收起按键 */}
         <View style={styles.sideLeft}>
           <Btn icon="chevron-left" onPress={back} />
         </View>
 
-        {/* 绝对几何居中：歌曲标题与歌手徽章铭牌 */}
+        {/* 绝对几何居中：歌曲标题与歌手胶囊 */}
         <View style={styles.centerTitleWrapper} pointerEvents="box-none">
           <Title />
         </View>
 
-        {/* 右侧：定时退出与音效设置按键组（保持间距，绝不重叠） */}
+        {/* 右侧：定时退出与音效设置 */}
         <View style={styles.sideRight}>
           <TimeoutExitBtn />
-          <Btn icon="slider" bg={neoColors.yellow} onPress={showSetting} />
+          <Btn icon="slider" onPress={showSetting} />
         </View>
       </View>
-
-      {/* 底部波普明黄点缀细条 */}
-      <View style={styles.bottomAccentBar} />
 
       <SettingPopup ref={popupRef} direction="vertical" />
     </View>
@@ -93,10 +89,7 @@ export default memo(() => {
 
 const styles = StyleSheet.create({
   headerWrapper: {
-    // 与首页头部/底部菜单统一的签名亮黄，沉浸式下由它铺满状态栏区域
-    backgroundColor: neoColors.yellow,
-    borderBottomWidth: 2.5,
-    borderBottomColor: neoColors.black,
+    backgroundColor: 'transparent',
     position: 'relative',
     zIndex: 10,
   },
@@ -119,7 +112,6 @@ const styles = StyleSheet.create({
     gap: 8,
     zIndex: 2,
   },
-  // 标题绝对水平居中容器
   centerTitleWrapper: {
     position: 'absolute',
     left: 0,
@@ -128,7 +120,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 92, // 避开左右两侧按钮
+    paddingHorizontal: 92,
     zIndex: 1,
   },
   titleContainer: {
@@ -138,10 +130,9 @@ const styles = StyleSheet.create({
   },
   titleText: {
     textAlign: 'center',
-    fontWeight: '900',
-    letterSpacing: -0.2,
+    fontWeight: '700',
   },
-  // 歌手波普微胶囊铭牌
+  // 歌手幽灵胶囊
   singerBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -149,31 +140,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 1.5,
     borderRadius: 999,
-    backgroundColor: '#F4F3ED',
-    borderWidth: 1.2,
-    borderColor: neoColors.black,
+    backgroundColor: 'rgba(255,255,255,0.10)',
     maxWidth: '100%',
   },
   singerDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: neoColors.pink,
+    backgroundColor: '#F5A623',
     marginRight: 4,
-    borderWidth: 0.5,
-    borderColor: neoColors.black,
   },
   singerText: {
     textAlign: 'center',
-    fontWeight: '700',
-  },
-  // 底部波普黑色分隔粗线（黄底上黄色点缀会糊掉，改用黑色强化外框）
-  bottomAccentBar: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: -2.5,
-    height: 2.5,
-    backgroundColor: neoColors.black,
+    fontWeight: '400',
   },
 })

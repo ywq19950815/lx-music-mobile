@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   type TextStyle,
   type GestureResponderEvent,
 } from 'react-native'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 
 export type NeoButtonVariant = 'primary' | 'secondary' | 'cyan' | 'green' | 'purple' | 'white' | 'dark'
 export type NeoButtonSize = 'sm' | 'md' | 'lg'
@@ -28,32 +28,31 @@ export interface NeoButtonProps {
   children?: React.ReactNode
 }
 
-const variantColors: Record<NeoButtonVariant, { bg: string; text: string; border: string }> = {
-  primary: { bg: neoColors.yellow, text: neoColors.black, border: neoColors.black },
-  secondary: { bg: neoColors.pink, text: neoColors.black, border: neoColors.black },
-  cyan: { bg: neoColors.cyan, text: neoColors.black, border: neoColors.black },
-  green: { bg: neoColors.green, text: neoColors.black, border: neoColors.black },
-  purple: { bg: neoColors.purple, text: neoColors.black, border: neoColors.black },
-  white: { bg: neoColors.white, text: neoColors.black, border: neoColors.black },
-  dark: { bg: neoColors.black, text: neoColors.yellow, border: neoColors.black },
+const variantStyles: Record<NeoButtonVariant, { bg: string; text: string; border?: string }> = {
+  primary: { bg: colors.brand, text: '#FFFFFF' },
+  secondary: { bg: 'rgba(245, 166, 35, 0.12)', text: '#B36B00' },
+  cyan: { bg: 'rgba(0, 180, 216, 0.12)', text: '#0077B6' },
+  green: { bg: 'rgba(52, 199, 89, 0.12)', text: '#15803D' },
+  purple: { bg: 'rgba(123, 97, 255, 0.12)', text: '#5E35B1' },
+  white: { bg: '#F3F4F6', text: colors.inkSecondary },
+  dark: { bg: colors.ink, text: '#FFFFFF' },
 }
 
-const sizeStyles: Record<NeoButtonSize, { paddingV: number; paddingH: number; fontSize: number; shadow: number }> = {
-  sm: { paddingV: 6, paddingH: 12, fontSize: 12, shadow: 2.5 },
-  md: { paddingV: 10, paddingH: 16, fontSize: 14, shadow: 3.5 },
-  lg: { paddingV: 14, paddingH: 22, fontSize: 16, shadow: 5 },
+const sizeStyles: Record<NeoButtonSize, { paddingV: number; paddingH: number; fontSize: number }> = {
+  sm: { paddingV: 6, paddingH: 12, fontSize: 12 },
+  md: { paddingV: 9, paddingH: 16, fontSize: 13.5 },
+  lg: { paddingV: 12, paddingH: 22, fontSize: 15 },
 }
 
 /**
- * NeoButton: 经典新粗野主义实体按钮。
- * 纯黑硬轮廓 + 纯黑实体投影 + 物理位移下沉，充满玩具打击感。
+ * NeoButton (兼容层): 现代圆角轻量化胶囊按钮。
  */
 export const NeoButton: React.FC<NeoButtonProps> = ({
   title,
   icon,
   variant = 'primary',
   size = 'md',
-  pill = false,
+  pill = true,
   disabled = false,
   style,
   contentStyle,
@@ -61,102 +60,67 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
   onPress,
   children,
 }) => {
-  const [isPressed, setIsPressed] = useState(false)
-
-  const colors = variantColors[variant]
+  const vStyle = variantStyles[variant]
   const config = sizeStyles[size]
-  const radius = pill ? neoBorders.radiusPill : neoBorders.radiusMd
-  const shadow = config.shadow
-
-  const translateDelta = isPressed ? shadow - 1 : 0
+  const btnRadius = pill ? radius.pill : radius.md
 
   return (
-    <View style={[styles.wrapper, { paddingRight: shadow, paddingBottom: shadow }, style]}>
-      {/* 背后实体投影 */}
-      <View
-        style={[
-          styles.shadow,
-          {
-            backgroundColor: neoColors.black,
-            borderRadius: radius,
-            top: shadow,
-            left: shadow,
-          },
-        ]}
-      />
-
-      {/* 按钮顶层 */}
-      <TouchableOpacity
-        activeOpacity={1}
-        disabled={disabled}
-        onPress={onPress}
-        onPressIn={() => setIsPressed(true)}
-        onPressOut={() => setIsPressed(false)}
-      >
-        <View
+    <TouchableOpacity
+      activeOpacity={0.75}
+      disabled={disabled}
+      onPress={onPress}
+      style={[
+        styles.button,
+        {
+          backgroundColor: disabled ? '#E5E7EB' : vStyle.bg,
+          borderRadius: btnRadius,
+          paddingVertical: config.paddingV,
+          paddingHorizontal: config.paddingH,
+        },
+        variant === 'primary' && !disabled ? styles.primaryShadow : null,
+        style,
+        contentStyle,
+      ]}
+    >
+      {icon && <View style={title || children ? styles.iconMargin : undefined}>{icon}</View>}
+      {title ? (
+        <Text
           style={[
-            styles.button,
+            styles.text,
             {
-              backgroundColor: disabled ? neoColors.gray200 : colors.bg,
-              borderColor: colors.border,
-              borderWidth: neoBorders.regular,
-              borderRadius: radius,
-              paddingVertical: config.paddingV,
-              paddingHorizontal: config.paddingH,
-              transform: [
-                { translateX: translateDelta },
-                { translateY: translateDelta },
-              ],
+              fontSize: config.fontSize,
+              color: disabled ? colors.inkTertiary : vStyle.text,
             },
-            contentStyle,
+            textStyle,
           ]}
         >
-          {icon && <View style={title || children ? styles.iconMargin : undefined}>{icon}</View>}
-          {title ? (
-            <Text
-              style={[
-                styles.text,
-                {
-                  fontSize: config.fontSize,
-                  color: disabled ? neoColors.gray700 : colors.text,
-                },
-                textStyle,
-              ]}
-            >
-              {title}
-            </Text>
-          ) : null}
-          {children}
-        </View>
-      </TouchableOpacity>
-    </View>
+          {title}
+        </Text>
+      ) : null}
+      {children}
+    </TouchableOpacity>
   )
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    position: 'relative',
-    alignSelf: 'flex-start',
-  },
-  shadow: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
-  },
   button: {
-    position: 'relative',
-    zIndex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
+  primaryShadow: {
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 2,
   },
   iconMargin: {
     marginRight: 6,
   },
   text: {
-    fontWeight: '900',
-    letterSpacing: -0.2,
+    fontWeight: '600',
   },
 })
 

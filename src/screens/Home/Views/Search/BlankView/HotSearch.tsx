@@ -1,10 +1,9 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { ScrollView, View, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, TouchableOpacity, StyleSheet } from 'react-native'
 import { type Source, type InitState } from '@/store/hotSearch/state'
 import { getList } from '@/core/hotSearch'
 import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
 
 interface ListProps {
   onSearch: (keyword: string) => void
@@ -15,28 +14,34 @@ export interface HotSearchType {
 
 export type List = NonNullable<InitState['sourceList'][keyof InitState['sourceList']]>
 
-const POP_COLORS = [
-  neoColors.yellow,
-  neoColors.cyan,
-  neoColors.pink,
-  neoColors.green,
-  neoColors.purple,
-]
-
 const ListItem = ({ keyword, index, onSearch }: {
   keyword: string
   index: number
   onSearch: (keyword: string) => void
 }) => {
-  const bg = POP_COLORS[index % POP_COLORS.length]
+  const isTop3 = index < 3
 
   return (
     <TouchableOpacity
-      style={[styles.tagPill, { backgroundColor: bg }]}
+      style={[
+        styles.tagPill,
+        isTop3 ? styles.tagPillTop : styles.tagPillNormal,
+      ]}
       activeOpacity={0.7}
       onPress={() => { onSearch(keyword) }}
     >
-      <Text style={styles.tagText} size={12} color={neoColors.black}>
+      {isTop3 && (
+        <View style={styles.topBadge}>
+          <Text size={9.5} color="#FFFFFF" style={styles.topBadgeText}>
+            {index + 1}
+          </Text>
+        </View>
+      )}
+      <Text
+        style={styles.tagText}
+        size={12}
+        color={isTop3 ? '#B36B00' : '#2C3038'}
+      >
         {keyword}
       </Text>
     </TouchableOpacity>
@@ -69,8 +74,8 @@ export default forwardRef<HotSearchType, ListProps>((props, ref) => {
       ? (
           <View style={styles.container}>
             <View style={styles.header}>
-              <View style={styles.accentDot} />
-              <Text style={styles.title} size={15} color={neoColors.black}>
+              <View style={styles.accentBar} />
+              <Text style={styles.title} size={14} color="#1A1C20">
                 {t('search_hot_search')}
               </Text>
             </View>
@@ -94,42 +99,62 @@ export default forwardRef<HotSearchType, ListProps>((props, ref) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingTop: 16,
     paddingBottom: 8,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  accentDot: {
-    width: 8,
-    height: 8,
-    backgroundColor: neoColors.yellow,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    marginRight: 6,
+  accentBar: {
+    width: 3.5,
+    height: 13,
+    backgroundColor: '#F5A623',
     borderRadius: 2,
+    marginRight: 7,
   },
   title: {
-    fontWeight: '900',
+    fontWeight: '700',
   },
   list: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   tagPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 11,
+    paddingVertical: 5.5,
+    borderRadius: 16,
     marginRight: 8,
     marginBottom: 8,
-    ...neoShadows.sm,
+  },
+  tagPillTop: {
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 166, 35, 0.3)',
+  },
+  tagPillNormal: {
+    backgroundColor: '#F3F4F7',
+    borderWidth: 1,
+    borderColor: '#E8EAEE',
+  },
+  topBadge: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#F5A623',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 5,
+  },
+  topBadgeText: {
+    fontWeight: '800',
+    lineHeight: 12,
   },
   tagText: {
-    fontWeight: '800',
+    fontWeight: '500',
   },
 })

@@ -8,7 +8,7 @@ import { COMPONENT_IDS } from '@/config/constant'
 import { type ListInfoItem } from '@/store/songlist/state'
 import PlayerBar from '@/components/player/PlayerBar'
 import { ListInfoContext } from './state'
-import { neoColors } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export default ({ componentId, info }: { componentId: string, info: ListInfoItem }) => {
   const musicListRef = useRef<MusicListType>(null)
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     height: '100%',
-    backgroundColor: neoColors.offWhite,
+    backgroundColor: colors.canvas,
     position: 'relative',
     overflow: 'hidden',
   },

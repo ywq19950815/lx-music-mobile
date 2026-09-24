@@ -21,7 +21,7 @@ import { scaleSizeH } from '@/utils/pixelRatio'
 const TOP_BAR_HEIGHT = scaleSizeH(48)
 
 
-export default () => {
+export default ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => {
   // const t = useI18n()
   const activeListRef = useRef<ActiveListType>(null)
   const listMusicSearchRef = useRef<ListMusicSearchType>(null)
@@ -137,7 +137,7 @@ export default () => {
       {/* 顶部整条搜索/选择模式切换区：子元素均为绝对定位浮层，
           但必须给定高度，否则浮层 height:'100%' 会塌成 0 被裁切成一条细线 */}
       <View style={styles.topBar}>
-        <ActiveList ref={activeListRef} onShowSearchBar={handleShowSearch} onScrollToTop={hancelScrollToTop} />
+        <ActiveList ref={activeListRef} onShowSearchBar={handleShowSearch} onScrollToTop={hancelScrollToTop} onBackToDashboard={onBackToDashboard} />
         <MultipleModeBar
           ref={multipleModeBarRef}
           onSwitchMode={hancelSwitchSelectMode}

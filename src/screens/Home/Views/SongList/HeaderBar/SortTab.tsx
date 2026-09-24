@@ -1,9 +1,9 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { ScrollView, TouchableOpacity, View, StyleSheet } from 'react-native'
+import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native'
 import songlistState, { type SortInfo, type Source } from '@/store/songlist/state'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
-import { neoColors, neoBorders } from '@/theme/neobrutalism'
+import { colors } from '@/theme/tokens'
 
 export interface SortTabProps {
   onSortChange: (id: string) => void
@@ -14,8 +14,8 @@ export interface SortTabType {
 }
 
 /**
- * NeoSortTab: 波普风歌单分类药丸切换条。
- * 激活项带有亮黄高亮底色与纯黑描边。
+ * 歌单分类切换条：现代微胶囊风格。
+ * 激活项带有浅金底色、细金边与高亮金文字。
  */
 export default forwardRef<SortTabType, SortTabProps>(({ onSortChange }, ref) => {
   const [sortList, setSortList] = useState<SortInfo[]>([])
@@ -81,25 +81,22 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: 12,
     paddingVertical: 5,
-    borderRadius: neoBorders.radiusPill,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
-    backgroundColor: neoColors.white,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   pillActive: {
-    backgroundColor: neoColors.yellow,
-    shadowColor: neoColors.black,
-    shadowOffset: { width: 1.5, height: 1.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    borderColor: '#F5A623',
   },
   pillText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: neoColors.black,
+    fontWeight: '500',
+    color: '#5A616B',
   },
   pillTextActive: {
-    fontWeight: '900',
+    fontWeight: '700',
+    color: '#B36B00',
   },
 })

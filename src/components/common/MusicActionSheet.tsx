@@ -13,7 +13,7 @@ import Modal, { type ModalType } from '@/components/common/Modal'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
-import { neoColors, neoBorders, neoShadows } from '@/theme/neobrutalism'
+import { colors, radius } from '@/theme/tokens'
 import { hasDislike } from '@/core/dislikeList'
 import { hasMusicUrlByMusic } from '@/utils/data'
 import { existsFile } from '@/utils/fs'
@@ -53,71 +53,65 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheetContainer: {
-    backgroundColor: '#F8F6EE', // 新粗野主义温暖底色
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    borderTopWidth: 2.5,
-    borderLeftWidth: 2.5,
-    borderRightWidth: 2.5,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    borderTopWidth: 1,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
     borderBottomWidth: 0,
-    borderColor: neoColors.black,
+    borderColor: colors.hairline,
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 28,
     maxHeight: '85%',
-    // 物理实体硬阴影
-    shadowColor: neoColors.black,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 0,
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
     elevation: 20,
   },
   dragHandle: {
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: neoColors.black,
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E0E2E7',
     alignSelf: 'center',
     marginBottom: 12,
   },
   // 当前操作歌曲微缩信息卡片
   musicCard: {
-    backgroundColor: neoColors.white,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: 12,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius.md,
     padding: 10,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 14,
-    ...neoShadows.sm,
   },
   musicCoverDisc: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: neoColors.black,
-    borderWidth: 2,
-    borderColor: neoColors.black,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#1A1C20',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 10,
   },
   musicCoverInner: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: neoColors.yellow,
-    borderWidth: 1.5,
-    borderColor: neoColors.black,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: colors.brand,
   },
   musicInfoCol: {
     flex: 1,
     marginRight: 8,
   },
   musicTitle: {
-    fontWeight: '800',
-    color: neoColors.black,
+    fontWeight: '700',
+    color: colors.ink,
     marginBottom: 3,
   },
   musicSubRow: {
@@ -126,35 +120,30 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   singerText: {
-    color: neoColors.gray600,
-    fontWeight: '600',
+    color: colors.inkSecondary,
+    fontWeight: '500',
     flexShrink: 1,
   },
   qualityBadge: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#2E7D32',
-    borderWidth: 1,
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
     borderRadius: 4,
     paddingHorizontal: 4,
     paddingVertical: 1,
   },
   qualityBadgeText: {
     fontSize: 9.5,
-    fontWeight: '800',
-    color: '#2E7D32',
+    fontWeight: '700',
+    color: '#B36B00',
   },
   closeBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: neoColors.white,
-    borderWidth: 2,
-    borderColor: neoColors.black,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#ECEEF1',
     alignItems: 'center',
     justifyContent: 'center',
-    ...neoShadows.sm,
   },
-  // 4 格高频波普大按键
+  // 4 格高频大按键
   quickActionsGrid: {
     flexDirection: 'row',
     gap: 8,
@@ -162,14 +151,12 @@ const styles = StyleSheet.create({
   },
   quickActionBtn: {
     flex: 1,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: neoColors.black,
+    borderRadius: radius.md,
     paddingVertical: 10,
     paddingHorizontal: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    ...neoShadows.sm,
+    backgroundColor: '#F3F4F6',
   },
   quickActionIconWrap: {
     height: 24,
@@ -179,27 +166,26 @@ const styles = StyleSheet.create({
   },
   quickActionLabel: {
     fontSize: 11,
-    fontWeight: '800',
-    color: neoColors.black,
+    fontWeight: '600',
+    color: colors.ink,
     textAlign: 'center',
   },
   // 次频管理列表卡片
   actionListCard: {
-    backgroundColor: neoColors.white,
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: 14,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    borderRadius: radius.md,
     overflow: 'hidden',
     marginBottom: 12,
-    ...neoShadows.sm,
   },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderBottomWidth: 1.5,
-    borderBottomColor: '#F0EFEA',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
   },
   actionRowDisabled: {
     opacity: 0.38,
@@ -216,45 +202,40 @@ const styles = StyleSheet.create({
   actionRowText: {
     flex: 1,
     fontSize: 13.5,
-    fontWeight: '700',
-    color: neoColors.black,
+    fontWeight: '500',
+    color: colors.ink,
   },
   actionArrow: {
     fontSize: 16,
-    fontWeight: '700',
-    color: neoColors.gray500,
+    fontWeight: '600',
+    color: colors.inkTertiary,
     marginLeft: 6,
   },
   // 危险移除区
   dangerBtn: {
-    backgroundColor: '#FFF1F1',
-    borderWidth: 2,
-    borderColor: neoColors.black,
-    borderRadius: 12,
+    backgroundColor: '#FEE2E2',
+    borderRadius: radius.md,
     paddingVertical: 11,
     paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...neoShadows.sm,
   },
   dangerText: {
     fontSize: 13.5,
-    fontWeight: '800',
-    color: '#D85A30',
+    fontWeight: '600',
+    color: '#DC2626',
   },
   dangerTag: {
-    backgroundColor: '#FFE5E5',
-    borderColor: '#D85A30',
-    borderWidth: 1,
+    backgroundColor: '#FCA5A5',
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   dangerTagText: {
     fontSize: 10,
-    fontWeight: '800',
-    color: '#D85A30',
+    fontWeight: '700',
+    color: '#991B1B',
   },
 })
 
@@ -374,33 +355,33 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                     onPress={hide}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Icon name="close" size={12} color={neoColors.black} />
+                    <Icon name="close" size={12} color={colors.inkSecondary} />
                   </TouchableOpacity>
                 </View>
               )}
 
-              {/* 第一层：4 格波普高频大按键 */}
+              {/* 第一层：4 格高频大按键 */}
               <View style={styles.quickActionsGrid}>
                 {/* 1. 立即播放 */}
                 <TouchableOpacity
-                  style={[styles.quickActionBtn, { backgroundColor: neoColors.yellow }]}
+                  style={[styles.quickActionBtn, { backgroundColor: colors.brand }]}
                   activeOpacity={0.8}
                   onPress={() => handleAction(props.onPlay)}
                 >
                   <View style={styles.quickActionIconWrap}>
-                    <Icon name="play" size={16} color={neoColors.black} />
+                    <Icon name="play" size={16} color="#FFFFFF" />
                   </View>
-                  <Text style={styles.quickActionLabel}>{t('play')}</Text>
+                  <Text style={[styles.quickActionLabel, { color: '#FFFFFF' }]}>{t('play')}</Text>
                 </TouchableOpacity>
 
                 {/* 2. 稍后播放 */}
                 <TouchableOpacity
-                  style={[styles.quickActionBtn, { backgroundColor: neoColors.white }]}
+                  style={styles.quickActionBtn}
                   activeOpacity={0.8}
                   onPress={() => handleAction(props.onPlayLater)}
                 >
                   <View style={styles.quickActionIconWrap}>
-                    <Icon name="play-outline" size={16} color={neoColors.black} />
+                    <Icon name="play-outline" size={16} color={colors.inkSecondary} />
                   </View>
                   <Text style={styles.quickActionLabel}>{t('play_later')}</Text>
                 </TouchableOpacity>
@@ -408,12 +389,12 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                 {/* 3. 歌曲换源 */}
                 {props.onToggleSource && !isLocal ? (
                   <TouchableOpacity
-                    style={[styles.quickActionBtn, { backgroundColor: '#FF66B2' }]}
+                    style={styles.quickActionBtn}
                     activeOpacity={0.8}
                     onPress={() => handleAction(props.onToggleSource)}
                   >
                     <View style={styles.quickActionIconWrap}>
-                      <Icon name="slider" size={15} color={neoColors.black} />
+                      <Icon name="slider" size={15} color={colors.inkSecondary} />
                     </View>
                     <Text style={styles.quickActionLabel}>{t('toggle_source')}</Text>
                   </TouchableOpacity>
@@ -421,12 +402,12 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
 
                 {/* 4. 添加到... */}
                 <TouchableOpacity
-                  style={[styles.quickActionBtn, { backgroundColor: '#AFA9EC' }]}
+                  style={styles.quickActionBtn}
                   activeOpacity={0.8}
                   onPress={() => handleAction(props.onAdd)}
                 >
                   <View style={styles.quickActionIconWrap}>
-                    <Icon name="add-music" size={16} color={neoColors.black} />
+                    <Icon name="add-music" size={16} color={colors.inkSecondary} />
                   </View>
                   <Text style={styles.quickActionLabel}>{t('add_to')}</Text>
                 </TouchableOpacity>
@@ -443,12 +424,12 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                   {props.onMove && (
                     <TouchableHighlight
                       style={styles.actionRow}
-                      underlayColor={neoColors.yellow}
+                      underlayColor="rgba(0,0,0,0.04)"
                       onPress={() => handleAction(props.onMove)}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                         <View style={styles.actionIconBox}>
-                          <Icon name="add_folder" size={17} color={neoColors.black} />
+                          <Icon name="add_folder" size={17} color={colors.inkSecondary} />
                         </View>
                         <Text style={styles.actionRowText}>{t('move_to')}</Text>
                         <Text style={styles.actionArrow}>›</Text>
@@ -460,12 +441,12 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                   {props.onMusicSourceDetail && !isLocal && (
                     <TouchableHighlight
                       style={styles.actionRow}
-                      underlayColor={neoColors.yellow}
+                      underlayColor="rgba(0,0,0,0.04)"
                       onPress={() => handleAction(props.onMusicSourceDetail)}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                         <View style={styles.actionIconBox}>
-                          <Icon name="album" size={16} color={neoColors.black} />
+                          <Icon name="album" size={16} color={colors.inkSecondary} />
                         </View>
                         <Text style={styles.actionRowText}>{t('music_source_detail')}</Text>
                         <Text style={styles.actionArrow}>›</Text>
@@ -477,12 +458,12 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                   {props.onChangePosition && (
                     <TouchableHighlight
                       style={styles.actionRow}
-                      underlayColor={neoColors.yellow}
+                      underlayColor="rgba(0,0,0,0.04)"
                       onPress={() => handleAction(props.onChangePosition)}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                         <View style={styles.actionIconBox}>
-                          <Icon name="music_time" size={16} color={neoColors.black} />
+                          <Icon name="music_time" size={16} color={colors.inkSecondary} />
                         </View>
                         <Text style={styles.actionRowText}>{t('change_position')}</Text>
                         <Text style={styles.actionArrow}>›</Text>
@@ -494,13 +475,13 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                   {props.onEditMetadata && isLocal && (
                     <TouchableHighlight
                       style={[styles.actionRow, !hasEditMeta && styles.actionRowDisabled]}
-                      underlayColor={neoColors.yellow}
+                      underlayColor="rgba(0,0,0,0.04)"
                       disabled={!hasEditMeta}
                       onPress={() => handleAction(props.onEditMetadata)}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                         <View style={styles.actionIconBox}>
-                          <Icon name="setting" size={16} color={neoColors.black} />
+                          <Icon name="setting" size={16} color={colors.inkSecondary} />
                         </View>
                         <Text style={styles.actionRowText}>{t('edit_metadata')}</Text>
                         <Text style={styles.actionArrow}>›</Text>
@@ -512,13 +493,13 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                   {props.onRemoveCache && (
                     <TouchableHighlight
                       style={[styles.actionRow, !hasCache && styles.actionRowDisabled]}
-                      underlayColor={neoColors.yellow}
+                      underlayColor="rgba(0,0,0,0.04)"
                       disabled={!hasCache}
                       onPress={() => handleAction(props.onRemoveCache)}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                         <View style={styles.actionIconBox}>
-                          <Icon name="eraser" size={16} color={neoColors.black} />
+                          <Icon name="eraser" size={16} color={colors.inkSecondary} />
                         </View>
                         <Text style={styles.actionRowText}>{t('list_remove_cache')}</Text>
                         <Text style={styles.actionArrow}>›</Text>
@@ -530,13 +511,13 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                   {props.onDislikeMusic && (
                     <TouchableHighlight
                       style={[styles.actionRow, styles.actionRowLast, isDisliked && styles.actionRowDisabled]}
-                      underlayColor={neoColors.yellow}
+                      underlayColor="rgba(0,0,0,0.04)"
                       disabled={isDisliked}
                       onPress={() => handleAction(props.onDislikeMusic)}
                     >
                       <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
                         <View style={styles.actionIconBox}>
-                          <Icon name="thumbs-up" size={16} color={neoColors.black} />
+                          <Icon name="thumbs-up" size={16} color={colors.inkSecondary} />
                         </View>
                         <Text style={styles.actionRowText}>{t('dislike')}</Text>
                         <Text style={styles.actionArrow}>›</Text>
