@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
+import Image from '@/components/common/Image'
 import commonActions from '@/store/common/action'
 import { colors, radius } from '@/theme/tokens'
 
@@ -9,14 +10,50 @@ export interface DiscoverHomeProps {
   onSearch: (keyword: string) => void
 }
 
-// 推荐精选歌单模拟数据（高质感封面与播放量）
+// 推荐精选歌单真实高清封面与播放量
 const RECOMMENDED_PLAYLISTS = [
-  { id: 'rec_1', name: '国风热歌来袭 | 100首诗意旋律', playCount: '328万', bg: '#D97706' },
-  { id: 'rec_2', name: '欧美流行热播：洗脑旋律循环不停', playCount: '245万', bg: '#2563EB' },
-  { id: 'rec_3', name: '伤感治愈：眼泪留不住要走的心', playCount: '198万', bg: '#DC2626' },
-  { id: 'rec_4', name: '华语R&B • 撩拨耳畔的浪漫旖思', playCount: '156万', bg: '#7C3AED' },
-  { id: 'rec_5', name: '车载慢摇：重低音夜行公路必听', playCount: '142万', bg: '#0D9488' },
-  { id: 'rec_6', name: '2026 热门歌曲短视频最火排行', playCount: '410万', bg: '#EA580C' },
+  {
+    id: 'rec_1',
+    name: '国风热歌来袭 | 100首诗意旋律',
+    playCount: '328万',
+    bg: '#C2410C',
+    img: 'https://p1.music.126.net/6y-UleORITEDbvrOLAL-vQ==/109951167436391480.jpg?param=300y300',
+  },
+  {
+    id: 'rec_2',
+    name: '欧美流行热播：洗脑旋律循环不停',
+    playCount: '245万',
+    bg: '#1D4ED8',
+    img: 'https://p2.music.126.net/v7_32p-4H_9fW71nJ3uB9A==/109951168536340245.jpg?param=300y300',
+  },
+  {
+    id: 'rec_3',
+    name: '伤感治愈：眼泪留不住要走的心',
+    playCount: '198万',
+    bg: '#B91C1C',
+    img: 'https://p2.music.126.net/rKSmg661Y63z2v1D1qWb4A==/109951166702962131.jpg?param=300y300',
+  },
+  {
+    id: 'rec_4',
+    name: '华语R&B • 撩拨耳畔的浪漫旖思',
+    playCount: '156万',
+    bg: '#6D28D9',
+    img: 'https://p1.music.126.net/79VqK3c8uV2UvQ6P244E3g==/109951165434199923.jpg?param=300y300',
+  },
+  {
+    id: 'rec_5',
+    name: '车载慢摇：重低音夜行公路必听',
+    playCount: '142万',
+    bg: '#0F766E',
+    img: 'https://p2.music.126.net/K7N5V6f6eD-3BqJ4fRz-8g==/109951165387431189.jpg?param=300y300',
+  },
+  {
+    id: 'rec_6',
+    name: '2026 热门歌曲短视频最火排行',
+    playCount: '410万',
+    bg: '#EA580C',
+    img: 'https://p1.music.126.net/5d6o4p-cR83yG7Z5T_lQ9w==/109951165842884210.jpg?param=300y300',
+  },
 ]
 
 // 今日新歌速递单曲推荐
@@ -41,7 +78,7 @@ export default memo(({ onSearch }: DiscoverHomeProps) => {
           onPress={() => onSearch('每日推荐')}
         >
           <View style={[styles.navIconBox, { backgroundColor: '#FEE2E2' }]}>
-            <Icon name="calendar" size={18} color="#EF4444" />
+            <Icon name="love" size={18} color="#EF4444" />
           </View>
           <Text style={styles.navLabel}>每日推荐</Text>
         </TouchableOpacity>
@@ -74,7 +111,7 @@ export default memo(({ onSearch }: DiscoverHomeProps) => {
           onPress={() => onSearch('周杰伦')}
         >
           <View style={[styles.navIconBox, { backgroundColor: '#D1FAE5' }]}>
-            <Icon name="singer" size={18} color="#059669" />
+            <Icon name="single" size={18} color="#059669" />
           </View>
           <Text style={styles.navLabel}>热门歌手</Text>
         </TouchableOpacity>
@@ -85,7 +122,7 @@ export default memo(({ onSearch }: DiscoverHomeProps) => {
           onPress={() => onSearch('车载音乐')}
         >
           <View style={[styles.navIconBox, { backgroundColor: '#FCE7F3' }]}>
-            <Icon name="broadcast" size={18} color="#DB2777" />
+            <Icon name="list-random" size={18} color="#DB2777" />
           </View>
           <Text style={styles.navLabel}>随心听</Text>
         </TouchableOpacity>
@@ -95,7 +132,7 @@ export default memo(({ onSearch }: DiscoverHomeProps) => {
       <View style={styles.sectionBlock}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>精选歌单推荐</Text>
-          <TouchableOpacity activeOpacity={0.6} onPress={() => setNavActiveId('nav_songlist')} style={styles.moreLink}>
+          <TouchableOpacity activeOpacity={0.6} onPress={() => commonActions.setNavActiveId('nav_songlist')} style={styles.moreLink}>
             <Text style={styles.moreText}>更多</Text>
             <Icon name="chevron-right" size={13} color={colors.inkTertiary} />
           </TouchableOpacity>
@@ -110,14 +147,22 @@ export default memo(({ onSearch }: DiscoverHomeProps) => {
               onPress={() => onSearch(pl.name.split(' ')[0])}
             >
               <View style={[styles.coverBox, { backgroundColor: pl.bg }]}>
+                {/* 真实高清歌单封面 */}
+                <Image
+                  url={pl.img}
+                  style={styles.coverImage}
+                  resizeMode="cover"
+                />
+
                 {/* 播放量角标 */}
                 <View style={styles.playCountBadge}>
-                  <Icon name="music" size={9} color="#FFFFFF" />
+                  <Icon name="play" size={8} color="#FFFFFF" />
                   <Text style={styles.playCountText}>{pl.playCount}</Text>
                 </View>
+
                 {/* 右下角播放圆钮 */}
                 <View style={styles.playBubble}>
-                  <Icon name="play" size={11} color={pl.bg} />
+                  <Icon name="play" size={11} color={colors.brand} />
                 </View>
               </View>
               <Text style={styles.playlistTitle} numberOfLines={2}>{pl.name}</Text>
@@ -159,7 +204,7 @@ export default memo(({ onSearch }: DiscoverHomeProps) => {
               </View>
 
               <View style={styles.playBtnWrap}>
-                <Icon name="play" size={15} color={colors.inkSecondary} />
+                <Icon name="play-outline" size={16} color={colors.inkSecondary} />
               </View>
             </TouchableOpacity>
           ))}
@@ -239,6 +284,7 @@ const styles = StyleSheet.create({
     width: 106,
     height: 106,
     borderRadius: 12,
+    overflow: 'hidden',
     position: 'relative',
     marginBottom: 6,
     shadowColor: '#000',
@@ -247,6 +293,11 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
   playCountBadge: {
     position: 'absolute',
     top: 6,
@@ -254,13 +305,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 10,
+    zIndex: 2,
   },
   playCountText: {
-    fontSize: 8.5,
+    fontSize: 9,
     fontWeight: '700',
     color: '#FFFFFF',
   },
@@ -274,6 +326,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+    zIndex: 2,
   },
   playlistTitle: {
     fontSize: 12,

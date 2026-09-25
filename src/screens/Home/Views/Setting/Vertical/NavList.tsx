@@ -1,22 +1,18 @@
 import { memo, useCallback, useState } from 'react'
 import { View, TouchableOpacity, ScrollView } from 'react-native'
 
-import { useTheme } from '@/store/theme/hook'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
 import { SETTING_SCREENS, type SettingScreenIds } from '../Main'
 import { useI18n } from '@/lang'
-import { BorderRadius, BorderWidths } from '@/theme'
-
+import { colors, radius } from '@/theme/tokens'
 
 const ListItem = memo(({ id, activeId, onPress }: {
   onPress: (item: SettingScreenIds) => void
   activeId: string
   id: SettingScreenIds
 }) => {
-  const theme = useTheme()
   const t = useI18n()
-
   const active = activeId == id
 
   const handlePress = () => {
@@ -24,11 +20,24 @@ const ListItem = memo(({ id, activeId, onPress }: {
   }
 
   return (
-    <View style={{ ...styles.listItem, backgroundColor: active ? theme['c-primary-background-active'] : 'transparent' }}>
-      <TouchableOpacity style={styles.listName} onPress={handlePress}>
-        <Text numberOfLines={1} color={active ? theme['c-primary-font'] : theme['c-font']}>{t(`setting_${id}`)}</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      style={[
+        styles.listItem,
+        active ? styles.listItemActive : styles.listItemInactive,
+      ]}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <Text
+        numberOfLines={1}
+        style={[
+          styles.listText,
+          active ? styles.listTextActive : styles.listTextInactive,
+        ]}
+      >
+        {t(`setting_${id}`)}
+      </Text>
+    </TouchableOpacity>
   )
 }, (prevProps, nextProps) => {
   return !!(prevProps.id === nextProps.id &&
@@ -37,12 +46,10 @@ const ListItem = memo(({ id, activeId, onPress }: {
   )
 })
 
-
 export default ({ onChangeId }: {
   onChangeId: (id: SettingScreenIds) => void
 }) => {
   const [activeId, setActiveId] = useState(global.lx.settingActiveId)
-  const theme = useTheme()
 
   const handleChangeId = useCallback((id: SettingScreenIds) => {
     onChangeId(id)
@@ -52,54 +59,58 @@ export default ({ onChangeId }: {
   }, [])
 
   return (
-    <ScrollView horizontal style={{ ...styles.container, borderBottomColor: theme['c-border-background'] }} contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps={'always'}
+    <ScrollView
+      horizontal
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      keyboardShouldPersistTaps={'always'}
       showsVerticalScrollIndicator={false}
-      showsHorizontalScrollIndicator={false}>
-      {
-        SETTING_SCREENS.map(id => <ListItem key={id} id={id} activeId={activeId} onPress={handleChangeId} />)
-      }
+      showsHorizontalScrollIndicator={false}
+    >
+      {SETTING_SCREENS.map(id => (
+        <ListItem key={id} id={id} activeId={activeId} onPress={handleChangeId} />
+      ))}
     </ScrollView>
   )
 }
 
-
 const styles = createStyle({
   container: {
-    height: 50,
+    height: 48,
     flexGrow: 0,
     flexShrink: 0,
-    borderBottomWidth: BorderWidths.normal,
-    opacity: 0.7,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ECEEF2',
   },
   contentContainer: {
     flexDirection: 'row',
-    flexWrap: 'nowrap',
-    padding: 5,
-    // backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    gap: 6,
   },
-  // listContainer: {
-  //   // borderBottomWidth: BorderWidths.normal2,
-  // },
-
   listItem: {
-    // width: '33.33%',
-    height: 40,
-    paddingLeft: 15,
-    paddingRight: 15,
-    // height: 'auto',
-    // flexDirection: 'row',
-    // alignItems: 'center',
-    paddingHorizontal: 5,
-    // paddingVertical: 10,
-    borderRadius: BorderRadius.normal,
-    marginBottom: 5,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  listName: {
+    height: 32,
+    paddingHorizontal: 12,
+    borderRadius: radius.pill,
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 1,
-    // paddingLeft: 5,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+  },
+  listItemActive: {
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+  },
+  listItemInactive: {
+    backgroundColor: 'transparent',
+  },
+  listText: {
+    fontSize: 13,
+  },
+  listTextActive: {
+    fontWeight: '700',
+    color: colors.brand,
+  },
+  listTextInactive: {
+    fontWeight: '500',
+    color: colors.inkSecondary,
   },
 })

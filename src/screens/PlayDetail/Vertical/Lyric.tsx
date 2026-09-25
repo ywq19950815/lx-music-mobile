@@ -1,209 +1,256 @@
-import { memo, useMemo, useEffect, useRef, useCallback } from 'react'
-import { View, FlatList, type FlatListProps, type LayoutChangeEvent, type NativeSyntheticEvent, type NativeScrollEvent } from 'react-native'
-// import { useLayout } from '@/utils/hooks'
+import { memo, useMemo, useEffect, useRef, useCallback, useState } from 'react'
+import {
+  View,
+  FlatList,
+  type FlatListProps,
+  type LayoutChangeEvent,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
+  Animated,
+  Easing,
+  StyleSheet,
+} from 'react-native'
 import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
-import { createStyle } from '@/utils/tools'
-// import { useComponentIds } from '@/store/common/hook'
 import { useSettingValue } from '@/store/setting/hook'
-import { AnimatedColorText } from '@/components/common/Text'
 import Text from '@/components/common/Text'
 import { useStatusText } from '@/store/player/hook'
 import { setSpText } from '@/utils/pixelRatio'
 import playerState from '@/store/player/state'
-import { scrollTo } from '@/utils/scroll'
 import PlayLine, { type PlayLineType } from '../components/PlayLine'
-// import { screenkeepAwake } from '@/utils/nativeModules/utils'
-// import { log } from '@/utils/log'
-// import { toast } from '@/utils/tools'
+import { colors as designColors } from '@/theme/tokens'
 
 type FlatListType = FlatListProps<Line>
-
-// const useLock = () => {
-//   const showCommentRef = useRef(false)
-
-
-//   useEffect(() => {
-//     let appstateListener = AppState.addEventListener('change', (state) => {
-//       switch (state) {
-//         case 'active':
-//           if (showLyricRef.current && !showCommentRef.current) screenkeepAwake()
-//           break
-//         case 'background':
-//           screenUnkeepAwake()
-//           break
-//       }
-//     })
-//     return () => {
-//       appstateListener.remove()
-//     }
-//   }, [])
-//   useEffect(() => {
-//     let listener: ReturnType<typeof onNavigationComponentDidDisappearEvent>
-//     showCommentRef.current = !!componentIds.comment
-//     if (showCommentRef.current) {
-//       if (showLyricRef.current) screenUnkeepAwake()
-//       listener = onNavigationComponentDidDisappearEvent(componentIds.comment as string, () => {
-//         if (showLyricRef.current && AppState.currentState == 'active') screenkeepAwake()
-//       })
-//     }
-
-//     const rm = global.state_event.on('componentIdsUpdated', (ids) => {
-
-//     })
-
-//     return () => {
-//       if (listener) listener.remove()
-//     }
-//   }, [])
-// }
 
 interface LineProps {
   line: Line
   lineNum: number
   activeLine: number
+  duration: number
+  lrcFontSize: number
+  textAlign: any
   onLayout: (lineNum: number, height: number, width: number) => void
 }
-const LrcLine = memo(({ line, lineNum, activeLine, onLayout }: LineProps) => {
-  const lrcFontSize = useSettingValue('playDetail.vertical.style.lrcFontSize')
-  const textAlign = useSettingValue('playDetail.style.align')
-  const active = activeLine == lineNum
+
+/**
+ * 现代高质感歌词行组件：
+ * - 激活态：双层渲染 + 逐字平滑金色填充动效 (Karaoke Effect)
+ * - 非激活态：柔和微弱白色，不抢占视觉
+ * - 极端性能优化：仅当前行与上一行触发重绘，丝滑不掉帧
+ */
+const LrcLine = memo(({
+  line,
+  lineNum,
+  activeLine,
+  duration,
+  lrcFontSize,
+  textAlign,
+  onLayout,
+}: LineProps) => {
+  const active = activeLine === lineNum
   const baseSize = lrcFontSize / 10
   const size = active ? baseSize * 1.15 : baseSize
-  const lineHeight = setSpText(size) * 1.38
+  const lineHeight = setSpText(size) * 1.4
 
-  const colors = useMemo(() => {
-    // 播放页固定深色沉浸：当前行品牌金，非当前行半透明白
-    return active ? [
-      '#F5A623',
-      'rgba(245,166,35,0.75)',
-      1,
-    ] as const : [
-      'rgba(255,255,255,0.62)',
-      'rgba(255,255,255,0.42)',
-      0.7,
-    ] as const
-  }, [active])
+  // 卡拉OK逐字平滑染色动画进度 (0 -> 1)
+  const progressAnim = useRef(new Animated.Value(active ? 1 : 0)).current
+  const [lineWidth, setLineWidth] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (active) {
+      progressAnim.setValue(0)
+      const animDuration = Math.max(800, Math.min(duration || 3500, 9000))
+      Animated.timing(progressAnim, {
+        toValue: 1,
+        duration: animDuration,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        useNativeDriver: false,
+      }).start()
+    } else {
+      progressAnim.setValue(0)
+    }
+  }, [active, duration, progressAnim])
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
   }
 
+  const handleTextLayout = ({ nativeEvent }: LayoutChangeEvent) => {
+    if (nativeEvent.layout.width > 0 && nativeEvent.layout.width !== lineWidth) {
+      setLineWidth(nativeEvent.layout.width)
+    }
+  }
 
-  // textBreakStrategy="simple" 用于解决某些设备上字体被截断的问题
-  // https://stackoverflow.com/a/72822360
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  })
+
   return (
-    <View style={[styles.line, active ? styles.activeLineWrapper : null]} onLayout={handleLayout}>
-      <View style={active ? styles.activeLineCard : null}>
-        <AnimatedColorText style={{
-          ...styles.lineText,
-          textAlign,
-          lineHeight,
-          fontWeight: active ? '700' : '500',
-        }} textBreakStrategy="simple" color={colors[0]} opacity={colors[2]} size={size}>{line.text}</AnimatedColorText>
-        {
-          line.extendedLyrics.map((lrc, index) => {
-            return (<AnimatedColorText style={{
-              ...styles.lineTranslationText,
-              textAlign,
-              lineHeight: lineHeight * 0.8,
-              fontWeight: active ? '600' : 'normal',
-            }} textBreakStrategy="simple" key={index} color={colors[1]} opacity={colors[2]} size={size * 0.8}>{lrc}</AnimatedColorText>)
-          })
-        }
-      </View>
+    <View
+      style={[styles.line, active ? styles.activeLineWrapper : null]}
+      onLayout={handleLayout}
+    >
+      {active ? (
+        <View style={styles.activeTextContainer}>
+          {/* 底层：弱化暗底文字 */}
+          <Text
+            style={[
+              styles.lineText,
+              {
+                textAlign,
+                lineHeight,
+                fontSize: size,
+                fontWeight: '700',
+                color: 'rgba(255, 255, 255, 0.35)',
+              },
+            ]}
+            onLayout={handleTextLayout}
+            textBreakStrategy="simple"
+          >
+            {line.text}
+          </Text>
+
+          {/* 顶层：卡拉OK平滑金色染色文字，随播放进度从左至右逐字擦染 */}
+          <Animated.View
+            style={[
+              styles.karaokeMask,
+              { width: progressWidth },
+            ]}
+          >
+            <Text
+              style={[
+                styles.lineText,
+                {
+                  textAlign,
+                  lineHeight,
+                  fontSize: size,
+                  fontWeight: '700',
+                  color: designColors.brand,
+                  width: lineWidth ?? '100%',
+                },
+              ]}
+              textBreakStrategy="simple"
+            >
+              {line.text}
+            </Text>
+          </Animated.View>
+
+          {/* 翻译歌词 */}
+          {line.extendedLyrics.map((lrc, index) => (
+            <Text
+              key={index}
+              style={[
+                styles.lineTranslationText,
+                {
+                  textAlign,
+                  lineHeight: lineHeight * 0.8,
+                  fontSize: size * 0.8,
+                  fontWeight: '600',
+                  color: 'rgba(245, 166, 35, 0.85)',
+                },
+              ]}
+              textBreakStrategy="simple"
+            >
+              {lrc}
+            </Text>
+          ))}
+        </View>
+      ) : (
+        <View style={styles.inactiveTextContainer}>
+          <Text
+            style={[
+              styles.lineText,
+              {
+                textAlign,
+                lineHeight,
+                fontSize: size,
+                fontWeight: '500',
+                color: 'rgba(255, 255, 255, 0.55)',
+              },
+            ]}
+            textBreakStrategy="simple"
+          >
+            {line.text}
+          </Text>
+          {line.extendedLyrics.map((lrc, index) => (
+            <Text
+              key={index}
+              style={[
+                styles.lineTranslationText,
+                {
+                  textAlign,
+                  lineHeight: lineHeight * 0.8,
+                  fontSize: size * 0.8,
+                  fontWeight: '400',
+                  color: 'rgba(255, 255, 255, 0.35)',
+                },
+              ]}
+              textBreakStrategy="simple"
+            >
+              {lrc}
+            </Text>
+          ))}
+        </View>
+      )}
     </View>
   )
 }, (prevProps, nextProps) => {
-  return prevProps.lineNum === nextProps.lineNum &&
+  return (
+    prevProps.lineNum === nextProps.lineNum &&
     prevProps.line === nextProps.line &&
-    prevProps.activeLine != nextProps.lineNum &&
-    nextProps.activeLine != nextProps.lineNum
+    prevProps.lrcFontSize === nextProps.lrcFontSize &&
+    prevProps.textAlign === nextProps.textAlign &&
+    (prevProps.activeLine === prevProps.lineNum) === (nextProps.activeLine === nextProps.lineNum) &&
+    (prevProps.activeLine !== prevProps.lineNum)
+  )
 })
-const wait = async() => new Promise(resolve => setTimeout(resolve, 100))
+
+const wait = async() => new Promise(resolve => setTimeout(resolve, 80))
 
 export default () => {
   const lyricLines = useLrcSet()
   const { line } = useLrcPlay()
   const flatListRef = useRef<FlatList>(null)
   const playLineRef = useRef<PlayLineType>(null)
-  const isPauseScrollRef = useRef(true)
+  const isPauseScrollRef = useRef(false)
   const scrollTimoutRef = useRef<NodeJS.Timeout | null>(null)
-  const delayScrollTimeout = useRef<NodeJS.Timeout | null>(null)
   const lineRef = useRef({ line: 0, prevLine: 0 })
   const isFirstSetLrc = useRef(true)
-  const scrollInfoRef = useRef<NativeSyntheticEvent<NativeScrollEvent>['nativeEvent'] | null>(null)
   const listLayoutInfoRef = useRef<{ spaceHeight: number, lineHeights: number[] }>({ spaceHeight: 0, lineHeights: [] })
-  const scrollCancelRef = useRef<(() => void) | null>(null)
   const isShowLyricProgressSetting = useSettingValue('playDetail.isShowLyricProgressSetting')
-  // useLock()
-  // const [imgUrl, setImgUrl] = useState(null)
-  // const theme = useGetter('common', 'theme')
-  // const { onLayout, ...layout } = useLayout()
+  const lrcFontSize = useSettingValue('playDetail.vertical.style.lrcFontSize')
+  const textAlign = useSettingValue('playDetail.style.align')
 
-  // useEffect(() => {
-  //   const url = playMusicInfo ? playMusicInfo.musicInfo.img : null
-  //   if (imgUrl == url) return
-  //   setImgUrl(url)
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [playMusicInfo])
-
-  // const imgWidth = useMemo(() => layout.width * 0.75, [layout.width])
-  const handleScrollToActive = (index = lineRef.current.line) => {
-    if (index < 0) return
-    if (flatListRef.current) {
-      // console.log('handleScrollToActive', index)
-      if (scrollInfoRef.current && lineRef.current.line - lineRef.current.prevLine == 1) {
-        let offset = listLayoutInfoRef.current.spaceHeight
-        for (let line = 0; line < index; line++) {
-          offset += listLayoutInfoRef.current.lineHeights[line]
-        }
-        offset += (listLayoutInfoRef.current.lineHeights[line] ?? 0) / 2
-        try {
-          scrollCancelRef.current = scrollTo(flatListRef.current, scrollInfoRef.current, offset - scrollInfoRef.current.layoutMeasurement.height * 0.42, 600, () => {
-            scrollCancelRef.current = null
-          })
-        } catch {}
-      } else {
-        if (scrollCancelRef.current) {
-          scrollCancelRef.current()
-          scrollCancelRef.current = null
-        }
-        try {
-          flatListRef.current.scrollToIndex({
-            index,
-            animated: true,
-            viewPosition: 0.42,
-          })
-        } catch {}
-      }
+  // 原生硬件加速平滑滚动到激活行，杜绝 JS 线程 10ms 频繁步进造成的掉帧与卡死
+  const handleScrollToActive = useCallback((index = lineRef.current.line) => {
+    if (index < 0 || !flatListRef.current) return
+    try {
+      flatListRef.current.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.42,
+      })
+    } catch {
+      // 容错兜底
     }
-  }
+  }, [])
 
   const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-    scrollInfoRef.current = nativeEvent
     if (isPauseScrollRef.current) {
       playLineRef.current?.updateScrollInfo(nativeEvent)
     }
   }
+
   const handleScrollBeginDrag = () => {
     isPauseScrollRef.current = true
     playLineRef.current?.setVisible(true)
-    if (delayScrollTimeout.current) {
-      clearTimeout(delayScrollTimeout.current)
-      delayScrollTimeout.current = null
-    }
     if (scrollTimoutRef.current) {
       clearTimeout(scrollTimoutRef.current)
       scrollTimoutRef.current = null
     }
-    if (scrollCancelRef.current) {
-      scrollCancelRef.current()
-      scrollCancelRef.current = null
-    }
   }
 
   const onScrollEndDrag = () => {
-    if (!isPauseScrollRef.current) return
     if (scrollTimoutRef.current) clearTimeout(scrollTimoutRef.current)
     scrollTimoutRef.current = setTimeout(() => {
       playLineRef.current?.setVisible(false)
@@ -211,16 +258,11 @@ export default () => {
       isPauseScrollRef.current = false
       if (!playerState.isPlay) return
       handleScrollToActive()
-    }, 3000)
+    }, 2500)
   }
-
 
   useEffect(() => {
     return () => {
-      if (delayScrollTimeout.current) {
-        clearTimeout(delayScrollTimeout.current)
-        delayScrollTimeout.current = null
-      }
       if (scrollTimoutRef.current) {
         clearTimeout(scrollTimoutRef.current)
         scrollTimoutRef.current = null
@@ -229,7 +271,6 @@ export default () => {
   }, [])
 
   useEffect(() => {
-    // linesRef.current = lyricLines
     listLayoutInfoRef.current.lineHeights = []
     lineRef.current.prevLine = 0
     lineRef.current.line = 0
@@ -246,49 +287,38 @@ export default () => {
         setTimeout(() => {
           isPauseScrollRef.current = false
           handleScrollToActive()
-        }, 100)
+        }, 120)
       } else {
-        if (delayScrollTimeout.current) clearTimeout(delayScrollTimeout.current)
-        delayScrollTimeout.current = setTimeout(() => {
+        setTimeout(() => {
           handleScrollToActive(0)
-        }, 100)
+        }, 80)
       }
     })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lyricLines])
+  }, [lyricLines, handleScrollToActive])
 
+  // 歌词行切换时，毫秒级响应滚动，消除 600ms 滞后
   useEffect(() => {
     if (line < 0) return
     lineRef.current.prevLine = lineRef.current.line
     lineRef.current.line = line
     if (!flatListRef.current || isPauseScrollRef.current) return
 
-    if (line - lineRef.current.prevLine != 1) {
-      handleScrollToActive()
-      return
-    }
-
-    delayScrollTimeout.current = setTimeout(() => {
-      delayScrollTimeout.current = null
-      handleScrollToActive()
-    }, 600)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [line])
+    handleScrollToActive(line)
+  }, [line, handleScrollToActive])
 
   useEffect(() => {
     requestAnimationFrame(() => {
       playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
       playLineRef.current?.updateLyricLines(lyricLines)
     })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isShowLyricProgressSetting])
+  }, [isShowLyricProgressSetting, lyricLines])
 
   const handleScrollToIndexFailed: FlatListType['onScrollToIndexFailed'] = (info) => {
     const spaceH = listLayoutInfoRef.current.spaceHeight || 200
-    const approxOffset = spaceH + info.index * 42
+    const approxOffset = spaceH + info.index * 44
     try {
       flatListRef.current?.scrollToOffset({
-        offset: Math.max(0, approxOffset - (scrollInfoRef.current?.layoutMeasurement.height || 400) * 0.42),
+        offset: Math.max(0, approxOffset - 200),
         animated: false,
       })
     } catch {}
@@ -313,14 +343,28 @@ export default () => {
   }, [])
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => {
+    const nextLine = lyricLines[index + 1]
+    const duration = nextLine && nextLine.time > item.time
+      ? nextLine.time - item.time
+      : 3500
+
     return (
-      <LrcLine line={item} lineNum={index} activeLine={line} onLayout={handleLineLayout} />
+      <LrcLine
+        line={item}
+        lineNum={index}
+        activeLine={line}
+        duration={duration}
+        lrcFontSize={lrcFontSize}
+        textAlign={textAlign}
+        onLayout={handleLineLayout}
+      />
     )
   }
+
   const getkey: FlatListType['keyExtractor'] = (item, index) => `${index}${item.text}`
 
   const spaceComponent = useMemo(() => (
-    <View style={styles.space} onLayout={handleSpaceLayout}></View>
+    <View style={styles.space} onLayout={handleSpaceLayout} />
   ), [handleSpaceLayout])
 
   const statusText = useStatusText()
@@ -328,7 +372,9 @@ export default () => {
     <View style={styles.emptyContainer}>
       <View style={styles.emptyCard}>
         <Text style={styles.emptyIcon}>🎵</Text>
-        <Text style={styles.emptyText}>{playerState.musicInfo.id ? (statusText || '正在加载歌词...') : '暂无播放歌曲'}</Text>
+        <Text style={styles.emptyText}>
+          {playerState.musicInfo.id ? (statusText || '正在加载歌词...') : '暂无播放歌曲'}
+        </Text>
       </View>
     </View>
   ), [statusText])
@@ -348,26 +394,26 @@ export default () => {
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
         fadingEdgeLength={100}
-        initialNumToRender={Math.max(line + 25, 30)}
-        maxToRenderPerBatch={25}
-        windowSize={15}
+        initialNumToRender={Math.max(line + 15, 20)}
+        maxToRenderPerBatch={10}
+        windowSize={7}
+        removeClippedSubviews={true}
         onScrollToIndexFailed={handleScrollToIndexFailed}
         onScroll={handleScroll}
       />
-      { isShowLyricProgressSetting ? <PlayLine ref={playLineRef} onPlayLine={handlePlayLine} /> : null }
+      {isShowLyricProgressSetting ? <PlayLine ref={playLineRef} onPlayLine={handlePlayLine} /> : null}
     </>
   )
 }
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingLeft: 24,
     paddingRight: 24,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
   },
   space: {
-    paddingTop: '100%',
+    paddingTop: '90%',
   },
   emptyContainer: {
     paddingTop: '60%',
@@ -375,7 +421,7 @@ const styles = createStyle({
     justifyContent: 'center',
   },
   emptyCard: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 14,
@@ -388,32 +434,34 @@ const styles = createStyle({
   emptyText: {
     fontSize: 14,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.9)',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   line: {
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingVertical: 8,
     alignItems: 'center',
   },
   activeLineWrapper: {
-    paddingTop: 12,
-    paddingBottom: 12,
+    paddingVertical: 12,
+  },
+  activeTextContainer: {
+    position: 'relative',
     alignItems: 'center',
   },
-  activeLineCard: {},
+  inactiveTextContainer: {
+    alignItems: 'center',
+  },
   lineText: {
     textAlign: 'center',
-    // fontSize: 16,
-    // lineHeight: 20,
-    // paddingTop: 5,
-    // paddingBottom: 5,
-    // opacity: 0,
+  },
+  karaokeMask: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    overflow: 'hidden',
   },
   lineTranslationText: {
     textAlign: 'center',
-    // fontSize: 13,
-    // lineHeight: 17,
     paddingTop: 6,
-    // paddingBottom: 5,
   },
 })

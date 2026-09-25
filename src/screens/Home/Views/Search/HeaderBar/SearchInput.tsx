@@ -5,6 +5,7 @@ import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
 
 export interface SearchInputProps {
+  prefix?: React.ReactNode
   onChangeText: (text: string) => void
   onSubmit: (text: string) => void
   onBlur: () => void
@@ -17,7 +18,7 @@ export interface SearchInputType {
   blur: () => void
 }
 
-export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, onSubmit, onBlur, onTouchStart }, ref) => {
+export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, onChangeText, onSubmit, onBlur, onTouchStart }, ref) => {
   const [text, setText] = useState('')
   const inputRef = useRef<InputType>(null)
 
@@ -53,6 +54,12 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
   return (
     <View style={styles.inputWrapper}>
       <View style={styles.searchBox}>
+        {prefix ? (
+          <View style={styles.prefixContainer}>
+            {prefix}
+            <View style={styles.verticalDivider} />
+          </View>
+        ) : null}
         <View style={styles.searchIconBox}>
           <Icon name="search-2" size={14} color="#8A909B" />
         </View>
@@ -84,8 +91,7 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ onChangeText, on
 const styles = StyleSheet.create({
   inputWrapper: {
     flex: 1,
-    paddingVertical: 3,
-    paddingHorizontal: 2,
+    paddingVertical: 4,
     justifyContent: 'center',
   },
   searchBox: {
@@ -94,10 +100,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderWidth: 1,
     borderColor: '#E6E8EC',
-    borderRadius: 18,
-    height: 36,
-    paddingLeft: 10,
+    borderRadius: 19,
+    height: 38,
+    paddingLeft: 4,
     paddingRight: 4,
+  },
+  prefixContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: '100%',
+  },
+  verticalDivider: {
+    width: 1,
+    height: 14,
+    backgroundColor: '#D1D5DB',
+    marginLeft: 2,
+    marginRight: 6,
   },
   searchIconBox: {
     marginRight: 6,

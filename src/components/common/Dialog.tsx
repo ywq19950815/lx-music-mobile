@@ -6,7 +6,7 @@ import { useKeyboard } from '@/utils/hooks'
 import Text from './Text'
 import { colors, radius } from '@/theme/tokens'
 
-const HEADER_HEIGHT = 42
+const HEADER_HEIGHT = 46
 
 export interface DialogProps {
   onHide?: () => void
@@ -16,6 +16,7 @@ export interface DialogProps {
   title?: string
   children: React.ReactNode | React.ReactNode[]
   height?: number | `${number}%`
+  position?: 'bottom' | 'center'
 }
 
 export interface DialogType {
@@ -30,6 +31,7 @@ export default forwardRef<DialogType, DialogProps>(({
   title = '',
   children,
   height,
+  position = 'bottom',
 }: DialogProps, ref) => {
   const { keyboardShown, keyboardHeight } = useKeyboard()
   const modalRef = useRef<ModalType>(null)
@@ -48,25 +50,47 @@ export default forwardRef<DialogType, DialogProps>(({
             activeOpacity={0.7}
             onPress={() => modalRef.current?.setVisible(false)}
           >
-            <Icon name="close" color={colors.inkSecondary} size={14} />
+            <Icon name="close" color={colors.inkSecondary} size={13} />
           </TouchableOpacity>
         )
       : null
   }, [closeBtn])
 
+  const isBottom = position === 'bottom'
+
   return (
     <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor="rgba(0, 0, 0, 0.45)" ref={modalRef}>
-      <View style={[styles.centeredView, { paddingBottom: keyboardShown ? keyboardHeight : 0 }]}>
-        <View style={[styles.modalCard, height ? { height } : null]} onStartShouldSetResponder={() => true}>
-          <View style={styles.header}>
-            <View style={styles.headerTitleBox}>
-              <View style={styles.headerDot} />
-              <Text style={styles.title} size={14} color={colors.ink} numberOfLines={1}>
-                {title}
-              </Text>
+      <View
+        style={[
+          isBottom ? styles.bottomView : styles.centeredView,
+          { paddingBottom: keyboardShown ? keyboardHeight : (isBottom ? 20 : 0) },
+        ]}
+      >
+        <View
+          style={[
+            isBottom ? styles.bottomSheetCard : styles.centeredModalCard,
+            height ? { height } : null,
+          ]}
+          onStartShouldSetResponder={() => true}
+        >
+          {isBottom ? (
+            <View style={styles.handleContainer}>
+              <View style={styles.handleBar} />
             </View>
-            {closeBtnComponent}
-          </View>
+          ) : null}
+
+          {title || closeBtn ? (
+            <View style={styles.header}>
+              <View style={styles.headerTitleBox}>
+                <View style={styles.headerDot} />
+                <Text style={styles.title} size={15} color={colors.ink} numberOfLines={1}>
+                  {title}
+                </Text>
+              </View>
+              {closeBtnComponent}
+            </View>
+          ) : null}
+
           <View style={styles.body}>
             {children}
           </View>
@@ -77,17 +101,53 @@ export default forwardRef<DialogType, DialogProps>(({
 })
 
 const styles = StyleSheet.create({
+  // 底部抽屉模式（QQ音乐现代交互标准：表单与操作从底部弹出）
+  bottomView: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    width: '100%',
+  },
+  bottomSheetCard: {
+    width: '100%',
+    maxHeight: '85%',
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    borderWidth: 1,
+    borderColor: '#ECEEF2',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 12,
+    overflow: 'hidden',
+  },
+  handleContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  handleBar: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#D1D5DB',
+  },
+
+  // 居中模式（轻量确认弹窗专用）
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
-  modalCard: {
-    maxWidth: '92%',
+  centeredModalCard: {
+    maxWidth: '90%',
     minWidth: '75%',
     maxHeight: '82%',
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.hairline,
@@ -98,15 +158,16 @@ const styles = StyleSheet.create({
     elevation: 10,
     overflow: 'hidden',
   },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.hairline,
+    borderBottomColor: '#F3F4F6',
     height: HEADER_HEIGHT,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
   },
   headerTitleBox: {
     flexDirection: 'row',
@@ -115,23 +176,24 @@ const styles = StyleSheet.create({
   },
   headerDot: {
     width: 3.5,
-    height: 13,
+    height: 14,
     borderRadius: 2,
     backgroundColor: colors.brand,
     marginRight: 8,
   },
   title: {
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
   closeBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
   },
   body: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
   },
 })

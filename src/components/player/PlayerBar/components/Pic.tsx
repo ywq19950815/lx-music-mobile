@@ -1,57 +1,21 @@
 import { StyleSheet, TouchableOpacity, View, Animated, Easing } from 'react-native'
-import { navigations } from '@/navigation'
 import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
-import commonState from '@/store/common/state'
-import playerState from '@/store/player/state'
-import { LIST_IDS, NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
+import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import Image from '@/components/common/Image'
+import { Icon } from '@/components/common/Icon'
 import { useCallback, useEffect, useRef } from 'react'
-import { setLoadErrorPicUrl, setMusicInfo } from '@/core/player/playInfo'
+import { setLoadErrorPicUrl } from '@/core/player/playInfo'
 
-const PIC_HEIGHT = scaleSizeH(44)
+const PIC_SIZE = scaleSizeH(44)
 const CENTER_PIC_SIZE = scaleSizeH(28)
 const HOLE_SIZE = scaleSizeH(6)
 
-const styles = StyleSheet.create({
-  diskContainer: {
-    width: PIC_HEIGHT,
-    height: PIC_HEIGHT,
-    borderRadius: PIC_HEIGHT / 2,
-    backgroundColor: '#0D0F14',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  diskGroove: {
-    width: PIC_HEIGHT - 4,
-    height: PIC_HEIGHT - 4,
-    borderRadius: (PIC_HEIGHT - 4) / 2,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  centerPic: {
-    width: CENTER_PIC_SIZE,
-    height: CENTER_PIC_SIZE,
-    borderRadius: CENTER_PIC_SIZE / 2,
-  },
-  centerHole: {
-    position: 'absolute',
-    width: HOLE_SIZE,
-    height: HOLE_SIZE,
-    borderRadius: HOLE_SIZE / 2,
-    backgroundColor: '#F5A623',
-    borderWidth: 1,
-    borderColor: '#0D0F14',
-  },
-})
-
+/**
+ * 悬浮条黑胶唱片唱芯：
+ * - 紧致同心刻度圈 + 中心黑金唱片贴 / 封面图
+ * - 播放时匀速 360° 旋转，暂停保持当前角度
+ */
 export default ({ isHome }: { isHome: boolean }) => {
   const musicInfo = usePlayerMusicInfo()
   const isPlay = useIsPlay()
@@ -79,7 +43,7 @@ export default ({ isHome }: { isHome: boolean }) => {
           duration: 16000,
           easing: Easing.linear,
           useNativeDriver: true,
-        })
+        }),
       )
       animRef.current.start()
     } else {
@@ -88,47 +52,93 @@ export default ({ isHome }: { isHome: boolean }) => {
         currentAngle.current = value
       })
     }
-
     return () => {
       animRef.current?.stop()
     }
   }, [isPlay, rotateAnim])
 
-  const spin = rotateAnim.interpolate({
+  const diskSpin = rotateAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   })
 
-  const handlePress = () => {
-    navigations.pushPlayDetailScreen(commonState.componentIds.home || 'home')
-    if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
-      (window as any).__lxTogglePlayDetail(true)
-    }
-    globalThis.app_event?.emit('openPlayDetail')
-  }
-
-  const handleLongPress = () => {
-    if (!isHome) return
-    const listId = playerState.playMusicInfo.listId
-    if (!listId || listId == LIST_IDS.DOWNLOAD) return
-    global.app_event.jumpListPosition()
-  }
-
   const handleError = useCallback((url: string | number) => {
     setLoadErrorPicUrl(url as string)
-    setMusicInfo({
-      pic: null,
-    })
   }, [])
 
   return (
-    <TouchableOpacity onLongPress={handleLongPress} onPress={handlePress} activeOpacity={0.8} style={{ paddingLeft: 2 }}>
-      <Animated.View style={[styles.diskContainer, { transform: [{ rotate: spin }] }]}>
+    <View style={styles.diskOuter}>
+      <Animated.View style={[styles.diskContainer, { transform: [{ rotate: diskSpin }] }]}>
         <View style={styles.diskGroove}>
-          <Image url={musicInfo.pic} nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic} style={styles.centerPic} onError={handleError} />
+          {musicInfo.pic ? (
+            <Image
+              url={musicInfo.pic}
+              nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic}
+              style={styles.centerPic}
+              onError={handleError}
+            />
+          ) : (
+            <View style={styles.defaultCenter}>
+              <Icon name="logo" size={12} color="#F5A623" />
+            </View>
+          )}
+          {/* 中心黄铜转轴微孔 */}
           <View style={styles.centerHole} />
         </View>
       </Animated.View>
-    </TouchableOpacity>
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  diskOuter: {
+    paddingLeft: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  diskContainer: {
+    width: PIC_SIZE,
+    height: PIC_SIZE,
+    borderRadius: PIC_SIZE / 2,
+    backgroundColor: '#12141A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  diskGroove: {
+    width: PIC_SIZE - 4,
+    height: PIC_SIZE - 4,
+    borderRadius: (PIC_SIZE - 4) / 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  centerPic: {
+    width: CENTER_PIC_SIZE,
+    height: CENTER_PIC_SIZE,
+    borderRadius: CENTER_PIC_SIZE / 2,
+  },
+  defaultCenter: {
+    width: CENTER_PIC_SIZE,
+    height: CENTER_PIC_SIZE,
+    borderRadius: CENTER_PIC_SIZE / 2,
+    backgroundColor: '#1E2028',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerHole: {
+    position: 'absolute',
+    width: HOLE_SIZE,
+    height: HOLE_SIZE,
+    borderRadius: HOLE_SIZE / 2,
+    backgroundColor: '#F5A623',
+    borderWidth: 1,
+    borderColor: '#0D0F14',
+  },
+})

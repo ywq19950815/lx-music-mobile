@@ -1,7 +1,6 @@
 import { memo } from 'react'
-import { View } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import CheckBox, { type CheckBoxProps } from '@/components/common/CheckBox'
-import { createStyle } from '@/utils/tools'
 
 export default memo((props: CheckBoxProps) => {
   return (
@@ -11,11 +10,10 @@ export default memo((props: CheckBoxProps) => {
   )
 })
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
-    paddingLeft: 4,
-    paddingVertical: 2,
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F9FAFB',
   },
 })
-
-

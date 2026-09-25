@@ -71,12 +71,23 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
   }
 
   return (
-    <Dialog onHide={onHide} keyHide={keyHide} bgHide={bgHide} closeBtn={closeBtn} title={title} ref={dialogRef}>
+    <Dialog
+      onHide={onHide}
+      keyHide={keyHide}
+      bgHide={bgHide}
+      closeBtn={closeBtn}
+      title={title}
+      position="center"
+      ref={dialogRef}
+    >
       <View style={styles.main}>
-        <ScrollView style={styles.content} keyboardShouldPersistTaps={'always'}
+        <ScrollView
+          style={styles.content}
+          keyboardShouldPersistTaps={'always'}
           showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}>
-          {children ?? <Text style={styles.textBody} size={13} color={colors.inkSecondary}>{text}</Text>}
+          showsHorizontalScrollIndicator={false}
+        >
+          {children ?? <Text style={styles.textBody} size={13.5} color={colors.inkSecondary}>{text}</Text>}
         </ScrollView>
       </View>
       <View style={[styles.btns, reverseBtn && styles.btnsReversed]}>
@@ -110,12 +121,12 @@ export default forwardRef<ConfirmAlertType, ConfirmAlertProps>(({
 
 const styles = StyleSheet.create({
   main: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingTop: 16,
     paddingBottom: 16,
   },
   content: {
-    maxHeight: 260,
+    maxHeight: 280,
   },
   textBody: {
     lineHeight: 22,
@@ -124,7 +135,7 @@ const styles = StyleSheet.create({
   btns: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingBottom: 16,
     gap: 10,
   },
@@ -132,7 +143,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
   },
   cancelBtn: {
-    paddingVertical: 7,
+    paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: radius.pill,
     backgroundColor: '#F3F4F6',
@@ -144,8 +155,8 @@ const styles = StyleSheet.create({
     color: colors.inkSecondary,
   },
   confirmBtn: {
-    paddingVertical: 7,
-    paddingHorizontal: 18,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
     borderRadius: radius.pill,
     backgroundColor: colors.brand,
     justifyContent: 'center',

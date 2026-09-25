@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ScrollView, TouchableOpacity, StyleSheet, View } from 'react-native'
+import { TouchableOpacity, StyleSheet, View } from 'react-native'
 import { type SearchType } from '@/store/search/state'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
 import { getSearchSetting } from '@/utils/data'
-import { colors } from '@/theme/tokens'
 
 const SEARCH_TYPE_LIST = [
   'music',
   'songlist',
 ] as const
 
+/**
+ * 搜索分类切换胶囊（QQ 音乐一体化分段控制器 Segmented Control）
+ */
 export default () => {
   const t = useI18n()
   const [type, setType] = useState<SearchType>('music')
@@ -25,75 +27,64 @@ export default () => {
     return SEARCH_TYPE_LIST.map(type => ({ label: t(`search_type_${type}`), id: type }))
   }, [t])
 
-  const handleTypeChange = (type: SearchType) => {
-    setType(type)
-    global.app_event.searchTypeChanged(type)
+  const handleTypeChange = (newType: SearchType) => {
+    if (newType === type) return
+    setType(newType)
+    global.app_event.searchTypeChanged(newType)
   }
 
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps={'always'} horizontal={true}>
-      <View style={styles.tabsRow}>
-        {
-          list.map(t => {
-            const active = type === t.id
-            return (
-              <TouchableOpacity
-                style={[
-                  styles.tabButton,
-                  active ? styles.tabActive : styles.tabInactive,
-                ]}
-                activeOpacity={0.7}
-                onPress={() => { handleTypeChange(t.id) }}
-                key={t.id}
-              >
-                <Text
-                  style={[styles.tabText, active && styles.tabTextActive]}
-                  size={12}
-                >
-                  {t.label}
-                </Text>
-              </TouchableOpacity>
-            )
-          })
-        }
-      </View>
-    </ScrollView>
+    <View style={styles.segmentWrapper}>
+      {list.map(item => {
+        const active = type === item.id
+        return (
+          <TouchableOpacity
+            key={item.id}
+            style={[styles.segmentBtn, active && styles.segmentBtnActive]}
+            activeOpacity={0.7}
+            onPress={() => handleTypeChange(item.id)}
+          >
+            <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        )
+      })}
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 0,
-    flexShrink: 1,
-    paddingTop: 2,
-    paddingBottom: 2,
-  },
-  tabsRow: {
+  segmentWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  tabButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 4.5,
-    borderRadius: 14,
-    marginRight: 8,
-    borderWidth: 1,
-  },
-  tabActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
-    borderColor: '#F5A623',
-  },
-  tabInactive: {
     backgroundColor: '#F3F4F6',
-    borderColor: 'transparent',
+    borderRadius: 14,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: '#E6E8EC',
   },
-  tabText: {
+  segmentBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  segmentBtnActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  segmentText: {
+    fontSize: 11.5,
     fontWeight: '500',
-    color: '#5A616B',
+    color: '#6B7280',
   },
-  tabTextActive: {
+  segmentTextActive: {
+    fontSize: 11.5,
     fontWeight: '700',
-    color: '#B36B00',
+    color: '#F5A623',
   },
 })

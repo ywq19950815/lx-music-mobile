@@ -1,25 +1,40 @@
 import Text from '@/components/common/Text'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
-import { useI18n } from '@/lang'
+import { StyleSheet, View } from 'react-native'
+import { colors } from '@/theme/tokens'
 
 export default ({ selectedList, isMove }: {
   selectedList: LX.Music.MusicInfo[]
   isMove: boolean
 }) => {
-  const theme = useTheme()
-  const t = useI18n()
   return (
-    <Text style={styles.title} size={16}>
-      {t(isMove ? 'list_multi_add_title_first_move' : 'list_multi_add_title_first_add')} <Text color={theme['c-primary-font']} size={16}>{selectedList.length}</Text> {t('list_multi_add_title_last')}
-    </Text>
+    <View style={styles.container}>
+      <Text style={styles.actionText}>
+        {isMove ? '批量移动到歌单' : '批量收藏到歌单'}
+      </Text>
+      <Text style={styles.subText}>
+        已选择 {selectedList.length} 首歌曲
+      </Text>
+    </View>
   )
 }
 
-const styles = createStyle({
-  title: {
-    textAlign: 'center',
-    paddingTop: 15,
-    paddingBottom: 15,
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#F3F4F6',
+  },
+  actionText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.ink,
+    letterSpacing: -0.3,
+  },
+  subText: {
+    fontSize: 12,
+    color: colors.inkTertiary,
+    marginTop: 3,
   },
 })

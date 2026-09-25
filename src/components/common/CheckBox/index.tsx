@@ -7,7 +7,7 @@ import { createStyle } from '@/utils/tools'
 import { scaleSizeH, scaleSizeW } from '@/utils/pixelRatio'
 import { useTheme } from '@/store/theme/hook'
 import Text from '../Text'
-import { Icon } from '../Icon'
+import { colors } from '@/theme/tokens'
 
 export interface CheckBoxProps {
   check: boolean
@@ -24,7 +24,19 @@ export interface CheckBoxProps {
   helpDesc?: string
 }
 
-export default ({ check, label, children, onChange, helpTitle, helpDesc, disabled = false, need = false, marginRight = 0, marginBottom = 0, size = 1 }: CheckBoxProps) => {
+export default ({
+  check,
+  label,
+  children,
+  onChange,
+  helpTitle,
+  helpDesc,
+  disabled = false,
+  need = false,
+  marginRight = 0,
+  marginBottom = 0,
+  size = 1,
+}: CheckBoxProps) => {
   const theme = useTheme()
   const [isDisabled, setDisabled] = useState(false)
   const alertRef = useRef<ConfirmAlertType>(null)
@@ -52,12 +64,13 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
 
   const modalTitle = helpTitle || (typeof label === 'string' ? label : '') || '提示说明'
 
+  // 精致低干扰的帮助圆点按钮，避免硬核黑色大问号突兀干扰视觉
   const helpComponent = useMemo(() => {
     return (helpTitle ?? helpDesc) ? (
       <TouchableOpacity
         style={styles.helpBtn}
         onPress={handleShowHelp}
-        activeOpacity={0.7}
+        activeOpacity={0.6}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text style={styles.helpBtnText}>?</Text>
@@ -70,9 +83,6 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
 
   return (
     <View style={contentStyle}>
-      {/* 注意：need（单选组「必须选中一项」）造成的 isDisabled 只用于拦截点击，
-          不传给 Checkbox 的 disabled —— 否则选中项会被渲染成灰色无边框阴影的禁用态，
-          与普通勾选框（黄底黑边硬阴影）风格割裂。选中态统一走 checked 样式。 */}
       <CheckBox
         status={check ? 'checked' : 'unchecked'}
         disabled={disabled}
@@ -89,9 +99,9 @@ export default ({ check, label, children, onChange, helpTitle, helpDesc, disable
           <Text
             style={[
               styles.name,
-              { color: disabled ? '#8E8E93' : '#000000', fontWeight: '700' },
+              { color: disabled ? colors.inkTertiary : colors.ink },
             ]}
-            size={14.5 * size}
+            size={14 * size}
           >
             {label}
           </Text>
@@ -119,7 +129,7 @@ const styles = createStyle({
     marginRight: 10,
     alignItems: 'center',
     flexDirection: 'row',
-    paddingVertical: 5,
+    paddingVertical: 6,
   },
   label: {
     flexGrow: 0,
@@ -128,29 +138,24 @@ const styles = createStyle({
   },
   name: {
     marginTop: 0,
+    fontWeight: '500',
   },
+  // 现代低调信息提示标：柔和浅灰底 + 深灰细圆字符，与正文自然融为一体
   helpBtn: {
-    backgroundColor: '#F5A623',
-    borderWidth: 1.5,
-    borderColor: '#000000',
-    borderRadius: 6,
-    width: 18,
-    height: 18,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    width: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 6,
-    shadowColor: '#000000',
-    shadowOffset: { width: 1.5, height: 1.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
   },
   helpBtnText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#000000',
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#6B7280',
     lineHeight: 12,
   },
 })
-
-

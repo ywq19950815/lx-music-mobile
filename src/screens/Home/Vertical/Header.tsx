@@ -12,16 +12,26 @@ const headerComponents: Partial<Record<CommonState['navActiveId'], React.ReactNo
   nav_search: <SearchTypeSelector />,
 }
 
+const TAB_TITLES: Partial<Record<CommonState['navActiveId'], string>> = {
+  nav_search: '发现音乐',
+  nav_songlist: '歌单广场',
+  nav_top: '官方排行榜',
+  nav_love: '我的音乐',
+  nav_setting: '设置中心',
+}
+
 /**
- * 主页头部：QQ 音乐式浅色 chrome。
- * - 纯白底，向上延伸进状态栏实现沉浸
- * - 深色大标题，常规字重，无贴纸装饰
- * - 底部 hairline 分隔
+ * 主页头部：QQ 音乐级轻奢极简 Chrome。
+ * - 纯净白底，沉浸式延伸进系统状态栏
+ * - 醒目品牌大标题 + 金色微装饰，视觉聚焦
+ * - 极细高光分界底线
  */
 const MainHeader = () => {
   const id = useNavActiveId()
   const t = useI18n()
   const statusBarHeight = useStatusbarHeight()
+
+  const displayTitle = TAB_TITLES[id] ?? t(id)
 
   return (
     <View
@@ -34,8 +44,10 @@ const MainHeader = () => {
       ]}
     >
       <View style={styles.titleRow}>
-        <Text style={styles.title} size={22}>
-          {t(id)}
+        {/* 品牌金色微质感重音标 */}
+        <View style={styles.brandAccentDot} />
+        <Text style={styles.title}>
+          {displayTitle}
         </Text>
       </View>
 
@@ -71,9 +83,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  brandAccentDot: {
+    width: 4,
+    height: 18,
+    borderRadius: 2,
+    backgroundColor: '#F5A623',
+  },
   title: {
-    fontWeight: '700',
-    color: '#1A1C20',
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111827',
+    letterSpacing: 0.3,
   },
   right: {
     flexGrow: 1,

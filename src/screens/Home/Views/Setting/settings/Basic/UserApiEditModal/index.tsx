@@ -1,84 +1,25 @@
 import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import Text from '@/components/common/Text'
-import { View } from 'react-native'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
+import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import { useI18n } from '@/lang'
 import Dialog, { type DialogType } from '@/components/common/Dialog'
-import Button from '@/components/common/Button'
 import List from './List'
 import ImportBtn from './ImportBtn'
+import { colors, radius } from '@/theme/tokens'
 
-// interface UrlInputType {
-//   setText: (text: string) => void
-//   getText: () => string
-//   focus: () => void
-// }
-// const UrlInput = forwardRef<UrlInputType, {}>((props, ref) => {
-//   const theme = useTheme()
-//   const t = useI18n()
-//   const [text, setText] = useState('')
-//   const inputRef = useRef<InputType>(null)
-//   const [height, setHeight] = useState(100)
-
-//   useImperativeHandle(ref, () => ({
-//     getText() {
-//       return text.trim()
-//     },
-//     setText(text) {
-//       setText(text)
-//     },
-//     focus() {
-//       inputRef.current?.focus()
-//     },
-//   }))
-
-//   const handleLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
-//     setHeight(nativeEvent.layout.height)
-//   }, [])
-
-//   return (
-//     <View style={styles.inputContent} onLayout={handleLayout}>
-//       <Input
-//         ref={inputRef}
-//         value={text}
-//         onChangeText={setText}
-//         textAlignVertical="top"
-//         placeholder={t('setting_dislike_list_input_tip')}
-//         size={12}
-//         style={{ ...styles.input, height, backgroundColor: theme['c-primary-input-background'] }}
-//       />
-//     </View>
-//   )
-// })
-
-
-// export interface UserApiEditModalProps {
-//   onSave: (rules: string) => void
-//   // onSourceChange: SourceSelectorProps['onSourceChange']
-// }
 export interface UserApiEditModalType {
   show: () => void
 }
 
 export default forwardRef<UserApiEditModalType, {}>((props, ref) => {
   const dialogRef = useRef<DialogType>(null)
-  // const sourceSelectorRef = useRef<SourceSelectorType>(null)
-  // const inputRef = useRef<UrlInputType>(null)
   const [visible, setVisible] = useState(false)
-  const theme = useTheme()
   const t = useI18n()
 
   const handleShow = () => {
     dialogRef.current?.setVisible(true)
-    // requestAnimationFrame(() => {
-    // inputRef.current?.setText('')
-    // sourceSelectorRef.current?.setSource(source)
-    // setTimeout(() => {
-    //   inputRef.current?.focus()
-    // }, 300)
-    // })
   }
+
   useImperativeHandle(ref, () => ({
     show() {
       if (visible) handleShow()
@@ -98,10 +39,8 @@ export default forwardRef<UserApiEditModalType, {}>((props, ref) => {
   return (
     visible
       ? (
-          <Dialog ref={dialogRef} bgHide={false}>
+          <Dialog ref={dialogRef} bgHide={false} title={t('user_api_title') || '自定义源管理'}>
             <View style={styles.content}>
-              {/* <UrlInput ref={inputRef} /> */}
-              <Text size={16} style={styles.title}>{t('user_api_title')}</Text>
               <List />
               <View style={styles.tips}>
                 <Text style={styles.tipsText} size={12}>
@@ -113,57 +52,67 @@ export default forwardRef<UserApiEditModalType, {}>((props, ref) => {
               </View>
             </View>
             <View style={styles.btns}>
-              <Button style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} onPress={handleCancel}>
-                <Text size={14} color={theme['c-button-font']}>{t('close')}</Text>
-              </Button>
-              <ImportBtn btnStyle={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} />
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={handleCancel}
+                activeOpacity={0.7}
+              >
+                <Text size={13.5} style={styles.cancelText}>{t('close')}</Text>
+              </TouchableOpacity>
+              <ImportBtn btnStyle={styles.importBtn} />
             </View>
           </Dialog>
         ) : null
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   content: {
-    // flexGrow: 1,
-    flexShrink: 1,
-    paddingHorizontal: 8,
-    paddingTop: 15,
+    paddingHorizontal: 16,
+    paddingTop: 10,
     paddingBottom: 10,
     flexDirection: 'column',
   },
-  title: {
-    marginBottom: 15,
-    textAlign: 'center',
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
-  },
   tips: {
-    paddingHorizontal: 7,
-    marginTop: 15,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: '#F8F9FA',
+    borderRadius: radius.md,
   },
   tipsText: {
-    marginTop: 8,
-    textAlignVertical: 'bottom',
-    // lineHeight: 18,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    lineHeight: 18,
+    color: colors.inkTertiary,
   },
   btns: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    paddingBottom: 15,
-    paddingLeft: 15,
-    // paddingRight: 15,
+    justifyContent: 'flex-end',
+    paddingBottom: 18,
+    paddingHorizontal: 16,
+    gap: 10,
   },
-  btn: {
-    flex: 1,
-    padding: 10,
+  cancelBtn: {
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
-    borderRadius: 4,
-    marginRight: 15,
+    justifyContent: 'center',
+  },
+  cancelText: {
+    fontWeight: '600',
+    color: colors.inkSecondary,
+  },
+  importBtn: {
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
   },
 })
-
-

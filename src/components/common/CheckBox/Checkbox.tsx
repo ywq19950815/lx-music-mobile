@@ -2,13 +2,12 @@ import * as React from 'react'
 import {
   Animated,
   type GestureResponderEvent,
-  StyleSheet,
   View,
   Pressable,
 } from 'react-native'
 
 import { createStyle } from '@/utils/tools'
-import { scaleSizeW } from '@/utils/pixelRatio'
+import { colors, radius } from '@/theme/tokens'
 
 export interface Props {
   /**
@@ -35,15 +34,13 @@ export interface Props {
   }
 }
 
-const ANIMATION_DURATION = 150
 const BOX_SIZE = 22
 
 /**
- * Neo-Brutalism 风格复选框：
- * - 纯黑 2px 粗实描边
- * - 零模糊 1.5px 实体物理硬阴影
- * - 选中态高饱和波普明黄 (#F5A623) + 纯黑加粗勾选标记
- * - 实体按压反馈与流畅弹性微动画
+ * 现代流体质感复选框（QQ音乐/iOS 现代设计标准）：
+ * - 柔和细边框 + 微圆角 (radius.sm)
+ * - 选中态品牌暖金 (#F5A623) + 纯白精致对勾标记
+ * - 柔和微投影 + 平滑弹性微动画
  */
 const Checkbox = ({
   status,
@@ -70,8 +67,8 @@ const Checkbox = ({
 
     Animated.spring(scaleAnim, {
       toValue: checked ? 1 : 0,
-      friction: 6,
-      tension: 100,
+      friction: 7,
+      tension: 120,
       useNativeDriver: true,
     }).start()
   }, [checked, scaleAnim])
@@ -91,7 +88,7 @@ const Checkbox = ({
         {
           width: boxDimension,
           height: boxDimension,
-          transform: [{ translateY: pressed ? 1.5 : 0 }, { translateX: pressed ? 1.5 : 0 }],
+          opacity: pressed ? 0.8 : 1,
         },
         checked ? styles.boxChecked : styles.boxUnchecked,
         disabled && styles.boxDisabled,
@@ -105,11 +102,27 @@ const Checkbox = ({
           justifyContent: 'center',
         }}
       >
-        {/* 不用图标字体画对勾：selection.json 里根本没有 check-bold 字形，
-            之前渲染出来是一个小圆点。改用纯 View 画的 CSS 对勾，两端渲染一致且锐利。 */}
-        {indeterminate
-          ? <View style={[styles.minusBar, { width: Math.round(11 * size), height: Math.max(2, Math.round(2.5 * size)) }]} />
-          : <View style={[styles.checkMark, { width: Math.round(11 * size), height: Math.round(6 * size) }]} />}
+        {indeterminate ? (
+          <View
+            style={[
+              styles.minusBar,
+              {
+                width: Math.round(11 * size),
+                height: Math.max(2, Math.round(2 * size)),
+              },
+            ]}
+          />
+        ) : (
+          <View
+            style={[
+              styles.checkMark,
+              {
+                width: Math.round(10 * size),
+                height: Math.round(5.5 * size),
+              },
+            ]}
+          />
+        )}
       </Animated.View>
     </Pressable>
   )
@@ -121,44 +134,44 @@ const styles = createStyle({
   boxWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 5,
-    shadowColor: '#000000',
-    shadowOffset: { width: 1.5, height: 1.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
     marginRight: 10,
     marginLeft: 2,
   },
   boxUnchecked: {
     backgroundColor: '#FFFFFF',
+    borderColor: '#D1D5DB',
   },
   boxChecked: {
-    backgroundColor: '#F5A623', // 高饱和波普黄
+    backgroundColor: colors.brand,
+    borderColor: colors.brand,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 2,
   },
   boxDisabled: {
-    backgroundColor: '#E8E8E8',
-    borderColor: '#888888',
+    backgroundColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
     shadowOpacity: 0,
     elevation: 0,
   },
-  // 纯 View 对勾：左下边框 + -45° 旋转 = ✓
+  // 纯白精致对勾：左下边框 + -45° 旋转 = ✓
   checkMark: {
-    borderLeftWidth: 2.5,
-    borderBottomWidth: 2.5,
-    borderColor: '#000000',
+    borderLeftWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: '#FFFFFF',
     borderStyle: 'solid',
     transform: [{ rotate: '-45deg' }],
     marginTop: -2,
   },
-  // indeterminate（半选）态的横杠
+  // indeterminate（半选）横杠
   minusBar: {
-    borderRadius: 2,
-    backgroundColor: '#000000',
+    borderRadius: 1.5,
+    backgroundColor: '#FFFFFF',
   },
 })
 
 export default Checkbox
-

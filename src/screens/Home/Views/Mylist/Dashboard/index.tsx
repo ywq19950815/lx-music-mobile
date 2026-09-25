@@ -65,7 +65,7 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
       <View style={styles.profileCard}>
         <View style={styles.avatarWrap}>
           <View style={styles.avatarCircle}>
-            <Icon name="music" size={20} color="#FFFFFF" />
+            <Icon name="logo" size={20} color="#FFFFFF" />
           </View>
           <View style={styles.vipBadge}>
             <Text style={styles.vipBadgeText}>VIP</Text>
@@ -140,7 +140,7 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
         >
           <View style={styles.gridHeader}>
             <View style={[styles.gridIconWrap, { backgroundColor: '#E0E7FF' }]}>
-              <Icon name="timer" size={18} color="#4F46E5" />
+              <Icon name="music_time" size={18} color="#4F46E5" />
             </View>
           </View>
           <Text style={styles.gridCardTitle}>最近播放</Text>
@@ -176,12 +176,12 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
 
           <View style={styles.sectionActionRow}>
             <TouchableOpacity style={styles.actionBtn} onPress={onImportList} activeOpacity={0.7}>
-              <Icon name="cloud-download" size={14} color={colors.inkSecondary} />
+              <Icon name="add-music" size={14} color={colors.inkSecondary} />
               <Text style={styles.actionBtnText}>导入</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]} onPress={onCreateList} activeOpacity={0.7}>
-              <Icon name="add" size={14} color="#FFFFFF" />
+              <Icon name="add_folder" size={14} color="#FFFFFF" />
               <Text style={styles.actionBtnTextPrimary}>新建</Text>
             </TouchableOpacity>
           </View>
@@ -191,7 +191,7 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
         {userLists.length === 0 ? (
           <TouchableOpacity style={styles.emptyPlaylistCard} onPress={onCreateList} activeOpacity={0.8}>
             <View style={styles.emptyIconCircle}>
-              <Icon name="add" size={24} color={colors.brand} />
+              <Icon name="add_folder" size={24} color={colors.brand} />
             </View>
             <Text style={styles.emptyTitle}>创建你的第一个专属歌单</Text>
             <Text style={styles.emptySubtitle}>收集好音乐，打造专属听歌品味</Text>

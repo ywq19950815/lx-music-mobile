@@ -3,6 +3,7 @@ import { StyleSheet, View, Keyboard } from 'react-native'
 import type { InputType, InputProps } from '@/components/common/Input'
 import Input from '@/components/common/Input'
 import Text from '@/components/common/Text'
+import { colors, radius } from '@/theme/tokens'
 
 export interface InputItemProps extends InputProps {
   value: string
@@ -80,28 +81,23 @@ export default memo(({ value, label, onChanged, ...props }: InputItemProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingLeft: 4,
-    marginBottom: 14,
+    paddingVertical: 6,
+    marginBottom: 8,
   },
   label: {
     marginBottom: 6,
-    fontWeight: '800',
-    color: '#000000',
+    fontWeight: '600',
+    color: colors.ink,
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#000000',
-    borderRadius: 8,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: radius.md,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    shadowColor: '#000000',
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
-    color: '#000000',
+    paddingVertical: 8,
+    color: colors.ink,
+    fontSize: 13.5,
     maxWidth: 320,
   },
 })
-

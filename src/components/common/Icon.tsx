@@ -23,6 +23,33 @@ import { type StyleProp, type TextStyle } from 'react-native'
 
 const IcoMoon = createIconSetFromIcoMoon(icoMoonConfig)
 
+// 合法图标集合
+const VALID_ICON_SET = new Set(icoMoonConfig.icons.map((i: any) => i.properties.name))
+
+// 常见图标别名映射（防止因传入通用名导致原生字体渲染出“？”）
+const ICON_ALIASES: Record<string, string> = {
+  music: 'logo',
+  timer: 'music_time',
+  time: 'music_time',
+  'cloud-download': 'download-2',
+  download: 'download-2',
+  add: 'add_folder',
+  plus: 'add_folder',
+  calendar: 'love',
+  singer: 'single',
+  user: 'single',
+  broadcast: 'list-random',
+  radio: 'list-random',
+  heart: 'love',
+  search: 'search-2',
+  settings: 'setting',
+  gear: 'setting',
+  refresh: 'available_updates',
+  delete: 'remove',
+  trash: 'remove',
+  more: 'dots-vertical',
+  folder: 'add_folder',
+}
 
 // https://oblador.github.io/react-native-vector-icons/
 
@@ -33,12 +60,19 @@ interface IconProps extends Omit<ComponentProps<IconType>, 'style'> {
   rawSize?: number
 }
 
-export const Icon = memo(({ size = 15, rawSize, color, style, ...props }: IconProps) => {
+export const Icon = memo(({ size = 15, rawSize, color, style, name, ...props }: IconProps) => {
   const theme = useTheme()
+
+  // 解析安全图标名称：直接匹配 -> 别名匹配 -> 安全回退
+  const resolvedName = VALID_ICON_SET.has(name)
+    ? name
+    : (ICON_ALIASES[name] ?? 'full_stop')
+
   return (
     <IcoMoon
       size={rawSize ?? scaleSizeW(size)}
       color={color ?? theme['c-font']}
+      name={resolvedName}
       // @ts-expect-error
       style={style}
       {...props}

@@ -1,98 +1,35 @@
 import { useRef, useImperativeHandle, forwardRef, useState, useEffect } from 'react'
-import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/ConfirmAlert'
+import Dialog, { type DialogType } from '@/components/common/Dialog'
 import Text from '@/components/common/Text'
-import { View } from 'react-native'
+import { View, TouchableOpacity, StyleSheet } from 'react-native'
 import Input, { type InputType } from '@/components/common/Input'
-import { createStyle, toast } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
-import { cancelTimeoutExit, getTimeoutExitTime, onTimeUpdate, startTimeoutExit, stopTimeoutExit, useTimeoutExitTimeInfo } from '@/core/player/timeoutExit'
+import { toast } from '@/utils/tools'
+import {
+  cancelTimeoutExit,
+  getTimeoutExitTime,
+  onTimeUpdate,
+  startTimeoutExit,
+  stopTimeoutExit,
+  useTimeoutExitTimeInfo,
+} from '@/core/player/timeoutExit'
 import { useI18n } from '@/lang'
 import CheckBox from './common/CheckBox'
 import { useSettingValue } from '@/store/setting/hook'
 import { updateSetting } from '@/core/common'
 import settingState from '@/store/setting/state'
+import { colors, radius } from '@/theme/tokens'
 
 const MAX_MIN = 1440
 const rxp = /([1-9]\d*)/
+const PRESET_MINUTES = [15, 30, 45, 60, 90]
+
 const formatTime = (time: number) => {
-  // let d = parseInt(time / 86400)
-  // d = d ? d.toString() + ':' : ''
-  // time = time % 86400
   let h = Math.trunc(time / 3600)
   let hStr = h ? h.toString() + ':' : ''
   time = time % 3600
   const m = Math.trunc(time / 60).toString().padStart(2, '0')
   const s = Math.trunc(time % 60).toString().padStart(2, '0')
   return `${hStr}${m}:${s}`
-}
-const Status = () => {
-  const theme = useTheme()
-  const t = useI18n()
-  const exitTimeInfo = useTimeoutExitTimeInfo()
-  return (
-    <View style={styles.tip}>
-      {
-      exitTimeInfo.time < 0
-        ? (
-            <Text>{t('timeout_exit_tip_off')}</Text>
-          )
-        : (
-            <Text>{t('timeout_exit_tip_on', { time: formatTime(exitTimeInfo.time) })}</Text>
-          )
-      }
-      {exitTimeInfo.isPlayedStop ? <Text color={theme['c-font-label']} size={13}>{t('timeout_exit_btn_wait_tip')}</Text> : null}
-    </View>
-  )
-}
-
-
-interface TimeInputType {
-  setText: (text: string) => void
-  getText: () => string
-  focus: () => void
-}
-const TimeInput = forwardRef<TimeInputType, {}>((props, ref) => {
-  const theme = useTheme()
-  const [text, setText] = useState('')
-  const inputRef = useRef<InputType>(null)
-  const t = useI18n()
-
-  useImperativeHandle(ref, () => ({
-    getText() {
-      return text.trim()
-    },
-    setText(text) {
-      setText(text)
-    },
-    focus() {
-      inputRef.current?.focus()
-    },
-  }))
-
-  return (
-    <Input
-      ref={inputRef}
-      placeholder={t('timeout_exit_input_tip')}
-      value={text}
-      onChangeText={setText}
-      style={{ ...styles.input, backgroundColor: theme['c-primary-input-background'] }}
-    />
-  )
-})
-
-
-const Setting = () => {
-  const t = useI18n()
-  const timeoutExitPlayed = useSettingValue('player.timeoutExitPlayed')
-  const onCheckChange = (check: boolean) => {
-    updateSetting({ 'player.timeoutExitPlayed': check })
-  }
-
-  return (
-    <View style={styles.checkbox}>
-      <CheckBox check={timeoutExitPlayed} label={t('timeout_exit_label_isPlayed')} onChange={onCheckChange} />
-    </View>
-  )
 }
 
 export const useTimeInfo = () => {
@@ -146,20 +83,20 @@ interface TimeoutExitEditModalProps {
 }
 
 export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>(({ timeInfo }, ref) => {
-  const alertRef = useRef<ConfirmAlertType>(null)
-  const timeInputRef = useRef<TimeInputType>(null)
+  const dialogRef = useRef<DialogType>(null)
+  const inputRef = useRef<InputType>(null)
   const [visible, setVisible] = useState(false)
+  const [timeText, setTimeText] = useState('')
+  const exitTimeInfo = useTimeoutExitTimeInfo()
+  const timeoutExitPlayed = useSettingValue('player.timeoutExitPlayed')
   const t = useI18n()
 
   const handleShow = () => {
-    alertRef.current?.setVisible(true)
-    requestAnimationFrame(() => {
-      if (settingState.setting['player.timeoutExit']) timeInputRef.current?.setText(settingState.setting['player.timeoutExit'])
-      //   setTimeout(() => {
-      //     timeInputRef.current?.focus()
-      //   }, 300)
-    })
+    dialogRef.current?.setVisible(true)
+    const currentVal = settingState.setting['player.timeoutExit'] || ''
+    setTimeText(currentVal)
   }
+
   useImperativeHandle(ref, () => ({
     show() {
       if (visible) handleShow()
@@ -172,23 +109,31 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
     },
   }))
 
-  const handleCancel = () => {
+  const handleCancelTimer = () => {
     if (timeInfo.isPlayedStop) {
       cancelTimeoutExit()
+      dialogRef.current?.setVisible(false)
       return
     }
-    if (!timeInfo.active) return
     stopTimeoutExit()
     toast(t('timeout_exit_tip_cancel'))
+    dialogRef.current?.setVisible(false)
   }
+
+  const handleApplyTime = (minNum: number) => {
+    cancelTimeoutExit()
+    startTimeoutExit(minNum * 60)
+    toast(t('timeout_exit_tip_on', { time: formatTime(getTimeoutExitTime()) }))
+    updateSetting({ 'player.timeoutExit': String(minNum) })
+    dialogRef.current?.setVisible(false)
+  }
+
   const handleConfirm = () => {
-    let timeStr = timeInputRef.current?.getText() ?? ''
+    let timeStr = timeText.trim()
     if (rxp.test(timeStr)) {
-      // if (timeStr != RegExp.$1) toast(t('input_error'))
       timeStr = RegExp.$1
       if (parseInt(timeStr) > MAX_MIN) {
         toast(t('timeout_exit_tip_max', { num: MAX_MIN }))
-        // timeStr = timeStr.substring(0, timeStr.length - 1)
         return
       }
     } else {
@@ -197,62 +142,203 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
     }
     if (!timeStr) return
     const time = parseInt(timeStr)
-    cancelTimeoutExit()
-    startTimeoutExit(time * 60)
-    toast(t('timeout_exit_tip_on', { time: formatTime(getTimeoutExitTime()) }))
-    updateSetting({ 'player.timeoutExit': String(time) })
-    alertRef.current?.setVisible(false)
+    handleApplyTime(time)
   }
 
-  return (
-    visible
-      ? <ConfirmAlert
-          ref={alertRef}
-          cancelText={timeInfo.cancelText}
-          confirmText={timeInfo.confirmText}
-          onCancel={handleCancel}
-          onConfirm={handleConfirm}
-        >
-          <View style={styles.alertContent}>
-            <Status />
-            <View style={styles.inputContent}>
-              <TimeInput ref={timeInputRef} />
-              <Text style={styles.inputLabel}>{t('timeout_exit_min')}</Text>
-            </View>
-            <Setting />
-          </View>
-        </ConfirmAlert>
-      : null
-  )
+  const onPlayedStopToggle = (check: boolean) => {
+    updateSetting({ 'player.timeoutExitPlayed': check })
+  }
+
+  return visible ? (
+    <Dialog ref={dialogRef} title="睡眠定时关闭">
+      <View style={styles.container}>
+        {/* 当前状态卡片 */}
+        <View style={styles.statusCard}>
+          <Text style={styles.statusLabel}>当前状态：</Text>
+          <Text style={styles.statusVal}>
+            {exitTimeInfo.time < 0
+              ? '未开启定时'
+              : `剩余 ${formatTime(exitTimeInfo.time)}`}
+          </Text>
+        </View>
+
+        {/* 预设快捷胶囊 */}
+        <Text style={styles.sectionTitle}>快速选择</Text>
+        <View style={styles.presetRow}>
+          {PRESET_MINUTES.map(min => (
+            <TouchableOpacity
+              key={min}
+              style={[
+                styles.presetPill,
+                timeText === String(min) && styles.presetPillActive,
+              ]}
+              onPress={() => {
+                setTimeText(String(min))
+                handleApplyTime(min)
+              }}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.presetText,
+                  timeText === String(min) && styles.presetTextActive,
+                ]}
+              >
+                {min} 分钟
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* 自定义分钟输入行 */}
+        <Text style={styles.sectionTitle}>自定义时间</Text>
+        <View style={styles.inputRow}>
+          <Input
+            ref={inputRef}
+            placeholder="输入分钟数 (如 40)"
+            value={timeText}
+            onChangeText={setTimeText}
+            keyboardType="number-pad"
+            style={styles.input}
+          />
+          <TouchableOpacity
+            style={styles.confirmSmallBtn}
+            onPress={handleConfirm}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.confirmSmallText}>设置</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 播放完当前歌曲后退出 开关 */}
+        <View style={styles.checkboxRow}>
+          <CheckBox
+            check={timeoutExitPlayed}
+            label={t('timeout_exit_label_isPlayed')}
+            onChange={onPlayedStopToggle}
+          />
+        </View>
+
+        {/* 取消定时按钮 */}
+        {exitTimeInfo.time >= 0 || timeInfo.isPlayedStop ? (
+          <TouchableOpacity
+            style={styles.cancelTimerBtn}
+            onPress={handleCancelTimer}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.cancelTimerText}>关闭定时</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+    </Dialog>
+  ) : null
 })
 
-const styles = createStyle({
-  alertContent: {
-    flexShrink: 1,
-    flexDirection: 'column',
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
-  tip: {
-    marginBottom: 8,
-  },
-  checkbox: {
-    marginTop: 5,
-  },
-  inputContent: {
-    marginTop: 8,
-    flex: 1,
+  statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  statusLabel: {
+    fontSize: 13,
+    color: colors.inkSecondary,
+    fontWeight: '500',
+  },
+  statusVal: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: colors.brand,
+  },
+  sectionTitle: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: colors.inkSecondary,
+    marginBottom: 8,
+  },
+  presetRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  presetPill: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
+  },
+  presetPillActive: {
+    backgroundColor: 'rgba(245, 166, 35, 0.15)',
+    borderWidth: 1,
+    borderColor: colors.brand,
+  },
+  presetText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.ink,
+  },
+  presetTextActive: {
+    color: colors.brand,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 14,
   },
   input: {
-    flexGrow: 1,
-    flexShrink: 1,
-    // borderRadius: 4,
-    // paddingTop: 2,
-    // paddingBottom: 2,
+    flex: 1,
+    height: 40,
+    backgroundColor: '#F3F4F6',
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    fontSize: 13.5,
+    color: colors.ink,
   },
-  inputLabel: {
-    marginLeft: 8,
+  confirmSmallBtn: {
+    height: 40,
+    paddingHorizontal: 18,
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  confirmSmallText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 13.5,
+  },
+  checkboxRow: {
+    paddingVertical: 6,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#F3F4F6',
+  },
+  cancelTimerBtn: {
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: radius.pill,
+    backgroundColor: '#FEE2E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelTimerText: {
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: '#DC2626',
   },
 })
-
-

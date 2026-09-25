@@ -9,31 +9,12 @@ interface Props {
   children: React.ReactNode | React.ReactNode[]
 }
 
-const getSectionEmoji = (title: string) => {
-  const lower = title.toLowerCase()
-  if (lower.includes('基本') || lower.includes('basic')) return '⚙️'
-  if (lower.includes('播放') || lower.includes('player')) return '🎵'
-  if (lower.includes('歌词') || lower.includes('lyric')) return '💬'
-  if (lower.includes('搜索') || lower.includes('search')) return '🔍'
-  if (lower.includes('列表') || lower.includes('list')) return '📋'
-  if (lower.includes('同步') || lower.includes('sync')) return '🔄'
-  if (lower.includes('备份') || lower.includes('backup')) return '💾'
-  if (lower.includes('其他') || lower.includes('other')) return '🧩'
-  if (lower.includes('版本') || lower.includes('version')) return '🚀'
-  if (lower.includes('关于') || lower.includes('about')) return '📖'
-  return '⚡'
-}
-
 export default ({ title, children }: Props) => {
-  const emoji = useMemo(() => getSectionEmoji(title), [title])
-
   return (
     <View style={styles.cardContainer}>
       <View style={styles.cardHeader}>
-        <View style={styles.headerTitleRow}>
-          <Text style={styles.badgeEmoji}>{emoji}</Text>
-          <Text style={styles.badgeText}>{title}</Text>
-        </View>
+        <View style={styles.headerIndicator} />
+        <Text style={styles.headerTitle}>{title}</Text>
       </View>
 
       <View style={styles.cardBody}>
@@ -45,14 +26,14 @@ export default ({ title, children }: Props) => {
 
 const styles = createStyle({
   cardContainer: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: colors.hairline,
-    borderRadius: radius.lg,
-    marginBottom: 16,
+    borderColor: '#ECEEF2',
+    borderRadius: 16,
+    marginBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.03,
     shadowRadius: 8,
     elevation: 2,
     overflow: 'hidden',
@@ -60,29 +41,27 @@ const styles = createStyle({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: colors.surface,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: colors.hairline,
+    borderBottomColor: '#F3F4F6',
   },
-  headerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  headerIndicator: {
+    width: 3.5,
+    height: 14,
+    borderRadius: 2,
+    backgroundColor: colors.brand,
+    marginRight: 8,
   },
-  badgeEmoji: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  badgeText: {
+  headerTitle: {
     fontSize: 14.5,
     fontWeight: '700',
     color: colors.ink,
+    letterSpacing: -0.2,
   },
   cardBody: {
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: colors.surface,
+    paddingVertical: 8,
   },
 })
-

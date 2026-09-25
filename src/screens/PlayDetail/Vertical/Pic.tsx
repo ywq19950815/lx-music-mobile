@@ -15,8 +15,7 @@ import { setLoadErrorPicUrl } from '@/core/player/playInfo'
  * 播放详情页唱机系统（Pic）：
  * - 沉浸式曜黑黑胶大唱盘 + 多层同心刻线微纹理 + 完美正圆高品质投影
  * - 柔和金辉呼吸氛围光晕（Ambient Aura）
- * - 顶级发烧友黑金唱片 Label（LX AUDIO RECORDING · 33⅓ RPM STEREO）
- * - 真实声学唱机唱针系统：长臂钛金唱针，播放平滑下搭在 1 点钟音轨，暂停归位休眠
+ * - 真实声学唱机唱针系统：基座严谨锚定在黑胶右上角，播放时精准下搭在黑胶1点钟音轨凹槽上，暂停顺滑抬起休眠
  * - 360° 平滑匀速旋转
  */
 export default ({ componentId }: { componentId: string }) => {
@@ -78,27 +77,27 @@ export default ({ componentId }: { componentId: string }) => {
     outputRange: ['0deg', '360deg'],
   })
 
-  // ── 真实黑胶唱针：0 (暂停靠右归位) → 1 (播放向左探入唱盘) ────
+  // ── 真实黑胶唱针：0 (暂停抬起移开) → 1 (播放放下精准卡盘) ────
   const needleAnim = useRef(new Animated.Value(isPlay ? 1 : 0)).current
 
   useEffect(() => {
     Animated.timing(needleAnim, {
       toValue: isPlay ? 1 : 0,
-      duration: 440,
+      duration: 380,
       easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       useNativeDriver: true,
     }).start()
   }, [isPlay, needleAnim])
 
-  // 暂停时 0deg（垂直靠右归位），播放时 +32deg（精准搭在黑胶 1 点钟外音轨上）
+  // 暂停时 -24deg（向右上方扬起移出唱盘），播放时 0deg（精准卡在黑胶1点钟音轨凹槽）
   const needleRotate = needleAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '32deg'],
+    outputRange: ['-24deg', '0deg'],
   })
 
   // ── 尺寸自适应 ───────────────────────────
   const diskSize = useMemo(() => {
-    return Math.min(winWidth * 0.74, (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.45, 290)
+    return Math.min(winWidth * 0.76, (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.46, 296)
   }, [statusBarHeight, winHeight, winWidth])
 
   const centerPicSize = Math.round(diskSize * 0.65)
@@ -108,35 +107,37 @@ export default ({ componentId }: { componentId: string }) => {
     setLoadErrorPicUrl(url as string)
   }, [])
 
-  // 唱针轴心位于黑胶右上角肩膀上方
-  const needleRightOffset = useMemo(() => {
-    return Math.max(16, (winWidth - diskSize) / 2 - 6)
-  }, [winWidth, diskSize])
+  // 唱针基座位于唱盘右上角肩部正上方
+  const needleBaseLeft = useMemo(() => {
+    return (winWidth / 2) + 18
+  }, [winWidth])
 
   return (
     <View style={styles.container}>
-      {/* 1. 真实黑胶唱针（长臂精密唱针：播放摆入黑胶音轨，暂停靠右归位） */}
+      {/* 1. 真实黑胶唱针（基座锚定于黑胶上方，播放时精准搭在黑胶音轨上） */}
       <View
         style={[
-          styles.needlePivotAnchor,
-          { right: needleRightOffset, top: 2 },
+          styles.needleAnchor,
+          { left: needleBaseLeft, top: 0 },
         ]}
         pointerEvents="none"
       >
-        <Animated.View style={[styles.needleArmWrapper, { transform: [{ rotate: needleRotate }] }]}>
+        <Animated.View style={[styles.needleArmRotator, { transform: [{ rotate: needleRotate }] }]}>
           {/* 金属精密轴承底座 */}
           <View style={styles.needlePivotBase}>
             <View style={styles.needlePivotInner} />
             <View style={styles.needlePivotDot} />
           </View>
-          {/* 钛黑长连杆 */}
-          <View style={styles.needleBar}>
+
+          {/* 唱针臂（长连杆） */}
+          <View style={styles.needleArmPole}>
             <View style={styles.needleHighlightEdge} />
           </View>
-          {/* 唱头架过渡 */}
+
+          {/* 弯折唱头架 */}
           <View style={styles.needleHeadshell}>
-            {/* 专业拾音唱头 */}
             <View style={styles.needleCartridge}>
+              {/* 唱针触针高亮细线 */}
               <View style={styles.needleStylusLine} />
             </View>
           </View>
@@ -311,39 +312,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    paddingTop: 12,
+    paddingTop: 16,
   },
   // ── 唱针样式 ──────────────────────────────
-  needlePivotAnchor: {
+  needleAnchor: {
     position: 'absolute',
-    zIndex: 15,
-    alignItems: 'center',
+    zIndex: 20,
+    width: 32,
+    height: 32,
   },
-  needleArmWrapper: {
-    width: 60,
-    height: 145,
+  needleArmRotator: {
+    width: 32,
+    height: 140,
     alignItems: 'center',
     transformOrigin: 'top center',
   },
   needlePivotBase: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#1C1E24',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#202228',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
+    borderColor: 'rgba(255, 255, 255, 0.22)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.45,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
     elevation: 6,
   },
   needlePivotInner: {
-    width: 15,
-    height: 15,
-    borderRadius: 7.5,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: '#F5A623',
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.5)',
@@ -355,12 +357,11 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: '#FFFFFF',
   },
-  needleBar: {
+  needleArmPole: {
     width: 3.5,
-    height: 138,
-    backgroundColor: '#262830',
+    height: 98,
+    backgroundColor: '#2A2D36',
     borderRadius: 2,
-    marginTop: -4,
     position: 'relative',
     borderWidth: 0.5,
     borderColor: 'rgba(0, 0, 0, 0.6)',
@@ -371,31 +372,31 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
   },
   needleHeadshell: {
     alignItems: 'center',
     marginTop: -2,
-    transform: [{ rotate: '-14deg' }],
+    transform: [{ rotate: '-18deg' }],
   },
   needleCartridge: {
-    width: 14,
+    width: 13,
     height: 22,
     borderRadius: 3,
     backgroundColor: '#16181E',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.22)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 4,
   },
   needleStylusLine: {
     width: 2,
-    height: 12,
+    height: 10,
     backgroundColor: '#F5A623',
     borderRadius: 1,
   },
@@ -407,40 +408,40 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.30,
     shadowRadius: 36,
+    elevation: 8,
   },
-  // ── 唱盘样式 ──────────────────────────────
+  // ── 悬浮黑胶大唱盘 ──────────────────────────
   diskOuterShadow: {
-    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.60,
+    shadowOpacity: 0.70,
     shadowRadius: 28,
-    elevation: 16,
+    elevation: 20,
   },
   vinylDisk: {
-    backgroundColor: '#0D0F14',
+    backgroundColor: '#0F1014',
+    borderWidth: 2,
+    borderColor: '#22252E',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   grooveRing1: {
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  grooveRing2: {
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.04)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  grooveRing2: {
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   grooveRing3: {
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: 'rgba(255, 255, 255, 0.035)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -448,14 +449,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#15171E',
+    backgroundColor: '#1E2028',
     borderWidth: 2,
-    borderColor: 'rgba(245, 166, 35, 0.45)',
-    position: 'relative',
+    borderColor: '#000000',
   },
-  // ── 默认唱片心（空状态） ─────────────────────
   defaultLabel: {
-    backgroundColor: '#14151B',
+    backgroundColor: '#131419',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -464,54 +463,51 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(245, 166, 35, 0.28)',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 166, 35, 0.03)',
-    paddingVertical: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
   },
   labelUpperSection: {
     alignItems: 'center',
-    justifyContent: 'center',
   },
   labelBrand: {
-    fontSize: 22,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '900',
     color: '#F5A623',
-    letterSpacing: 4,
+    letterSpacing: 2,
   },
   labelCenterGap: {
-    height: 24,
+    height: 20,
   },
   labelLowerSection: {
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 1,
   },
   labelSub: {
-    fontSize: 7,
+    fontSize: 6.5,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.55)',
-    letterSpacing: 1.5,
+    color: '#CBD5E1',
+    letterSpacing: 1.2,
   },
   labelSpec: {
-    fontSize: 6.5,
+    fontSize: 5.5,
     fontWeight: '500',
-    color: 'rgba(245, 166, 35, 0.65)',
-    letterSpacing: 1,
-    marginTop: 2,
+    color: '#94A3B8',
+    letterSpacing: 0.6,
   },
-  // ── 转轴孔 ───────────────────────────────
   spindleHole: {
     position: 'absolute',
-    backgroundColor: '#F5A623',
+    backgroundColor: '#B45309',
     borderWidth: 2,
-    borderColor: '#000000',
+    borderColor: '#F59E0B',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.6,
     shadowRadius: 2,
-    elevation: 2,
+    elevation: 3,
   },
   spindleCore: {
-    backgroundColor: '#000000',
+    backgroundColor: '#0F172A',
   },
 })

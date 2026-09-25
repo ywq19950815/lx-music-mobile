@@ -1,7 +1,7 @@
 import { memo } from 'react'
-import { View } from 'react-native'
-import { createStyle } from '@/utils/tools'
+import { View, StyleSheet } from 'react-native'
 import Text from '@/components/common/Text'
+import { colors } from '@/theme/tokens'
 
 export default memo(({ title, children }: {
   title: string
@@ -9,7 +9,7 @@ export default memo(({ title, children }: {
 }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.titleBadge}>
+      <View style={styles.titleRow}>
         <Text style={styles.titleText}>{title}</Text>
       </View>
       <View style={styles.content}>
@@ -19,34 +19,24 @@ export default memo(({ title, children }: {
   )
 })
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
-    marginTop: 12,
+    marginTop: 10,
     marginBottom: 8,
-    paddingTop: 6,
+    paddingTop: 4,
   },
-  titleBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#FFF8E7',
-    borderWidth: 1.5,
-    borderColor: '#000000',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2.5,
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
-    shadowColor: '#000000',
-    shadowOffset: { width: 1.5, height: 1.5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2,
   },
   titleText: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#000000',
+    fontWeight: '700',
+    color: colors.inkSecondary,
+    letterSpacing: -0.2,
   },
   content: {
-    paddingLeft: 4,
+    paddingLeft: 2,
   },
 })
-

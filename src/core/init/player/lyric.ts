@@ -1,4 +1,4 @@
-import { init as initLyricPlayer, toggleTranslation, toggleRoma, play, pause, stop, setLyric, setPlaybackRate } from '@/core/lyric'
+import { init as initLyricPlayer, toggleTranslation, toggleRoma, play, pause, stop, setLyric, setPlaybackRate, handlePlay } from '@/core/lyric'
 import { updateSetting } from '@/core/common'
 import { onDesktopLyricPositionChange, showDesktopLyric, onLyricLinePlay, showRemoteLyric } from '@/core/desktopLyric'
 import playerState from '@/store/player/state'
@@ -7,7 +7,7 @@ import { setLastLyric } from '@/core/player/playInfo'
 
 const updateRemoteLyric = async(lrc?: string) => {
   setLastLyric(lrc)
-  if (lrc == null) {
+  if (!lrc || !lrc.trim()) {
     void updateNowPlayingTitles({
       title: playerState.musicInfo.name,
       artist: playerState.musicInfo.singer ?? '',
@@ -61,4 +61,7 @@ export default async(setting: LX.AppSetting) => {
   global.app_event.on('error', pause)
   global.app_event.on('musicToggled', stop)
   global.app_event.on('lyricUpdated', setLyric)
+  global.app_event.on('setProgress', (time: number) => {
+    handlePlay(time * 1000)
+  })
 }

@@ -22,6 +22,7 @@ type Sources = Readonly<Array<LX.OnlineSource | 'all'>>
 export interface SourceSelectorProps<S extends Sources> {
   fontSize?: number
   center?: boolean
+  integrated?: boolean
   onSourceChange: (source: S[number]) => void
 }
 
@@ -51,6 +52,16 @@ const styles = StyleSheet.create({
     borderColor: '#E6E8EC',
     borderRadius: 14,
     backgroundColor: '#F3F4F6',
+  },
+  sourceMenuIntegrated: {
+    height: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 4,
+    paddingRight: 6,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
   sourceMenuText: {
     fontWeight: '600',
@@ -197,7 +208,7 @@ const styles = StyleSheet.create({
 })
 
 const Component = <S extends Sources>(
-  { fontSize = 13, center, onSourceChange }: SourceSelectorProps<S>,
+  { fontSize = 13, center, integrated, onSourceChange }: SourceSelectorProps<S>,
   ref: Ref<SourceSelectorType<S>>
 ) => {
   const sourceNameType = useSettingValue('common.sourceNameType')
@@ -262,7 +273,7 @@ const Component = <S extends Sources>(
     <>
       {/* 顶部触发胶囊按钮 */}
       <TouchableOpacity
-        style={styles.sourceMenu}
+        style={integrated ? styles.sourceMenuIntegrated : styles.sourceMenu}
         activeOpacity={0.8}
         onPress={showSheet}
       >

@@ -45,11 +45,9 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
 
   return (
     <View style={styles.searchBar}>
-      <View style={styles.selector}>
-        <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} center />
-      </View>
       <SearchInput
         ref={searchInputRef}
+        prefix={<SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} integrated center />}
         onChangeText={onTipSearch}
         onSubmit={onSearch}
         onBlur={onHideTipList}
@@ -63,14 +61,11 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 48,
+    height: 50,
     zIndex: 2,
-    paddingRight: 12,
+    paddingHorizontal: 12,
     backgroundColor: colors.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.hairline,
-  },
-  selector: {
-    justifyContent: 'center',
   },
 })

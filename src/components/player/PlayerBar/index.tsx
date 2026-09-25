@@ -7,25 +7,20 @@ import { useProgress } from '@/store/player/hook'
 
 import Pic from './components/Pic'
 import Title from './components/Title'
-import PlayInfo from './components/PlayInfo'
 import ControlBtn from './components/ControlBtn'
 import { useSettingValue } from '@/store/setting/hook'
 import { useNavigationBarHeight } from '@/store/common/hook'
-import { softShadow, motion } from '@/theme/tokens'
-import { scaleSizeH } from '@/utils/pixelRatio'
+import { motion } from '@/theme/tokens'
 
-const BAR_HEIGHT = scaleSizeH(64)
-const BASE_PADDING_BOTTOM = 8
+const BAR_HEIGHT = 56
+const BASE_PADDING_BOTTOM = 6
 
 /**
- * 迷你播放条：QQ 音乐式悬浮胶囊。
- * - 白底圆角胶囊 + 弥散软阴影（无描边、无硬底座）
- * - 顶部 2px 品牌金进度细线（QQ 音乐标志性细节）
+ * 迷你播放条：QQ 音乐式精致悬浮胶囊。
+ * - 纯白圆角胶囊 + 双层柔和弥散软阴影
+ * - 顶部极细品牌金流光进度条（高度 1.5px）
  * - 按压 spring 缩放反馈
- * - 定高设计，根绝 Yoga 百分比高度布局爆展
- *
- * isHome=true 时坐在底部 TabBar 之上（TabBar 已让出手势条高度）；
- * 其余场景自己是页面最底部，需让出底部系统栏高度。
+ * - 黑胶唱片微浮动旋转 + 歌名/歌手清爽单行排版 + 纯圆金白控制按键
  */
 export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const { keyboardShown } = useKeyboard()
@@ -37,7 +32,7 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const pressAnim = useRef(new Animated.Value(1)).current
   const pressIn = useCallback(() => {
     Animated.spring(pressAnim, {
-      toValue: 0.97,
+      toValue: 0.98,
       friction: motion.spring.friction,
       tension: motion.spring.tension,
       useNativeDriver: true,
@@ -78,16 +73,20 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
           onPressOut={pressOut}
           activeOpacity={1}
         >
-          {/* 顶部进度细线：QQ 音乐标志性细节 */}
+          {/* 顶部流金进度细线 */}
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${Math.min(progress * 100, 100)}%` }]} />
           </View>
 
+          {/* 左侧精致黑胶唱片 */}
           <Pic isHome={isHome} />
+
+          {/* 中间核心歌曲信息 */}
           <View style={styles.center}>
             <Title isHome={isHome} />
-            <PlayInfo isHome={isHome} />
           </View>
+
+          {/* 右侧控制区 */}
           <View style={styles.right}>
             <ControlBtn />
           </View>
@@ -100,7 +99,7 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
 const styles = StyleSheet.create({
   outerWrapper: {
     width: '100%',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingTop: 4,
   },
   barBox: {
@@ -110,12 +109,18 @@ const styles = StyleSheet.create({
   cardContainer: {
     flex: 1,
     paddingHorizontal: 8,
-    borderRadius: 16,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
-    ...softShadow('md'),
+    borderWidth: 1,
+    borderColor: '#EFF0F3',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 8,
   },
   // 进度细线轨道（顶部通栏）
   progressTrack: {
@@ -123,27 +128,23 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 2,
-    backgroundColor: 'rgba(245,166,35,0.15)',
+    height: 1.5,
+    backgroundColor: 'rgba(245, 166, 35, 0.12)',
   },
   progressFill: {
     height: '100%',
     backgroundColor: '#F5A623',
-    borderRadius: 1,
   },
   center: {
     flex: 1,
     minWidth: 0,
-    flexDirection: 'column',
     justifyContent: 'center',
     paddingLeft: 10,
+    paddingRight: 6,
   },
   right: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexGrow: 0,
     flexShrink: 0,
-    paddingLeft: 4,
-    paddingRight: 2,
   },
 })

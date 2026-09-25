@@ -19,7 +19,7 @@ export default ({ componentId }: { componentId: string }) => {
 
   return (
     <PageContent>
-      <StatusBar />
+      <StatusBar barStyle="light-content" />
       {
         isHorizontalMode
           ? <Horizontal componentId={componentId} />
