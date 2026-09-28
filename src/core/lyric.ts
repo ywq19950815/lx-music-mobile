@@ -35,7 +35,7 @@ export const init = async() => {
  * @param lxlrc lyric word-by-word karaoke
  */
 const handleSetLyric = async(lyric: string, translation = '', romalrc = '', lxlrc = '') => {
-  lrcSetLyric(lyric, translation, romalrc)
+  lrcSetLyric(lyric, translation, romalrc, lxlrc)
   await setDesktopLyric(lyric, translation, romalrc, lxlrc)
   if (settingState.setting['player.isShowBluetoothFullLyric']) {
     void updateNowPlayingTitles({

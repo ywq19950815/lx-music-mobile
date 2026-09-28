@@ -10,7 +10,7 @@ import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import { useVersionDownloadProgressUpdated, useVersionInfo, useVersionInfoIgnoreVersionUpdated } from '@/store/version/hook'
 import ModalContent from './ModalContent'
-import { checkUpdate, hideModal, setIgnoreVersion } from '@/core/version'
+import { checkUpdate, hideModal, setIgnoreVersion, downloadUpdate } from '@/core/version'
 
 const VersionItem = ({ version, desc }: VersionInfo) => {
   return (
@@ -164,8 +164,9 @@ const VersionModal = ({ componentId }: { componentId: string }) => {
   }
 
   const handleConfirm = () => {
-    // 在线更新已停用，这里仅刷新一次版本状态（始终为「已是最新」）
-    void checkUpdate()
+    // 检查失败（未知状态）→ 重试检查；否则下载新版并唤起安装（已下载完成则直接安装）
+    if (versionInfo.isUnknown) void checkUpdate()
+    else void downloadUpdate()
   }
 
   return (

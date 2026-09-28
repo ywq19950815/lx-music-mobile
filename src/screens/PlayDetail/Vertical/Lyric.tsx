@@ -12,6 +12,7 @@ import {
 } from 'react-native'
 import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
 import { useSettingValue } from '@/store/setting/hook'
+import { useIsPlay } from '@/store/player/hook'
 import Text from '@/components/common/Text'
 import { useStatusText } from '@/store/player/hook'
 import { setSpText } from '@/utils/pixelRatio'
@@ -31,11 +32,19 @@ interface LineProps {
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 
+const COLOR_INACTIVE = 'rgba(255, 255, 255, 0.55)'
+const COLOR_IDLE = 'rgba(255, 255, 255, 0.35)'
+const COLOR_SUNG = designColors.brand
+
 /**
- * 现代高质感歌词行组件：
- * - 激活态：双层渲染 + 逐字平滑金色填充动效 (Karaoke Effect)
- * - 非激活态：柔和微弱白色，不抢占视觉
- * - 极端性能优化：仅当前行与上一行触发重绘，丝滑不掉帧
+ * 歌词行组件：
+ * - 逐字模式（源提供 lxlrc 时）：严格按逐字时间戳染色，与歌声同步
+ * - 行级模式（普通 lrc）：整行宽度线性擦染——
+ *   1) 线性缓动（卡拉OK必须线性，曲线缓动会造成忽快忽慢）
+ *   2) 进入行时按当前播放进度校准起始位置（中途打开播放页不重头跑）
+ *   3) 暂停冻结 / 恢复续走
+ *   4) seek 跳变（>600ms）自动重校准
+ * - 播放时钟：进度广播只写 ref 校准基准（不触发渲染），本地插值推算，丝滑不掉帧
  */
 const LrcLine = memo(({
   line,
@@ -50,25 +59,113 @@ const LrcLine = memo(({
   const baseSize = lrcFontSize / 10
   const size = active ? baseSize * 1.15 : baseSize
   const lineHeight = setSpText(size) * 1.4
+  const isPlay = useIsPlay()
 
-  // 卡拉OK逐字平滑染色动画进度 (0 -> 1)
-  const progressAnim = useRef(new Animated.Value(active ? 1 : 0)).current
+  const words = line.words
+  const isWordMode = !!words && words.length > 0
+
+  // 逐字模式：当前已唱到的字索引
+  const [wordIdx, setWordIdx] = useState(-1)
+  // 行级模式：擦染进度
+  const progressAnim = useRef(new Animated.Value(0)).current
   const [lineWidth, setLineWidth] = useState<number | null>(null)
+  const [seekTick, setSeekTick] = useState(0)
 
+  // ── 播放时钟 ─────────────────────────────
+  const clockRef = useRef({ baseTime: 0, baseStamp: 0 })
+  const frozenTRef = useRef<number | null>(null)
+
+  const getCurTime = useCallback(() => {
+    if (frozenTRef.current != null) return frozenTRef.current
+    const clock = clockRef.current
+    if (!clock.baseStamp) return line.time
+    return clock.baseTime + (Date.now() - clock.baseStamp)
+  }, [line])
+
+  // 进度广播校准时钟；检测 seek 跳变（>600ms）触发行级动画重启
   useEffect(() => {
-    if (active) {
+    if (!active) return
+    const handleProgress = ({ nowPlayTime }: { nowPlayTime: number }) => {
+      const prevT = getCurTime()
+      clockRef.current.baseTime = nowPlayTime
+      clockRef.current.baseStamp = Date.now()
+      frozenTRef.current = null
+      const newT = getCurTime()
+      if (Math.abs(newT - prevT) > 600) setSeekTick(t => t + 1)
+    }
+    global.state_event.on('playProgressChanged', handleProgress)
+    return () => {
+      global.state_event.off('playProgressChanged', handleProgress)
+    }
+  }, [active, getCurTime])
+
+  // 暂停冻结 / 恢复续走
+  useEffect(() => {
+    if (!active) {
+      frozenTRef.current = null
+      return
+    }
+    if (isPlay) {
+      if (frozenTRef.current != null) {
+        clockRef.current.baseTime = frozenTRef.current
+        clockRef.current.baseStamp = Date.now()
+        frozenTRef.current = null
+        setSeekTick(t => t + 1)
+      }
+    } else {
+      frozenTRef.current = getCurTime()
+    }
+  }, [isPlay, active, getCurTime])
+
+  // 逐字模式驱动：本地时钟推算当前字索引（仅索引变化时 setState）
+  useEffect(() => {
+    if (!active || !isWordMode || !words) {
+      setWordIdx(-1)
+      return
+    }
+    const computeIdx = (t: number) => {
+      let idx = -1
+      for (let i = 0; i < words.length; i++) {
+        if (words[i].startTime <= t) idx = i
+        else break
+      }
+      return idx
+    }
+    if (!clockRef.current.baseStamp) {
+      clockRef.current.baseTime = line.time
+      clockRef.current.baseStamp = Date.now()
+    }
+    setWordIdx(computeIdx(getCurTime()))
+    const timer = setInterval(() => {
+      const idx = computeIdx(getCurTime())
+      setWordIdx(prev => (prev === idx ? prev : idx))
+    }, 60)
+    return () => {
+      clearInterval(timer)
+    }
+  }, [active, isWordMode, words, line, getCurTime])
+
+  // 行级模式：线性擦染（起始校准 + 暂停跟随 + seek 重校准）
+  useEffect(() => {
+    if (!active || isWordMode) {
+      progressAnim.stopAnimation()
       progressAnim.setValue(0)
-      const animDuration = Math.max(800, Math.min(duration || 3500, 9000))
+      return
+    }
+    const dur = Math.max(800, Math.min(duration || 3500, 15000))
+    const elapsed = getCurTime() - line.time
+    const startFraction = elapsed > 0 && elapsed < dur ? elapsed / dur : 0
+    progressAnim.stopAnimation()
+    progressAnim.setValue(startFraction)
+    if (isPlay && startFraction < 1) {
       Animated.timing(progressAnim, {
         toValue: 1,
-        duration: animDuration,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+        duration: Math.max(200, dur * (1 - startFraction)),
+        easing: Easing.linear,
         useNativeDriver: false,
       }).start()
-    } else {
-      progressAnim.setValue(0)
     }
-  }, [active, duration, progressAnim])
+  }, [active, isWordMode, duration, isPlay, line, seekTick, progressAnim, getCurTime])
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
@@ -85,12 +182,55 @@ const LrcLine = memo(({
     outputRange: ['0%', '100%'],
   })
 
+  const renderExtended = (alpha: number, sizeRatio: number, fontWeight: string) => (
+    line.extendedLyrics.map((lrc, index) => (
+      <Text
+        key={index}
+        style={[
+          styles.lineTranslationText,
+          {
+            textAlign,
+            lineHeight: lineHeight * 0.8,
+            fontSize: size * sizeRatio,
+            fontWeight,
+            color: `rgba(49, 199, 124, ${alpha})`,
+          },
+        ]}
+        textBreakStrategy="simple"
+      >
+        {lrc}
+      </Text>
+    ))
+  )
+
+  // 逐字染色主文本（仅激活行）
+  const renderWordModeText = () => {
+    if (!words) return null
+    return (
+      <Text
+        style={[styles.lineText, { textAlign, lineHeight, fontSize: size, fontWeight: '700' }]}
+        textBreakStrategy="simple"
+      >
+        {words.map((word, index) => (
+          <Text key={index} style={{ color: index <= wordIdx ? COLOR_SUNG : COLOR_IDLE }}>
+            {word.text}
+          </Text>
+        ))}
+      </Text>
+    )
+  }
+
   return (
     <View
       style={[styles.line, active ? styles.activeLineWrapper : null]}
       onLayout={handleLayout}
     >
-      {active ? (
+      {active && isWordMode ? (
+        <View style={styles.activeTextContainer}>
+          {renderWordModeText()}
+          {renderExtended(0.8, 0.8, '600')}
+        </View>
+      ) : active ? (
         <View style={styles.activeTextContainer}>
           {/* 底层：弱化暗底文字 */}
           <Text
@@ -101,7 +241,7 @@ const LrcLine = memo(({
                 lineHeight,
                 fontSize: size,
                 fontWeight: '700',
-                color: 'rgba(255, 255, 255, 0.35)',
+                color: COLOR_IDLE,
               },
             ]}
             onLayout={handleTextLayout}
@@ -110,7 +250,7 @@ const LrcLine = memo(({
             {line.text}
           </Text>
 
-          {/* 顶层：卡拉OK平滑金色染色文字，随播放进度从左至右逐字擦染 */}
+          {/* 顶层：线性擦染，与播放进度严格同步 */}
           <Animated.View
             style={[
               styles.karaokeMask,
@@ -135,25 +275,7 @@ const LrcLine = memo(({
             </Text>
           </Animated.View>
 
-          {/* 翻译歌词 */}
-          {line.extendedLyrics.map((lrc, index) => (
-            <Text
-              key={index}
-              style={[
-                styles.lineTranslationText,
-                {
-                  textAlign,
-                  lineHeight: lineHeight * 0.8,
-                  fontSize: size * 0.8,
-                  fontWeight: '600',
-                  color: 'rgba(245, 166, 35, 0.85)',
-                },
-              ]}
-              textBreakStrategy="simple"
-            >
-              {lrc}
-            </Text>
-          ))}
+          {renderExtended(0.8, 0.8, '600')}
         </View>
       ) : (
         <View style={styles.inactiveTextContainer}>
@@ -165,31 +287,14 @@ const LrcLine = memo(({
                 lineHeight,
                 fontSize: size,
                 fontWeight: '500',
-                color: 'rgba(255, 255, 255, 0.55)',
+                color: COLOR_INACTIVE,
               },
             ]}
             textBreakStrategy="simple"
           >
             {line.text}
           </Text>
-          {line.extendedLyrics.map((lrc, index) => (
-            <Text
-              key={index}
-              style={[
-                styles.lineTranslationText,
-                {
-                  textAlign,
-                  lineHeight: lineHeight * 0.8,
-                  fontSize: size * 0.8,
-                  fontWeight: '400',
-                  color: 'rgba(255, 255, 255, 0.35)',
-                },
-              ]}
-              textBreakStrategy="simple"
-            >
-              {lrc}
-            </Text>
-          ))}
+          {renderExtended(0.35, 0.8, '400')}
         </View>
       )}
     </View>
@@ -413,10 +518,10 @@ const styles = StyleSheet.create({
     paddingRight: 24,
   },
   space: {
-    paddingTop: '90%',
+    paddingTop: 56,
   },
   emptyContainer: {
-    paddingTop: '60%',
+    paddingTop: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },

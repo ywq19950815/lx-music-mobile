@@ -4,25 +4,24 @@ import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook'
 import { useWindowSize } from '@/utils/hooks'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import { useNavigationComponentDidAppear } from '@/navigation'
-import { HEADER_HEIGHT } from './components/Header'
 import Image from '@/components/common/Image'
 import Text from '@/components/common/Text'
-import { useStatusbarHeight } from '@/store/common/hook'
 import commonState from '@/store/common/state'
 import { setLoadErrorPicUrl } from '@/core/player/playInfo'
+import { PIC_AREA_RATIO } from './constant'
 
 /**
  * 播放详情页唱机系统（Pic）：
  * - 沉浸式曜黑黑胶大唱盘 + 多层同心刻线微纹理 + 完美正圆高品质投影
  * - 柔和金辉呼吸氛围光晕（Ambient Aura）
- * - 真实声学唱机唱针系统：基座严谨锚定在黑胶右上角，播放时精准下搭在黑胶1点钟音轨凹槽上，暂停顺滑抬起休眠
+ * - 真实声学唱机唱针系统：基座锚定在唱盘右上角（与唱盘同一坐标系、随盘缩放），
+ *   播放时针尖精准落在唱盘 1 点钟音轨凹槽上，暂停顺滑抬起休眠
  * - 360° 平滑匀速旋转
  */
 export default ({ componentId }: { componentId: string }) => {
   const musicInfo = usePlayerMusicInfo()
   const isPlay = useIsPlay()
   const { width: winWidth, height: winHeight } = useWindowSize()
-  const statusBarHeight = useStatusbarHeight()
 
   const [animated, setAnimated] = useState(!!commonState.componentIds.playDetail)
   const [pic, setPic] = useState(musicInfo.pic)
@@ -89,85 +88,91 @@ export default ({ componentId }: { componentId: string }) => {
     }).start()
   }, [isPlay, needleAnim])
 
-  // 暂停时 -24deg（向右上方扬起移出唱盘），播放时 0deg（精准卡在黑胶1点钟音轨凹槽）
+  // 暂停时 -26deg（向右上方扬起移出唱盘），播放时 0deg（精准卡在黑胶1点钟音轨凹槽）
   const needleRotate = needleAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['-24deg', '0deg'],
+    outputRange: ['-26deg', '0deg'],
   })
 
-  // ── 尺寸自适应 ───────────────────────────
+  // ── 尺寸自适应（唱片区域 = 整页高度 × PIC_AREA_RATIO）──
   const diskSize = useMemo(() => {
-    return Math.min(winWidth * 0.76, (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.46, 296)
-  }, [statusBarHeight, winHeight, winWidth])
+    return Math.min(winWidth * 0.76, winHeight * PIC_AREA_RATIO * 0.72, 300)
+  }, [winHeight, winWidth])
 
   const centerPicSize = Math.round(diskSize * 0.65)
   const spindleHoleSize = Math.max(16, Math.round(diskSize * 0.08))
+
+  // 唱针臂长随唱盘缩放：播放（0deg，垂直向下）时针尖落在唱盘 1 点钟音轨上
+  const needlePoleH = Math.round(diskSize * 0.46)
+  const needleRotatorH = needlePoleH + 26
 
   const handleError = useCallback((url: string | number) => {
     setLoadErrorPicUrl(url as string)
   }, [])
 
-  // 唱针基座位于唱盘右上角肩部正上方
-  const needleBaseLeft = useMemo(() => {
-    return (winWidth / 2) + 18
-  }, [winWidth])
-
   return (
     <View style={styles.container}>
-      {/* 1. 真实黑胶唱针（基座锚定于黑胶上方，播放时精准搭在黑胶音轨上） */}
-      <View
-        style={[
-          styles.needleAnchor,
-          { left: needleBaseLeft, top: 0 },
-        ]}
-        pointerEvents="none"
-      >
-        <Animated.View style={[styles.needleArmRotator, { transform: [{ rotate: needleRotate }] }]}>
-          {/* 金属精密轴承底座 */}
-          <View style={styles.needlePivotBase}>
-            <View style={styles.needlePivotInner} />
-            <View style={styles.needlePivotDot} />
-          </View>
+      {/* 转盘坐标系：唱针与唱盘同参照，保证针尖永远搭在盘面上 */}
+      <View style={[styles.turntable, { width: diskSize, height: diskSize }]}>
+        {/* 1. 背景微光金辉氛围光晕（Ambient Aura） */}
+        <View
+          style={[
+            styles.ambientAura,
+            {
+              width: diskSize * 1.06,
+              height: diskSize * 1.06,
+              borderRadius: (diskSize * 1.06) / 2,
+              left: -(diskSize * 0.03),
+              top: -(diskSize * 0.03),
+            },
+          ]}
+          pointerEvents="none"
+        />
 
-          {/* 唱针臂（长连杆） */}
-          <View style={styles.needleArmPole}>
-            <View style={styles.needleHighlightEdge} />
-          </View>
-
-          {/* 弯折唱头架 */}
-          <View style={styles.needleHeadshell}>
-            <View style={styles.needleCartridge}>
-              {/* 唱针触针高亮细线 */}
-              <View style={styles.needleStylusLine} />
+        {/* 2. 真实黑胶唱针（基座锚定唱盘右上角，随盘缩放） */}
+        <View
+          style={[
+            styles.needleAnchor,
+            {
+              left: diskSize * 0.82 - 16,
+              top: diskSize * 0.10 - 16,
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <Animated.View style={[styles.needleArmRotator, { height: needleRotatorH, transform: [{ rotate: needleRotate }] }]}>
+            {/* 金属精密轴承底座 */}
+            <View style={styles.needlePivotBase}>
+              <View style={styles.needlePivotInner} />
+              <View style={styles.needlePivotDot} />
             </View>
-          </View>
-        </Animated.View>
-      </View>
 
-      {/* 2. 背景微光金辉氛围光晕（Ambient Aura） */}
-      <View
-        style={[
-          styles.ambientAura,
-          {
-            width: diskSize * 1.06,
-            height: diskSize * 1.06,
-            borderRadius: (diskSize * 1.06) / 2,
-          },
-        ]}
-        pointerEvents="none"
-      />
+            {/* 唱针臂（长连杆） */}
+            <View style={[styles.needleArmPole, { height: needlePoleH }]}>
+              <View style={styles.needleHighlightEdge} />
+            </View>
 
-      {/* 3. 悬浮黑胶大唱盘（正圆软阴影） */}
-      <View
-        style={[
-          styles.diskOuterShadow,
-          {
-            width: diskSize,
-            height: diskSize,
-            borderRadius: diskSize / 2,
-          },
-        ]}
-      >
+            {/* 弯折唱头架 */}
+            <View style={styles.needleHeadshell}>
+              <View style={styles.needleCartridge}>
+                {/* 唱针触针高亮细线 */}
+                <View style={styles.needleStylusLine} />
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+
+        {/* 3. 悬浮黑胶大唱盘（正圆软阴影） */}
+        <View
+          style={[
+            styles.diskOuterShadow,
+            {
+              width: diskSize,
+              height: diskSize,
+              borderRadius: diskSize / 2,
+            },
+          ]}
+        >
         <Animated.View
           style={[
             styles.vinylDisk,
@@ -301,6 +306,7 @@ export default ({ componentId }: { componentId: string }) => {
             </View>
           </View>
         </Animated.View>
+        </View>
       </View>
     </View>
   )
@@ -312,7 +318,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
-    paddingTop: 16,
+  },
+  // ── 转盘坐标系（唱针与唱盘同参照）──────────────
+  turntable: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   // ── 唱针样式 ──────────────────────────────
   needleAnchor: {
@@ -323,7 +334,6 @@ const styles = StyleSheet.create({
   },
   needleArmRotator: {
     width: 32,
-    height: 140,
     alignItems: 'center',
     transformOrigin: 'top center',
   },
@@ -409,8 +419,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.30,
     shadowRadius: 36,
     elevation: 8,
-  },
-  // ── 悬浮黑胶大唱盘 ──────────────────────────
+  },  // ── 悬浮黑胶大唱盘 ──────────────────────────
   diskOuterShadow: {
     justifyContent: 'center',
     alignItems: 'center',

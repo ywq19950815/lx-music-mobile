@@ -1,10 +1,11 @@
 import { memo } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, View, TouchableOpacity } from 'react-native'
 
 import Section from '../components/Section'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
 import { colors, radius } from '@/theme/tokens'
+import { showModal } from '@/core/version'
 
 const currentVer = process.versions.app
 
@@ -18,9 +19,15 @@ export default memo(() => {
           <Text style={styles.label}>{t('version_label_current_ver')}</Text>
           <Text style={styles.version}>v{currentVer}</Text>
         </View>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{t('version_tip_latest')}</Text>
-        </View>
+        <TouchableOpacity
+          style={styles.badge}
+          activeOpacity={0.7}
+          onPress={() => {
+            void showModal()
+          }}
+        >
+          <Text style={styles.badgeText}>{t('setting_version_show_ver_modal')}</Text>
+        </TouchableOpacity>
       </View>
     </Section>
   )
@@ -59,14 +66,14 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     flexShrink: 0,
     marginLeft: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    backgroundColor: 'rgba(52, 199, 89, 0.12)',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: 'rgba(49, 199, 124, 0.12)',
     borderRadius: radius.pill,
   },
   badgeText: {
     fontSize: 11.5,
     fontWeight: '600',
-    color: '#15803D',
+    color: '#1E9E5F',
   },
 })

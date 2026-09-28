@@ -1,9 +1,75 @@
 import { useEffect, useState } from 'react'
 import Lyric, { type Lines } from 'lrc-file-parser'
 // import { getStore, subscribe } from '@/store'
-export type Line = Lines[number]
+
+export interface LyricWord {
+  /** word text */
+  text: string
+  /** word start time (ms, absolute in song) */
+  startTime: number
+  /** word duration (ms) */
+  duration: number
+}
+
+export type Line = Lines[number] & { words?: LyricWord[] }
+
 type PlayHook = (line: number, text: string) => void
 type SetLyricHook = (lines: Lines) => void
+
+// ── 逐字歌词（lxlrc）解析 ─────────────────────────────
+// 格式：[mm:ss.mmm]<startMs,durationMs>字<startMs,durationMs>字…
+// startMs 为相对行首的偏移，需换算为全曲绝对时间
+const RXP_LINE_TIME = /^\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]/
+const RXP_WORD = /<(\d+),(\d+)>([^<]*)/g
+
+const parseLineTimeMs = (m: string, s: string, ms?: string) => {
+  const msNum = ms ? parseInt(ms.padEnd(3, '0')) : 0
+  return parseInt(m) * 60 * 1000 + parseInt(s) * 1000 + msNum
+}
+
+/**
+ * 解析逐字歌词，返回 行时间 -> 逐字数组 的映射
+ */
+export const parseLxLrc = (lxlrc: string | null | undefined): Map<number, LyricWord[]> => {
+  const map = new Map<number, LyricWord[]>()
+  if (!lxlrc) return map
+  for (let raw of lxlrc.split(/\r?\n/)) {
+    const line = raw.trim()
+    const head = RXP_LINE_TIME.exec(line)
+    if (!head) continue
+    const lineTime = parseLineTimeMs(head[1], head[2], head[3])
+    const content = line.slice(head[0].length)
+    const words: LyricWord[] = []
+    RXP_WORD.lastIndex = 0
+    let m: RegExpExecArray | null
+    while ((m = RXP_WORD.exec(content))) {
+      const text = m[3]
+      if (!text) continue
+      const startTime = lineTime + parseInt(m[1], 10)
+      const duration = parseInt(m[2], 10)
+      if (duration <= 0) continue
+      words.push({ text, startTime, duration })
+    }
+    if (words.length) map.set(lineTime, words)
+  }
+  return map
+}
+
+// 为普通歌词行匹配逐字数据（时间戳容差匹配，音源生成的 lrc 与 lxlrc 行时间应一致）
+const TIME_MATCH_TOLERANCE = 20
+const matchWords = (map: Map<number, LyricWord[]>, time: number): LyricWord[] | undefined => {
+  if (!map.size) return undefined
+  let best: LyricWord[] | undefined
+  let bestDiff = TIME_MATCH_TOLERANCE + 1
+  for (const [key, words] of map) {
+    const diff = Math.abs(key - time)
+    if (diff <= TIME_MATCH_TOLERANCE && diff < bestDiff) {
+      best = words
+      bestDiff = diff
+    }
+  }
+  return best
+}
 
 const lrcTools = {
   isInited: false,
@@ -18,6 +84,8 @@ const lrcTools = {
   lyricText: '',
   translationText: '' as string | null | undefined,
   romaText: '' as string | null | undefined,
+  lxLyricText: '' as string | null | undefined,
+  wordMap: new Map<number, LyricWord[]>(),
   init() {
     if (this.isInited) return
     this.isInited = true
@@ -34,6 +102,13 @@ const lrcTools = {
     for (const hook of this.playHooks) hook(line, text)
   },
   onSetLyric(lines: Lines) {
+    // 将逐字（lxlrc）数据合并进对应的歌词行，供卡拉OK逐字染色
+    if (this.wordMap.size) {
+      for (const line of lines as Line[]) {
+        const words = matchWords(this.wordMap, line.time)
+        if (words) line.words = words
+      }
+    }
     this.currentLines = lines
     this.currentLineData.line = 0
     this.currentLineData.text = ''
@@ -58,6 +133,7 @@ const lrcTools = {
     const extendedLyrics = [] as string[]
     if (this.isShowTranslation && this.translationText) extendedLyrics.push(this.translationText)
     if (this.isShowRoma && this.romaText) extendedLyrics.push(this.romaText)
+    this.wordMap = parseLxLrc(this.lxLyricText)
     this.lrc!.setLyric(this.lyricText, extendedLyrics)
   },
 }
@@ -67,11 +143,12 @@ export const init = async() => {
   lrcTools.init()
 }
 
-export const setLyric = (lyric: string, translation?: string, romalrc?: string) => {
+export const setLyric = (lyric: string, translation?: string, romalrc?: string, lxlrc?: string) => {
   lrcTools.isPlay = false
   lrcTools.lyricText = lyric
   lrcTools.translationText = translation
   lrcTools.romaText = romalrc
+  lrcTools.lxLyricText = lxlrc
   lrcTools.setLyric()
 }
 export const setPlaybackRate = (playbackRate: number) => {
@@ -134,4 +211,3 @@ export const useLrcSet = () => {
 
   return lines
 }
-

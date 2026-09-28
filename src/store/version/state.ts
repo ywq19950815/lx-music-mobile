@@ -9,6 +9,8 @@ export interface VersionInfo {
   version: string
   desc: string
   history?: LX.VersionInfo[]
+  /** 新版 APK 下载地址（应用内更新用） */
+  url?: string
 }
 
 export interface InitState {
