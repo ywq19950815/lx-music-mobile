@@ -16,18 +16,17 @@ import { colors, radius } from '@/theme/tokens'
 
 const SettingHeaderBanner = () => {
   return (
-    <View style={styles.banner}>
-      <View style={styles.bannerLeft}>
-        <View style={styles.bannerTitleRow}>
-          <Text style={styles.bannerTitle}>设置与偏好</Text>
-          <View style={styles.bannerBadge}>
-            <Text style={styles.bannerBadgeText}>PREFERENCES</Text>
-          </View>
+    <View style={styles.hero}>
+      <View style={styles.heroDecoA} />
+      <View style={styles.heroDecoB} />
+      <View style={styles.heroRow}>
+        <View style={styles.heroTextWrap}>
+          <Text style={styles.heroTitle}>设置</Text>
+          <Text style={styles.heroSubtitle}>音源 · 播放 · 歌词 · 备份同步</Text>
         </View>
-        <Text style={styles.bannerSubtitle}>音源管理 · 播放体验 · 桌面歌词 · 备份与同步</Text>
-      </View>
-      <View style={styles.bannerIconBox}>
-        <Icon name="setting" size={18} color={colors.brand} />
+        <View style={styles.heroIconBox}>
+          <Icon name="setting" size={22} color="#FFFFFF" />
+        </View>
       </View>
     </View>
   )
@@ -75,60 +74,62 @@ const styles = StyleSheet.create({
     paddingBottom: 160,
     flex: 0,
   },
-  banner: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#ECEEF2',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+  hero: {
+    backgroundColor: colors.brand,
+    borderRadius: 18,
+    paddingHorizontal: 18,
+    paddingVertical: 18,
     marginBottom: 14,
+    overflow: 'hidden',
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  heroDecoA: {
+    position: 'absolute',
+    top: -40,
+    right: -30,
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  heroDecoB: {
+    position: 'absolute',
+    bottom: -50,
+    right: 40,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  heroRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
   },
-  bannerLeft: {
+  heroTextWrap: {
     flex: 1,
   },
-  bannerTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  heroTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
   },
-  bannerTitle: {
-    fontSize: 16.5,
-    fontWeight: '700',
-    color: colors.ink,
-    letterSpacing: -0.3,
+  heroSubtitle: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.82)',
+    marginTop: 6,
   },
-  bannerBadge: {
-    backgroundColor: 'rgba(245, 166, 35, 0.1)',
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  bannerBadgeText: {
-    color: colors.brand,
-    fontSize: 9.5,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  bannerSubtitle: {
-    fontSize: 11.5,
-    fontWeight: '400',
-    color: colors.inkTertiary,
-    marginTop: 4,
-  },
-  bannerIconBox: {
-    width: 36,
-    height: 36,
-    backgroundColor: 'rgba(245, 166, 35, 0.08)',
-    borderRadius: 18,
+  heroIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
     alignItems: 'center',
     justifyContent: 'center',
   },

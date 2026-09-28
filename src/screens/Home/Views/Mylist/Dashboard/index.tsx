@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useMemo } from 'react'
+import { memo, useEffect, useState, useMemo, useRef } from 'react'
 import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
@@ -7,6 +7,8 @@ import { setActiveList } from '@/core/list'
 import { getListMusics } from '@/utils/listManage'
 import { colors, radius } from '@/theme/tokens'
 import { LIST_IDS } from '@/config/constant'
+import { getData, saveData } from '@/plugins/storage'
+import Popup, { type PopupType } from '@/components/common/Popup'
 
 export interface DashboardProps {
   onSelectList: (listId: string) => void
@@ -16,12 +18,39 @@ export interface DashboardProps {
 }
 
 /**
- * Tab 4 我的音乐 - 现代商业级资产大盘
- * 包含：用户资产卡片、四大金刚入口（我喜欢/试听/最近/本地）、我的歌单卡片列表
+ * 头像预设（无需原生图片选择器，安全可打包）
+ * 默认 logo，用户可在底部弹窗中挑选不同配色头像，选择持久化保存。
+ */
+const AVATARS = [
+  { id: 'logo', bg: '#1A1C20', icon: 'logo' },
+  { id: 'green', bg: '#31C27C', icon: 'play' },
+  { id: 'blue', bg: '#1D4ED8', icon: 'album' },
+  { id: 'purple', bg: '#6D28D9', icon: 'love' },
+  { id: 'orange', bg: '#EA580C', icon: 'leaderboard' },
+  { id: 'pink', bg: '#DB2777', icon: 'comment' },
+] as const
+
+const AVATAR_KEY = 'user_avatar_id'
+const getAvatar = (id: string) => AVATARS.find(a => a.id === id) ?? AVATARS[0]
+
+/**
+ * Tab 4 我的音乐 - 现代简洁资产大盘
+ * 包含：可自定义头像的个人卡片、四大金刚入口、我的歌单卡片列表
  */
 export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu }: DashboardProps) => {
   const allList = useMyList()
   const [counts, setCounts] = useState<Record<string, number>>({})
+  const [avatarId, setAvatarId] = useState<string>('logo')
+  const avatarPopupRef = useRef<PopupType>(null)
+
+  // 读取已保存头像
+  useEffect(() => {
+    let isMounted = true
+    void getData<string>(AVATAR_KEY).then(id => {
+      if (isMounted && id) setAvatarId(id)
+    }).catch(() => {})
+    return () => { isMounted = false }
+  }, [])
 
   // 统计各歌单歌曲数
   useEffect(() => {
@@ -47,6 +76,12 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
     }
   }, [allList])
 
+  const handleSelectAvatar = (id: string) => {
+    setAvatarId(id)
+    void saveData(AVATAR_KEY, id).catch(() => {})
+    avatarPopupRef.current?.setVisible(false)
+  }
+
   // 我喜欢与试听列表数量
   const loveCount = counts[LIST_IDS.LOVE] ?? 0
   const defaultCount = counts[LIST_IDS.DEFAULT] ?? 0
@@ -59,31 +94,25 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
     return allList.filter(l => l.id !== LIST_IDS.DEFAULT && l.id !== LIST_IDS.LOVE)
   }, [allList])
 
+  const avatar = getAvatar(avatarId)
+
   return (
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {/* 1. 顶部个人资产尊享卡片 */}
-      <View style={styles.profileCard}>
-        <View style={styles.avatarWrap}>
-          <View style={styles.avatarCircle}>
-            <Icon name="logo" size={20} color="#FFFFFF" />
-          </View>
-          <View style={styles.vipBadge}>
-            <Text style={styles.vipBadgeText}>VIP</Text>
-          </View>
+      {/* 1. 顶部个人卡片（可自定义头像） */}
+      <TouchableOpacity style={styles.profileCard} activeOpacity={0.9} onPress={() => avatarPopupRef.current?.setVisible(true)}>
+        <View style={[styles.avatarCircle, { backgroundColor: avatar.bg }]}>
+          <Icon name={avatar.icon} size={22} color="#FFFFFF" />
         </View>
-
         <View style={styles.profileInfo}>
-          <View style={styles.nameRow}>
-            <Text style={styles.profileName} numberOfLines={1}>我的音乐空间</Text>
-            <View style={styles.hifiTag}>
-              <Text style={styles.hifiText}>Hi-Fi</Text>
-            </View>
-          </View>
+          <Text style={styles.profileName} numberOfLines={1}>我的音乐空间</Text>
           <Text style={styles.profileSubtitle}>
-            已收纳 {totalMusics} 首歌曲 · {allList.length} 个专属歌单
+            已收纳 {totalMusics} 首歌曲 · {allList.length} 个歌单
           </Text>
         </View>
-      </View>
+        <View style={styles.avatarEditHint}>
+          <Text style={styles.avatarEditText}>换头像</Text>
+        </View>
+      </TouchableOpacity>
 
       {/* 2. 四大金刚核心资产区（2x2 大方块矩阵） */}
       <View style={styles.quickGrid}>
@@ -235,6 +264,28 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
           </View>
         )}
       </View>
+
+      {/* 头像选择弹窗 */}
+      <Popup ref={avatarPopupRef} position="bottom" title="选择头像">
+        <View style={styles.avatarGrid}>
+          {AVATARS.map((a) => (
+            <TouchableOpacity
+              key={a.id}
+              style={styles.avatarOption}
+              activeOpacity={0.7}
+              onPress={() => handleSelectAvatar(a.id)}
+            >
+              <View style={[
+                styles.avatarOptionCircle,
+                { backgroundColor: a.bg },
+                avatarId === a.id && styles.avatarOptionActive,
+              ]}>
+                <Icon name={a.icon} size={24} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </Popup>
     </ScrollView>
   )
 })
@@ -249,7 +300,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 40,
   },
-  // 个人资产卡
+  // 个人卡片（可点击换头像）
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -265,60 +316,40 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  avatarWrap: {
-    position: 'relative',
-    marginRight: 14,
-  },
   avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#1A1C20',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  vipBadge: {
-    position: 'absolute',
-    bottom: -2,
-    right: -4,
-    backgroundColor: colors.brand,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 4,
-  },
-  vipBadgeText: {
-    fontSize: 8,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    marginRight: 14,
   },
   profileInfo: {
     flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
   },
   profileName: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.ink,
-  },
-  hifiTag: {
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    borderRadius: 4,
-  },
-  hifiText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#B36B00',
+    marginBottom: 4,
   },
   profileSubtitle: {
     fontSize: 12,
     color: colors.inkSecondary,
+  },
+  avatarEditHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(49, 196, 125, 0.1)',
+  },
+  avatarEditText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.brand,
   },
   // 四大金刚卡片 2x2
   quickGrid: {
@@ -456,7 +487,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(245, 166, 35, 0.1)',
+    backgroundColor: 'rgba(49, 196, 125, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -512,5 +543,34 @@ const styles = StyleSheet.create({
   },
   moreBtn: {
     padding: 8,
+  },
+  // 头像选择弹窗
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 18,
+    paddingVertical: 22,
+    paddingHorizontal: 16,
+  },
+  avatarOption: {
+    padding: 4,
+  },
+  avatarOptionCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  avatarOptionActive: {
+    borderColor: colors.brand,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
 })

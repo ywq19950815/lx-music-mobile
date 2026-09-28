@@ -103,7 +103,6 @@ export default forwardRef<PopupType, PopupProps>(({
           {
             width: '100%',
             maxHeight: '78%',
-            minHeight: '20%',
             // backgroundColor: 'white',
           },
         ] as const
@@ -159,7 +158,6 @@ export default forwardRef<PopupType, PopupProps>(({
           {
             width: '100%',
             maxHeight: '78%',
-            minHeight: '20%',
             // backgroundColor: 'white',
             borderTopLeftRadius: 8,
             borderTopRightRadius: 8,

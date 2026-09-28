@@ -10,7 +10,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <Section title={t('setting_search')}>
+    <Section title={t('setting_search')} icon="search-2">
       <IsShowHotSearch />
       <IsShowHistorySearch />
     </Section>

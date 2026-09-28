@@ -12,7 +12,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <Section title={t('setting_version')}>
+    <Section title={t('setting_version')} icon="available_updates">
       <View style={styles.card}>
         <View style={styles.left}>
           <Text style={styles.label}>{t('version_label_current_ver')}</Text>

@@ -2,18 +2,29 @@ import { useMemo } from 'react'
 import { View } from 'react-native'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
+import { Icon } from '@/components/common/Icon'
 import { colors, radius } from '@/theme/tokens'
 
 interface Props {
   title: string
+  icon?: string
   children: React.ReactNode | React.ReactNode[]
 }
 
-export default ({ title, children }: Props) => {
+export default ({ title, icon, children }: Props) => {
+  const iconNode = useMemo(() => {
+    if (!icon) return null
+    return (
+      <View style={styles.headerIconChip}>
+        <Icon name={icon} size={15} color={colors.brand} />
+      </View>
+    )
+  }, [icon])
+
   return (
     <View style={styles.cardContainer}>
       <View style={styles.cardHeader}>
-        <View style={styles.headerIndicator} />
+        {iconNode}
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
 
@@ -27,41 +38,41 @@ export default ({ title, children }: Props) => {
 const styles = createStyle({
   cardContainer: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#ECEEF2',
-    borderRadius: 16,
+    borderRadius: 18,
     marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
     overflow: 'hidden',
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 10,
+    paddingTop: 15,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#F2F4F7',
   },
-  headerIndicator: {
-    width: 3.5,
-    height: 14,
-    borderRadius: 2,
-    backgroundColor: colors.brand,
-    marginRight: 8,
+  headerIconChip: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: 'rgba(49, 196, 125, 0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 9,
   },
   headerTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '700',
     color: colors.ink,
     letterSpacing: -0.2,
   },
   cardBody: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
 })

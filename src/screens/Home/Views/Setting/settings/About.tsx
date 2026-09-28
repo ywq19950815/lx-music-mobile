@@ -19,7 +19,7 @@ export default memo(() => {
   ], [t])
 
   return (
-    <Section title={t('setting_about')}>
+    <Section title={t('setting_about')} icon="help">
       {/* 品牌卡：应用名 + 版本 + 定位语 */}
       <View style={styles.brandCard}>
         <View style={styles.brandMark}>

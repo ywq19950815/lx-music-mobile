@@ -54,7 +54,6 @@ export default forwardRef<ModalType, ModalProps>(({
   ...props
 }: ModalProps, ref) => {
   const [visible, setVisible] = useState(false)
-  console.log('--- [Modal] component render, visible =', visible)
   // const { window: windowSize } = useWindowSize()
   const statusBarHeight = useStatusbarHeight()
   const handleRequestClose = () => {
@@ -72,7 +71,6 @@ export default forwardRef<ModalType, ModalProps>(({
 
   useImperativeHandle(ref, () => ({
     setVisible(_visible) {
-      console.log('--- [Modal] setVisible called:', _visible, 'current visible:', visible)
       if (visible == _visible) return
       setVisible(_visible)
       if (!_visible) onHide()

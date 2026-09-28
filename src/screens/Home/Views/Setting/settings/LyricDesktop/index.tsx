@@ -20,7 +20,7 @@ export default memo(() => {
   const t = useI18n()
 
   return (
-    <Section title={t('setting_lyric_desktop')}>
+    <Section title={t('setting_lyric_desktop')} icon="lyric-on">
       <IsShowLyric />
       <IsLockLyric />
       <IsShowToggleAnima />

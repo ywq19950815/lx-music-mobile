@@ -21,7 +21,7 @@ export default memo(() => {
 
 
   return (
-    <Section title={t('setting_basic')}>
+    <Section title={t('setting_basic')} icon="setting">
       <IsStartupAutoPlay />
       <IsStartupPushPlayDetailScreen />
       <IsShowBackBtn />
