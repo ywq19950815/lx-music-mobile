@@ -110,6 +110,7 @@ const List = forwardRef<ListType, ListProps>(({
       onEndReached={handleLoadMore}
       refreshControl={refreshControl}
       ListFooterComponent={footerComponent}
+      ListEmptyComponent={<EmptyState status={status} />}
     />
   )
 })
@@ -136,6 +137,17 @@ const Footer = ({ label, onLoadMore }: {
   )
 }
 
+const EmptyState = ({ status }: { status: Status }) => {
+  const theme = useTheme()
+  if (status === 'loading' || status === 'refreshing') return null
+  return (
+    <View style={styles.empty}>
+      <Text style={styles.emptyTitle} color={theme['c-font']}>还没有评论</Text>
+      <Text style={styles.emptySub} color={theme['c-font-label']}>这首歌还没有人评论，快来抢沙发～</Text>
+    </View>
+  )
+}
+
 const styles = createStyle({
   container: {
     flex: 1,
@@ -149,6 +161,21 @@ const styles = createStyle({
   footer: {
     textAlign: 'center',
     padding: 10,
+  },
+  empty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 80,
+    paddingBottom: 80,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  emptySub: {
+    fontSize: 13,
   },
 })
 

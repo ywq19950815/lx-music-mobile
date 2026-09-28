@@ -59,7 +59,7 @@ const CommentFloor = memo(({ comment, isLast }: {
   }, [])
 
   return (
-    <View style={{ ...styles.container, borderBottomColor: theme['c-list-header-border-bottom'], borderBottomWidth: isLast ? 0 : BorderWidths.normal, paddingBottom: isLast ? 0 : GAP }}>
+    <View style={{ ...styles.container, backgroundColor: theme['c-content-background'] }}>
       <View style={styles.comment}>
         <View>
           <Image
@@ -101,12 +101,15 @@ const CommentFloor = memo(({ comment, isLast }: {
 
 const styles = createStyle({
   container: {
-    flex: 1,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
+    borderRadius: 14,
+    padding: 12,
     marginTop: GAP,
-    paddingBottom: GAP,
-    borderBottomWidth: BorderWidths.normal,
-    borderStyle: 'dashed',
+    marginHorizontal: 12,
+    shadowColor: '#171A1F',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   comment: {
     flex: 1,
@@ -147,8 +150,6 @@ const styles = createStyle({
     marginTop: GAP,
     marginLeft: 20,
     borderTopWidth: BorderWidths.normal,
-    // backgroundColor: 'rgba(0,0,0,0.1)',
-    borderStyle: 'dashed',
   },
 })
 
@@ -156,7 +157,7 @@ const stylesRaw = StyleSheet.create({
   avatar: {
     height: avatarWidth,
     width: avatarWidth,
-    borderRadius: 4,
+    borderRadius: avatarWidth / 2,
   },
 })
 

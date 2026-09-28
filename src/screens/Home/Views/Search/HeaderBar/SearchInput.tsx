@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   searchBtn: {
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 14,

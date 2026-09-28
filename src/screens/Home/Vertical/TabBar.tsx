@@ -50,7 +50,7 @@ export default memo(() => {
               <Icon
                 name={icon}
                 size={20}
-                color={active ? '#F5A623' : '#8A919E'}
+                color={active ? '#31C27C' : '#8A919E'}
               />
             </View>
             <Text
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   tabLabelActive: {
-    color: '#F5A623',
+    color: '#31C27C',
     fontWeight: '700',
   },
   tabLabelInactive: {

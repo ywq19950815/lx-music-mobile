@@ -507,6 +507,7 @@
   "version_tip_downloaded": "The apk has been downloaded.",
   "version_tip_failed": "Failed to download the apk. You can either retry or go to the project address and download the new update manually.",
   "version_tip_latest": "The app is up to date, please enjoy it~🥂",
+  "double_click_exit_tip": "Press back again to exit",
   "version_tip_min": "The download has been switched to background. You can navigate to \"Settings → Update\" to re-open this pop-up window.",
   "version_tip_unknown": "Failed to get the latest version information. Recommended to manually go to the project address to check for a new version.",
   "version_title_checking": "⏳ Checking for updates ⏳",

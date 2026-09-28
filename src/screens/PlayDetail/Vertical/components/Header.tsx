@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
     marginRight: 4,
   },
   singerText: {

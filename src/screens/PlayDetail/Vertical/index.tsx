@@ -177,7 +177,7 @@ const styles = createStyle({
   },
   pageDotActive: {
     width: 14,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
   },
   pageDotIdle: {
     width: 4,

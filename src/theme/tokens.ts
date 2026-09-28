@@ -1,4 +1,6 @@
 import { StyleSheet } from 'react-native'
+import { useContext } from 'react'
+import { ThemeContext } from '@/store/theme/state'
 
 /**
  * QQ 音乐式柔和现代设计令牌（单一来源）
@@ -7,9 +9,10 @@ import { StyleSheet } from 'react-native'
  */
 
 export const colors = {
-  // 品牌
-  brand: '#F5A623', // 暖金（延续亮黄品牌记忆，收敛为质感金）
-  brandDeep: '#E08C0F', // 金的按压/暂停态
+  // 品牌（奇哥 2026-09-28 定调：从暖金改为 QQ音乐绿 #31C27C）
+  brand: '#31C27C', // QQ音乐绿
+  brandDeep: '#1E9E63', // 绿的按压/暂停态
+  brandLight: '#6FD9A4', // 绿的亮部（渐变/光晕用）
 
   // 浅色世界（浏览场景）
   canvas: '#F5F6F8', // 页面底
@@ -27,6 +30,40 @@ export const colors = {
   onNightTertiary: 'rgba(255,255,255,0.40)',
   ghost: 'rgba(255,255,255,0.10)', // 幽灵按钮底
   nightHairline: 'rgba(255,255,255,0.08)',
+}
+
+/**
+ * 深色世界色板（奇哥 2026-09-28 补：原 colors 是静态浅色，深色下会导致"白底浅字"）。
+ * 翻新页面时用 getColors(isDark) / useAppColors() 取，天然支持深色。
+ */
+export const darkColors = {
+  canvas: '#0E0F12',
+  surface: '#17191E',
+  surface2: '#1F2228',
+  hairline: 'rgba(255,255,255,0.08)',
+  ink: 'rgba(255,255,255,0.92)',
+  inkSecondary: 'rgba(255,255,255,0.60)',
+  inkTertiary: 'rgba(255,255,255,0.38)',
+  // 品牌系列在深色下保持一致
+  brand: '#31C27C',
+  brandDeep: '#1E9E63',
+  brandLight: '#6FD9A4',
+  night: '#0E0F12',
+  nightSurface: '#17191E',
+  onNight: 'rgba(255,255,255,0.92)',
+  onNightSecondary: 'rgba(255,255,255,0.60)',
+  onNightTertiary: 'rgba(255,255,255,0.38)',
+  ghost: 'rgba(255,255,255,0.10)',
+  nightHairline: 'rgba(255,255,255,0.08)',
+}
+
+/** 主题感知取色：翻新页面用这个替代直接解构静态 colors */
+export const getColors = (isDark: boolean) => (isDark ? darkColors : colors)
+
+/** 在组件中直接取主题色（已接入全局 isDark） */
+export const useAppColors = () => {
+  const theme = useContext(ThemeContext)
+  return getColors(theme.isDark)
 }
 
 /** 间距节奏（4 的倍数） */

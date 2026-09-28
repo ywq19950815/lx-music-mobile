@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   pillActive: {
     backgroundColor: 'rgba(245, 166, 35, 0.12)',
-    borderColor: '#F5A623',
+    borderColor: '#31C27C',
   },
   pillText: {
     fontSize: 12,

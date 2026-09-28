@@ -84,7 +84,7 @@ const TogglePlayBtn = ({ size }: { size: number }) => {
               width: playBtnSize,
               height: playBtnSize,
               borderRadius: playBtnSize / 2,
-              backgroundColor: isPlay ? '#F5A623' : '#E08C0F',
+              backgroundColor: isPlay ? '#31C27C' : '#1E9E63',
             },
           ]}
           activeOpacity={1}
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   mainPlayBtn: {
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#F5A623',
+    shadowColor: '#31C27C',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.42,
     shadowRadius: 18,

@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   indexBadgeActive: {
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
   },
   indexText: {
     fontSize: 11,

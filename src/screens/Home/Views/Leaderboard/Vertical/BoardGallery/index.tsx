@@ -124,7 +124,7 @@ export default memo(({ list, activeId, onSelectBoard }: BoardGalleryProps) => {
               {/* 右侧：TOP 1/2/3 三行歌曲预览 */}
               <View style={styles.songsArea}>
                 {meta.topSongs.map((song, sIdx) => {
-                  const numColor = sIdx === 0 ? '#F5A623' : sIdx === 1 ? '#64748B' : '#B45309'
+                  const numColor = sIdx === 0 ? '#31C27C' : sIdx === 1 ? '#64748B' : '#B45309'
                   return (
                     <View key={sIdx} style={styles.songRow}>
                       <Text style={[styles.songIndex, { color: numColor }]}>{sIdx + 1}</Text>

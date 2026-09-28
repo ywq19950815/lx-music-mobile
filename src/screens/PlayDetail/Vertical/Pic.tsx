@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.5)',
   },
@@ -397,14 +397,14 @@ const styles = StyleSheet.create({
   needleStylusLine: {
     width: 2,
     height: 10,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
     borderRadius: 1,
   },
   // ── 背景氛围微光 ────────────────────────────
   ambientAura: {
     position: 'absolute',
     backgroundColor: 'rgba(245, 166, 35, 0.06)',
-    shadowColor: '#F5A623',
+    shadowColor: '#31C27C',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.30,
     shadowRadius: 36,
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
   labelBrand: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#F5A623',
+    color: '#31C27C',
     letterSpacing: 2,
   },
   labelCenterGap: {

@@ -79,7 +79,7 @@ export default ({ isHome }: { isHome: boolean }) => {
             />
           ) : (
             <View style={styles.defaultCenter}>
-              <Icon name="logo" size={12} color="#F5A623" />
+              <Icon name="logo" size={12} color="#31C27C" />
             </View>
           )}
           {/* 中心黄铜转轴微孔 */}
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     width: HOLE_SIZE,
     height: HOLE_SIZE,
     borderRadius: HOLE_SIZE / 2,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
     borderWidth: 1,
     borderColor: '#0D0F14',
   },

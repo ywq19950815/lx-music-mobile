@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 18,
     borderRadius: 2,
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
   },
   title: {
     fontSize: 20,

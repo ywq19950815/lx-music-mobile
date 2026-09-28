@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   sourceCardActive: {
     backgroundColor: 'rgba(245, 166, 35, 0.10)',
     borderWidth: 1.5,
-    borderColor: '#F5A623',
+    borderColor: '#31C27C',
   },
   sourceCardInactive: {
     backgroundColor: '#F8F9FA',
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   indicatorDotActive: {
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
   },
   indicatorDotInactive: {
     backgroundColor: '#D1D5DB',
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   activeBadge: {
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
     borderRadius: 4,
     paddingHorizontal: 5,
     paddingVertical: 1.5,

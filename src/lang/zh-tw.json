@@ -507,6 +507,7 @@
   "version_tip_downloaded": "安裝包已經下載完畢。",
   "version_tip_failed": "安裝包下載失敗，你可以重試或者去項目位址手動下載新版更新。\n💡提示：一般多點幾次重試即可正常更新！",
   "version_tip_latest": "軟體已是最新，盡情地體驗吧~🥂",
+  "double_click_exit_tip": "再按一次退出程式",
   "version_tip_min": "已切換到後台下載，你可以去「設定 → 軟體更新」重新開啟本視窗哦",
   "version_tip_unknown": "獲取最新版本資訊失敗，建議手動去項目位址檢查是否有新版本",
   "version_title_checking": "⏳ 檢查更新中 ⏳",

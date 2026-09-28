@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   snGold: {
-    backgroundColor: '#F5A623',
+    backgroundColor: '#31C27C',
   },
   snSoftGold: {
     backgroundColor: 'rgba(245, 166, 35, 0.18)',

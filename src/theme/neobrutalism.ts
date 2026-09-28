@@ -19,7 +19,7 @@ export const neoColors = {
   darkBg: '#20222A',
 
   // 波普高饱和色 → 柔和现代同职能色
-  yellow: '#F5A623',     // 品牌金（Primary）
+  yellow: '#31C27C',     // 品牌金（Primary）
   pink: '#FA5151',       // 点赞/激活 → QQ 红
   cyan: '#4A90D9',       // 次强调 → 雾蓝
   purple: '#8E7CC3',     // 标签 → 灰紫
