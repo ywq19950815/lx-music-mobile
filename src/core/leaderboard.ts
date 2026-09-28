@@ -32,10 +32,19 @@ type CacheValue = Map<string, PageCache | ListDetailInfo['list']>
 const cache = new Map<string, CacheValue>()
 const LIST_LOAD_LIMIT = 30
 
+const withBoardsTimeout = <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
+  return Promise.race([
+    p,
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('boards request timeout')), ms)
+    }),
+  ])
+}
+
 export const getBoardsList = async(source: LX.OnlineSource) => {
   // const source = (await getLeaderboardSetting()).source as LX.OnlineSource
   if (leaderboardState.boards[source]) return leaderboardState.boards[source].list
-  const board = await (musicSdk[source]?.leaderboard.getBoards() as Promise<Board>)
+  const board = await withBoardsTimeout(musicSdk[source]?.leaderboard.getBoards() as Promise<Board>)
   setBoard(board, source)
   return leaderboardState.boards[source]!.list
 }

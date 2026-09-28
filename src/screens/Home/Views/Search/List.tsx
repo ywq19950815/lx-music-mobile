@@ -21,9 +21,9 @@ export default forwardRef<ListType, ListProps>(({ onSearch }, ref) => {
 
   useImperativeHandle(ref, () => ({
     loadList(text, source, type) {
+      setListType(type)
       if (text) {
         setShowListView(false)
-        setListType(type)
         // const listDetailInfo = searchMusicState.listDetailInfo
         requestAnimationFrame(() => {
           listRef.current?.loadList(text, source)
@@ -31,7 +31,7 @@ export default forwardRef<ListType, ListProps>(({ onSearch }, ref) => {
       } else {
         setShowListView(true)
         requestAnimationFrame(() => {
-          blankViewRef.current?.show(source)
+          blankViewRef.current?.show(source, type)
         })
       }
     },

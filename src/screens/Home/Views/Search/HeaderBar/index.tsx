@@ -24,6 +24,7 @@ export interface HeaderBarProps {
 export interface HeaderBarType {
   setSourceList: SourceSelectorType['setSourceList']
   setText: SearchInputType['setText']
+  setPlaceholder: SearchInputType['setPlaceholder']
   blur: SearchInputType['blur']
 }
 
@@ -37,6 +38,9 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onSourceChange, onTi
     },
     setText(text) {
       searchInputRef.current?.setText(text)
+    },
+    setPlaceholder(holder) {
+      searchInputRef.current?.setPlaceholder(holder)
     },
     blur() {
       searchInputRef.current?.blur()

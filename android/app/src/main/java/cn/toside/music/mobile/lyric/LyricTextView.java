@@ -64,6 +64,7 @@ public class LyricTextView extends TextView {
   @Override
   protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
     super.onTextChanged(text, start, lengthBefore, lengthAfter);
+    this.progress = 0f;
     stopScroll();
     this.text = text.toString();
     init();
@@ -133,15 +134,20 @@ public class LyricTextView extends TextView {
     if (text != null) {
       float drawX = getDrawX();
       if (isKaraoke) {
-        mPaint.setColor(unplayColor);
-        canvas.drawText(text, drawX, y, mPaint);
-        if (progress > 0f) {
-          float clipRight = drawX + textLength * Math.min(1.0f, progress);
-          canvas.save();
-          canvas.clipRect(drawX, 0, clipRight, getHeight());
+        if (progress >= 1.0f) {
           mPaint.setColor(playedColor);
           canvas.drawText(text, drawX, y, mPaint);
-          canvas.restore();
+        } else {
+          mPaint.setColor(unplayColor);
+          canvas.drawText(text, drawX, y, mPaint);
+          if (progress > 0f) {
+            float clipRight = drawX + textLength * Math.min(1.0f, progress);
+            canvas.save();
+            canvas.clipRect(drawX, 0, clipRight, getHeight());
+            mPaint.setColor(playedColor);
+            canvas.drawText(text, drawX, y, mPaint);
+            canvas.restore();
+          }
         }
       } else {
         canvas.drawText(text, drawX, y, mPaint);

@@ -32,8 +32,12 @@ interface LineProps {
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 
-const COLOR_INACTIVE = 'rgba(255, 255, 255, 0.55)'
-const COLOR_IDLE = 'rgba(255, 255, 255, 0.35)'
+// QQ 音乐标准歌词配色方案：
+// - 未唱行/非激活行：柔和半透明浅白灰（对比克制，不抢视觉焦点）
+// - 激活行未唱部分：高亮纯白（大字高亮待唱）
+// - 激活行已唱部分/卡拉OK：鲜活 QQ 绿（#31C27C 唱过即逐字染色）
+const COLOR_IDLE = 'rgba(255, 255, 255, 0.68)'
+const COLOR_INACTIVE = 'rgba(255, 255, 255, 0.40)'
 const COLOR_SUNG = designColors.brand
 
 /**
@@ -57,8 +61,9 @@ const LrcLine = memo(({
 }: LineProps) => {
   const active = activeLine === lineNum
   const baseSize = lrcFontSize / 10
-  const size = active ? baseSize * 1.15 : baseSize
-  const lineHeight = setSpText(size) * 1.4
+  // 激活行放大加粗为视觉主体大字（1.42x），未激活行收敛为背景副字（0.88x），层级极分明
+  const size = active ? baseSize * 1.42 : baseSize * 0.88
+  const lineHeight = setSpText(size) * 1.44
   const isPlay = useIsPlay()
 
   const words = line.words
@@ -193,7 +198,7 @@ const LrcLine = memo(({
             lineHeight: lineHeight * 0.8,
             fontSize: size * sizeRatio,
             fontWeight,
-            color: `rgba(49, 199, 124, ${alpha})`,
+            color: `rgba(255, 255, 255, ${alpha})`,
           },
         ]}
         textBreakStrategy="simple"
@@ -300,14 +305,13 @@ const LrcLine = memo(({
     </View>
   )
 }, (prevProps, nextProps) => {
-  return (
-    prevProps.lineNum === nextProps.lineNum &&
-    prevProps.line === nextProps.line &&
-    prevProps.lrcFontSize === nextProps.lrcFontSize &&
-    prevProps.textAlign === nextProps.textAlign &&
-    (prevProps.activeLine === prevProps.lineNum) === (nextProps.activeLine === nextProps.lineNum) &&
-    (prevProps.activeLine !== prevProps.lineNum)
-  )
+  if (prevProps.lineNum !== nextProps.lineNum) return false
+  if (prevProps.line !== nextProps.line) return false
+  if (prevProps.lrcFontSize !== nextProps.lrcFontSize) return false
+  if (prevProps.textAlign !== nextProps.textAlign) return false
+  const prevActive = prevProps.activeLine === prevProps.lineNum
+  const nextActive = nextProps.activeLine === nextProps.lineNum
+  return prevActive === nextActive
 })
 
 const wait = async() => new Promise(resolve => setTimeout(resolve, 80))

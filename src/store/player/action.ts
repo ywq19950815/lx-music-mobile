@@ -111,3 +111,7 @@ export default {
     state.lastLyric = lrc
   },
 }
+
+if (typeof window !== 'undefined') {
+  (window as any).__playerActions = playerActions
+}

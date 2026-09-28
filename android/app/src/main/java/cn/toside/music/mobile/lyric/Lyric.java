@@ -82,16 +82,14 @@ public class Lyric extends LyricPlayer {
     if (duration <= 0) duration = 3000;
 
     int elapsed = curTime - lineStart;
-    float progress = (float) elapsed / (float) duration;
-    if (progress < 0f) progress = 0f;
-    if (progress > 1f) progress = 1f;
-
     String text = (String) curLine.get("text");
     if (text == null) text = "";
     int textLen = text.length();
 
-    ArrayList<WordInfo> words = (ArrayList<WordInfo>) curLine.get("words");
+    float progress = 0f;
     int playedChars = 0;
+
+    ArrayList<WordInfo> words = (ArrayList<WordInfo>) curLine.get("words");
 
     if (words != null && !words.isEmpty()) {
       int charsAcc = 0;
@@ -104,6 +102,9 @@ public class Lyric extends LyricPlayer {
         } else if (elapsed > w.start && w.duration > 0) {
           float wProg = (float) (elapsed - w.start) / (float) w.duration;
           totalWordProgress += (wProg * wLen);
+          if (wProg >= 0.5f) {
+            charsAcc += Math.round(wProg * wLen);
+          }
           break;
         } else {
           break;
@@ -113,8 +114,22 @@ public class Lyric extends LyricPlayer {
       if (textLen > 0) {
         progress = Math.min(1.0f, totalWordProgress / (float) textLen);
       }
+      if (elapsed < 0) {
+        progress = 0f;
+        playedChars = 0;
+      }
     } else {
-      playedChars = Math.round(progress * textLen);
+      int estimatedSingDuration = Math.min(duration, Math.max(textLen * 320, 1800));
+      if (elapsed <= 0) {
+        progress = 0f;
+        playedChars = 0;
+      } else if (elapsed >= estimatedSingDuration) {
+        progress = 1.0f;
+        playedChars = textLen;
+      } else {
+        progress = (float) elapsed / (float) estimatedSingDuration;
+        playedChars = (int) Math.floor(progress * textLen);
+      }
     }
 
     lyricView.setProgress(progress, playedChars);
@@ -216,9 +231,9 @@ public class Lyric extends LyricPlayer {
     this.pause();
   }
 
-  private void setCurrentLyric(String lyric, ArrayList<String> extendedLyrics) {
+  private void setCurrentLyric(String lyric, ArrayList<String> extendedLyrics, ArrayList<String> nextLines) {
     if (isShowLyricView && !isScreenOff && lyricView != null) {
-      lyricView.setLyric(lyric, extendedLyrics);
+      lyricView.setLyric(lyric, extendedLyrics, nextLines);
     }
     if (isSendLyricTextEvent) {
       WritableMap params = Arguments.createMap();
@@ -232,11 +247,23 @@ public class Lyric extends LyricPlayer {
     if (lineNum >= 0 && lineNum < lines.size()) {
       HashMap line = (HashMap) lines.get(lineNum);
       if (line != null) {
-        setCurrentLyric((String) line.get("text"), (ArrayList<String>) line.get("extendedLyrics"));
+        String text = (String) line.get("text");
+        ArrayList<String> extendedLyrics = (ArrayList<String>) line.get("extendedLyrics");
+        ArrayList<String> nextLines = new ArrayList<>();
+        for (int i = lineNum + 1; i < lines.size() && nextLines.size() < 3; i++) {
+          HashMap next = (HashMap) lines.get(i);
+          if (next != null) {
+            String nextText = (String) next.get("text");
+            if (nextText != null && !nextText.trim().isEmpty()) {
+              nextLines.add(nextText.trim());
+            }
+          }
+        }
+        setCurrentLyric(text, extendedLyrics, nextLines);
         return;
       }
     }
-    setCurrentLyric("", new ArrayList<>(0));
+    setCurrentLyric("", new ArrayList<>(0), new ArrayList<>(0));
   }
 
   public void setSendLyricTextEvent(boolean isSend) {

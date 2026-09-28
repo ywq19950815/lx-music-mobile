@@ -177,7 +177,7 @@ export const pause = () => {
 
 // on lyric play hook
 export const useLrcPlay = (autoUpdate = true) => {
-  const [lrcInfo, setLrcInfo] = useState(lrcTools.currentLineData)
+  const [lrcInfo, setLrcInfo] = useState({ ...lrcTools.currentLineData })
   useEffect(() => {
     if (!autoUpdate) return
     const setLrcCallback: SetLyricHook = () => {
@@ -188,7 +188,7 @@ export const useLrcPlay = (autoUpdate = true) => {
     }
     lrcTools.addSetLyricHook(setLrcCallback)
     lrcTools.addPlayHook(playCallback)
-    setLrcInfo(lrcTools.currentLineData)
+    setLrcInfo({ ...lrcTools.currentLineData })
     return () => {
       lrcTools.removeSetLyricHook(setLrcCallback)
       lrcTools.removePlayHook(playCallback)
@@ -200,10 +200,10 @@ export const useLrcPlay = (autoUpdate = true) => {
 
 // on lyric set hook
 export const useLrcSet = () => {
-  const [lines, setLines] = useState<Lines>(lrcTools.currentLines)
+  const [lines, setLines] = useState<Lines>(() => [...lrcTools.currentLines])
   useEffect(() => {
     const callback = (lines: Lines) => {
-      setLines(lines)
+      setLines([...lines])
     }
     lrcTools.addSetLyricHook(callback)
     return () => { lrcTools.removeSetLyricHook(callback) }

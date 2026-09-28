@@ -9,50 +9,66 @@ import { motion } from '@/theme/tokens'
 
 /**
  * 播放页主控区：
- * - 次级（上一首/下一首）：微磨砂质感圆钮（柔和半透明白底 + 微边框 + 白图标）
- * - 主控（播放/暂停）：品牌暖金大圆钮，尊贵光晕投影，纯白图标，spring 弹性按压缩放
+ * - 次级（上一首/下一首）：通透轻盈纯白图标，去粗笨厚底，带精致轻触缩放反馈
+ * - 主控（播放/暂停）：品牌绿大圆钮，高品质呼吸光晕，纯白图标，spring 弹性按压缩放
  */
-const ON_NIGHT_ICON = 'rgba(255,255,255,0.92)'
+const ON_NIGHT_ICON = 'rgba(255, 255, 255, 0.92)'
 
 const PrevBtn = ({ size }: { size: number }) => {
-  const btnSize = size * 0.88
+  const scale = useRef(new Animated.Value(1)).current
+  const pressIn = useCallback(() => {
+    Animated.spring(scale, { toValue: 0.88, friction: motion.spring.friction, tension: motion.spring.tension, useNativeDriver: true }).start()
+  }, [scale])
+  const pressOut = useCallback(() => {
+    Animated.spring(scale, { toValue: 1, friction: motion.spring.friction, tension: motion.spring.tension, useNativeDriver: true }).start()
+  }, [scale])
+
+  const hitSize = Math.max(48, size * 0.9)
+
   return (
-    <View style={styles.subBtnWrapper}>
+    <Animated.View style={[styles.subBtnWrapper, { transform: [{ scale }] }]}>
       <TouchableOpacity
-        style={[
-          styles.controlSubBtn,
-          { width: btnSize, height: btnSize, borderRadius: btnSize / 2 },
-        ]}
-        activeOpacity={0.65}
+        style={[styles.controlSubBtn, { width: hitSize, height: hitSize, borderRadius: hitSize / 2 }]}
+        activeOpacity={0.7}
         onPress={() => { void playPrev() }}
+        onPressIn={pressIn}
+        onPressOut={pressOut}
       >
-        <Icon name='prevMusic' color={ON_NIGHT_ICON} rawSize={btnSize * 0.50} />
+        <Icon name="prevMusic" color={ON_NIGHT_ICON} rawSize={26} />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   )
 }
 
 const NextBtn = ({ size }: { size: number }) => {
-  const btnSize = size * 0.88
+  const scale = useRef(new Animated.Value(1)).current
+  const pressIn = useCallback(() => {
+    Animated.spring(scale, { toValue: 0.88, friction: motion.spring.friction, tension: motion.spring.tension, useNativeDriver: true }).start()
+  }, [scale])
+  const pressOut = useCallback(() => {
+    Animated.spring(scale, { toValue: 1, friction: motion.spring.friction, tension: motion.spring.tension, useNativeDriver: true }).start()
+  }, [scale])
+
+  const hitSize = Math.max(48, size * 0.9)
+
   return (
-    <View style={styles.subBtnWrapper}>
+    <Animated.View style={[styles.subBtnWrapper, { transform: [{ scale }] }]}>
       <TouchableOpacity
-        style={[
-          styles.controlSubBtn,
-          { width: btnSize, height: btnSize, borderRadius: btnSize / 2 },
-        ]}
-        activeOpacity={0.65}
+        style={[styles.controlSubBtn, { width: hitSize, height: hitSize, borderRadius: hitSize / 2 }]}
+        activeOpacity={0.7}
         onPress={() => { void playNext() }}
+        onPressIn={pressIn}
+        onPressOut={pressOut}
       >
-        <Icon name='nextMusic' color={ON_NIGHT_ICON} rawSize={btnSize * 0.50} />
+        <Icon name="nextMusic" color={ON_NIGHT_ICON} rawSize={26} />
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   )
 }
 
 const TogglePlayBtn = ({ size }: { size: number }) => {
   const isPlay = useIsPlay()
-  const playBtnSize = Math.max(60, size * 1.15)
+  const playBtnSize = Math.max(62, size * 1.18)
   const scale = useRef(new Animated.Value(1)).current
 
   const pressIn = useCallback(() => {
@@ -92,7 +108,7 @@ const TogglePlayBtn = ({ size }: { size: number }) => {
           onPressIn={pressIn}
           onPressOut={pressOut}
         >
-          <Icon name={isPlay ? 'pause' : 'play'} color="#FFFFFF" rawSize={playBtnSize * 0.50} />
+          <Icon name={isPlay ? 'pause' : 'play'} color="#FFFFFF" rawSize={playBtnSize * 0.48} />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -130,23 +146,17 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     paddingHorizontal: '4%',
-    paddingVertical: 12,
+    paddingVertical: 10,
   },
   subBtnWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // 通透无边框轻盈触控区
   controlSubBtn: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 3,
+    backgroundColor: 'transparent',
   },
   mainBtnWrapper: {
     alignItems: 'center',
@@ -157,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     shadowColor: '#31C27C',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.42,
+    shadowOpacity: 0.45,
     shadowRadius: 18,
     elevation: 8,
   },

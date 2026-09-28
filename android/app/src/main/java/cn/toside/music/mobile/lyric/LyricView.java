@@ -69,6 +69,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
   // private float lineHeight = 1;
   private String currentLyric = "Andy Music ^-^";
   private ArrayList<String> currentExtendedLyrics = new ArrayList<>();
+  private ArrayList<String> currentNextLines = new ArrayList<>();
 
   private int mLastRotation;
   private OrientationEventListener orientationEventListener = null;
@@ -256,7 +257,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
     textView.setText("");
     textView.setText(currentLyric);
 
-    textView.setTextColor(parseColor(playedColor));
+    textView.setTextColor(parseColor(unplayColor));
     textView.setShadowColor(parseColor(shadowColor));
     textView.setAlpha(alpha);
     textView.setTextSize(textSize);
@@ -374,16 +375,29 @@ public class LyricView extends Activity implements View.OnTouchListener {
   }
 
   public void setLyric(String text, ArrayList<String> extendedLyrics) {
-    if (text.equals("") && text.equals(currentLyric) && extendedLyrics.size() == 0) return;
+    setLyric(text, extendedLyrics, new ArrayList<>());
+  }
+
+  public void setLyric(String text, ArrayList<String> extendedLyrics, ArrayList<String> nextLines) {
+    if (text.equals("") && text.equals(currentLyric) && (extendedLyrics == null || extendedLyrics.isEmpty()) && (nextLines == null || nextLines.isEmpty())) return;
     currentLyric = text;
-    currentExtendedLyrics = extendedLyrics;
+    currentExtendedLyrics = extendedLyrics != null ? extendedLyrics : new ArrayList<>();
+    currentNextLines = nextLines != null ? nextLines : new ArrayList<>();
     if (textView == null) return;
-    if (extendedLyrics.size() > 0 && maxLineNum > 1 && !isSingleLine) {
-      int num = maxLineNum - 1;
+    if (maxLineNum > 1 && !isSingleLine) {
+      int remainingLines = maxLineNum - 1;
       StringBuilder textBuilder = new StringBuilder(text);
-      for (String lrc : extendedLyrics) {
-        textBuilder.append("\n").append(lrc);
-        if (--num < 1) break;
+      if (currentExtendedLyrics != null && !currentExtendedLyrics.isEmpty()) {
+        for (String lrc : currentExtendedLyrics) {
+          textBuilder.append("\n").append(lrc);
+          if (--remainingLines < 1) break;
+        }
+      }
+      if (remainingLines > 0 && currentNextLines != null && !currentNextLines.isEmpty()) {
+        for (String nextLine : currentNextLines) {
+          textBuilder.append("\n").append(nextLine);
+          if (--remainingLines < 1) break;
+        }
       }
       text = textBuilder.toString();
     }
@@ -521,7 +535,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
     this.playedColor = playedColor;
     this.shadowColor = shadowColor;
     if (textView == null) return;
-    textView.setTextColor(parseColor(playedColor));
+    textView.setTextColor(parseColor(unplayColor));
     textView.setShadowColor(parseColor(shadowColor));
     textView.setColors(parseColor(unplayColor), parseColor(playedColor));
     // windowManager.updateViewLayout(textView, layoutParams);
@@ -595,7 +609,7 @@ public class LyricView extends Activity implements View.OnTouchListener {
     if (isLock) lockView();
     else unlockView();
 
-    setLyric(currentLyric, currentExtendedLyrics);
+    setLyric(currentLyric, currentExtendedLyrics, currentNextLines);
   }
 
   public void setShowToggleAnima(boolean showToggleAnima) {

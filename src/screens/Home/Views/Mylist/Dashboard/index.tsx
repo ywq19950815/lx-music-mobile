@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useMemo, useRef } from 'react'
+import { memo, useEffect, useState, useMemo } from 'react'
 import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
@@ -7,50 +7,22 @@ import { setActiveList } from '@/core/list'
 import { getListMusics } from '@/utils/listManage'
 import { colors, radius } from '@/theme/tokens'
 import { LIST_IDS } from '@/config/constant'
-import { getData, saveData } from '@/plugins/storage'
-import Popup, { type PopupType } from '@/components/common/Popup'
 
 export interface DashboardProps {
   onSelectList: (listId: string) => void
   onCreateList: () => void
   onImportList: () => void
+  onOpenSetting: () => void
   onShowListMenu: (listInfo: LX.List.MyListInfo, position: { x: number, y: number, w: number, h: number }) => void
 }
 
 /**
- * 头像预设（无需原生图片选择器，安全可打包）
- * 默认 logo，用户可在底部弹窗中挑选不同配色头像，选择持久化保存。
+ * 我的音乐 - 简洁资产大盘
+ * 包含：品牌头部（无头像图片）、四大金刚入口、我的歌单卡片列表。
  */
-const AVATARS = [
-  { id: 'logo', bg: '#1A1C20', icon: 'logo' },
-  { id: 'green', bg: '#31C27C', icon: 'play' },
-  { id: 'blue', bg: '#1D4ED8', icon: 'album' },
-  { id: 'purple', bg: '#6D28D9', icon: 'love' },
-  { id: 'orange', bg: '#EA580C', icon: 'leaderboard' },
-  { id: 'pink', bg: '#DB2777', icon: 'comment' },
-] as const
-
-const AVATAR_KEY = 'user_avatar_id'
-const getAvatar = (id: string) => AVATARS.find(a => a.id === id) ?? AVATARS[0]
-
-/**
- * Tab 4 我的音乐 - 现代简洁资产大盘
- * 包含：可自定义头像的个人卡片、四大金刚入口、我的歌单卡片列表
- */
-export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu }: DashboardProps) => {
+export default memo(({ onSelectList, onCreateList, onImportList, onOpenSetting, onShowListMenu }: DashboardProps) => {
   const allList = useMyList()
   const [counts, setCounts] = useState<Record<string, number>>({})
-  const [avatarId, setAvatarId] = useState<string>('logo')
-  const avatarPopupRef = useRef<PopupType>(null)
-
-  // 读取已保存头像
-  useEffect(() => {
-    let isMounted = true
-    void getData<string>(AVATAR_KEY).then(id => {
-      if (isMounted && id) setAvatarId(id)
-    }).catch(() => {})
-    return () => { isMounted = false }
-  }, [])
 
   // 统计各歌单歌曲数
   useEffect(() => {
@@ -76,12 +48,6 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
     }
   }, [allList])
 
-  const handleSelectAvatar = (id: string) => {
-    setAvatarId(id)
-    void saveData(AVATAR_KEY, id).catch(() => {})
-    avatarPopupRef.current?.setVisible(false)
-  }
-
   // 我喜欢与试听列表数量
   const loveCount = counts[LIST_IDS.LOVE] ?? 0
   const defaultCount = counts[LIST_IDS.DEFAULT] ?? 0
@@ -94,14 +60,12 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
     return allList.filter(l => l.id !== LIST_IDS.DEFAULT && l.id !== LIST_IDS.LOVE)
   }, [allList])
 
-  const avatar = getAvatar(avatarId)
-
   return (
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {/* 1. 顶部个人卡片（可自定义头像） */}
-      <TouchableOpacity style={styles.profileCard} activeOpacity={0.9} onPress={() => avatarPopupRef.current?.setVisible(true)}>
-        <View style={[styles.avatarCircle, { backgroundColor: avatar.bg }]}>
-          <Icon name={avatar.icon} size={22} color="#FFFFFF" />
+      {/* 1. 顶部品牌头部（无头像图片） */}
+      <View style={styles.profileCard}>
+        <View style={styles.avatarCircle}>
+          <Icon name="logo" size={22} color="#FFFFFF" />
         </View>
         <View style={styles.profileInfo}>
           <Text style={styles.profileName} numberOfLines={1}>我的音乐空间</Text>
@@ -109,93 +73,84 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
             已收纳 {totalMusics} 首歌曲 · {allList.length} 个歌单
           </Text>
         </View>
-        <View style={styles.avatarEditHint}>
-          <Text style={styles.avatarEditText}>换头像</Text>
-        </View>
-      </TouchableOpacity>
-
-      {/* 2. 四大金刚核心资产区（2x2 大方块矩阵） */}
-      <View style={styles.quickGrid}>
-        {/* 卡片 1：我喜欢 */}
-        <TouchableOpacity
-          style={[styles.gridCard, styles.cardLove]}
-          activeOpacity={0.8}
-          onPress={() => {
-            setActiveList(LIST_IDS.LOVE)
-            onSelectList(LIST_IDS.LOVE)
-          }}
-        >
-          <View style={styles.gridHeader}>
-            <View style={[styles.gridIconWrap, { backgroundColor: '#FEE2E2' }]}>
-              <Icon name="love" size={18} color="#EF4444" />
-            </View>
-            <View style={[styles.miniPlayBtn, { backgroundColor: '#FEE2E2' }]}>
-              <Icon name="play" size={11} color="#EF4444" />
-            </View>
-          </View>
-          <Text style={styles.gridCardTitle}>我喜欢</Text>
-          <Text style={styles.gridCardSub}>{loveCount} 首歌曲</Text>
-        </TouchableOpacity>
-
-        {/* 卡片 2：试听列表 */}
-        <TouchableOpacity
-          style={[styles.gridCard, styles.cardDefault]}
-          activeOpacity={0.8}
-          onPress={() => {
-            setActiveList(LIST_IDS.DEFAULT)
-            onSelectList(LIST_IDS.DEFAULT)
-          }}
-        >
-          <View style={styles.gridHeader}>
-            <View style={[styles.gridIconWrap, { backgroundColor: '#FEF3C7' }]}>
-              <Icon name="play" size={17} color="#D97706" />
-            </View>
-            <View style={[styles.miniPlayBtn, { backgroundColor: '#FEF3C7' }]}>
-              <Icon name="chevron-right" size={12} color="#D97706" />
-            </View>
-          </View>
-          <Text style={styles.gridCardTitle}>试听列表</Text>
-          <Text style={styles.gridCardSub}>{defaultCount} 首歌曲</Text>
-        </TouchableOpacity>
-
-        {/* 卡片 3：最近播放 */}
-        <TouchableOpacity
-          style={[styles.gridCard, styles.cardRecent]}
-          activeOpacity={0.8}
-          onPress={() => {
-            setActiveList(LIST_IDS.DEFAULT)
-            onSelectList(LIST_IDS.DEFAULT)
-          }}
-        >
-          <View style={styles.gridHeader}>
-            <View style={[styles.gridIconWrap, { backgroundColor: '#E0E7FF' }]}>
-              <Icon name="music_time" size={18} color="#4F46E5" />
-            </View>
-          </View>
-          <Text style={styles.gridCardTitle}>最近播放</Text>
-          <Text style={styles.gridCardSub}>快捷续听 · 沉浸回顾</Text>
-        </TouchableOpacity>
-
-        {/* 卡片 4：本地与离线 */}
-        <TouchableOpacity
-          style={[styles.gridCard, styles.cardLocal]}
-          activeOpacity={0.8}
-          onPress={() => {
-            setActiveList(LIST_IDS.DEFAULT)
-            onSelectList(LIST_IDS.DEFAULT)
-          }}
-        >
-          <View style={styles.gridHeader}>
-            <View style={[styles.gridIconWrap, { backgroundColor: '#D1FAE5' }]}>
-              <Icon name="download-2" size={18} color="#059669" />
-            </View>
-          </View>
-          <Text style={styles.gridCardTitle}>本地与缓存</Text>
-          <Text style={styles.gridCardSub}>设备离线 · 极速畅听</Text>
+        <TouchableOpacity style={styles.settingEntry} activeOpacity={0.7} onPress={onOpenSetting}>
+          <Icon name="setting" size={14} color={colors.brand} />
         </TouchableOpacity>
       </View>
 
-      {/* 3. 我的自建歌单专区 */}
+      {/* 2. 我喜欢 - 全宽主视觉大卡（红粉渐变，QQ 式主次分明） */}
+      <TouchableOpacity
+        style={styles.loveHeroCard}
+        activeOpacity={0.85}
+        onPress={() => {
+          setActiveList(LIST_IDS.LOVE)
+          onSelectList(LIST_IDS.LOVE)
+        }}
+      >
+        <View style={styles.loveHeroDecor} />
+        <View style={styles.loveHeroLeft}>
+          <View style={styles.loveHeroIconWrap}>
+            <Icon name="love" size={22} color="#FFFFFF" />
+          </View>
+          <View style={styles.loveHeroInfo}>
+            <Text style={styles.loveHeroTitle}>我喜欢</Text>
+            <Text style={styles.loveHeroSub}>{loveCount} 首歌曲 · 每一首都是心头好</Text>
+          </View>
+        </View>
+        <View style={styles.loveHeroPlay}>
+          <Icon name="play" size={16} color="#E11D48" />
+        </View>
+      </TouchableOpacity>
+
+      {/* 3. 次级入口三宫格（试听 / 最近播放 / 本地缓存） */}
+      <View style={styles.trioRow}>
+        <TouchableOpacity
+          style={styles.trioCard}
+          activeOpacity={0.8}
+          onPress={() => {
+            setActiveList(LIST_IDS.DEFAULT)
+            onSelectList(LIST_IDS.DEFAULT)
+          }}
+        >
+          <View style={[styles.trioIconWrap, { backgroundColor: '#FEF3C7' }]}>
+            <Icon name="play" size={16} color="#D97706" />
+          </View>
+          <Text style={styles.trioTitle} numberOfLines={1}>试听列表</Text>
+          <Text style={styles.trioSub}>{defaultCount} 首</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.trioCard}
+          activeOpacity={0.8}
+          onPress={() => {
+            setActiveList(LIST_IDS.DEFAULT)
+            onSelectList(LIST_IDS.DEFAULT)
+          }}
+        >
+          <View style={[styles.trioIconWrap, { backgroundColor: '#E0E7FF' }]}>
+            <Icon name="music_time" size={16} color="#4F46E5" />
+          </View>
+          <Text style={styles.trioTitle} numberOfLines={1}>最近播放</Text>
+          <Text style={styles.trioSub}>续听回顾</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.trioCard}
+          activeOpacity={0.8}
+          onPress={() => {
+            setActiveList(LIST_IDS.DEFAULT)
+            onSelectList(LIST_IDS.DEFAULT)
+          }}
+        >
+          <View style={[styles.trioIconWrap, { backgroundColor: '#D1FAE5' }]}>
+            <Icon name="download-2" size={16} color="#059669" />
+          </View>
+          <Text style={styles.trioTitle} numberOfLines={1}>本地缓存</Text>
+          <Text style={styles.trioSub}>离线畅听</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 4. 我的自建歌单专区 */}
       <View style={styles.playlistSection}>
         <View style={styles.sectionHeader}>
           <View style={styles.sectionTitleRow}>
@@ -265,27 +220,6 @@ export default memo(({ onSelectList, onCreateList, onImportList, onShowListMenu 
         )}
       </View>
 
-      {/* 头像选择弹窗 */}
-      <Popup ref={avatarPopupRef} position="bottom" title="选择头像">
-        <View style={styles.avatarGrid}>
-          {AVATARS.map((a) => (
-            <TouchableOpacity
-              key={a.id}
-              style={styles.avatarOption}
-              activeOpacity={0.7}
-              onPress={() => handleSelectAvatar(a.id)}
-            >
-              <View style={[
-                styles.avatarOptionCircle,
-                { backgroundColor: a.bg },
-                avatarId === a.id && styles.avatarOptionActive,
-              ]}>
-                <Icon name={a.icon} size={24} color="#FFFFFF" />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </Popup>
     </ScrollView>
   )
 })
@@ -300,7 +234,100 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 40,
   },
-  // 个人卡片（可点击换头像）
+  // 我喜欢主视觉大卡
+  loveHeroCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F43F5E',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 12,
+    overflow: 'hidden',
+    shadowColor: '#F43F5E',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  loveHeroDecor: {
+    position: 'absolute',
+    top: -40,
+    right: -30,
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+  },
+  loveHeroLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  loveHeroIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 13,
+  },
+  loveHeroInfo: {
+    flex: 1,
+  },
+  loveHeroTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 3,
+  },
+  loveHeroSub: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.85)',
+  },
+  loveHeroPlay: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // 次级入口三宫格
+  trioRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 20,
+  },
+  trioCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ECEEF1',
+    alignItems: 'flex-start',
+  },
+  trioIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  trioTitle: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: colors.ink,
+    marginBottom: 2,
+  },
+  trioSub: {
+    fontSize: 10.5,
+    color: colors.inkTertiary,
+  },
+  // 个人头部卡片（品牌标识，无头像图片）
   profileCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -320,9 +347,18 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
+    backgroundColor: colors.brand,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
+  },
+  settingEntry: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(49, 196, 125, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileInfo: {
     flex: 1,

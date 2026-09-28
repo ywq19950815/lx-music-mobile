@@ -410,10 +410,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#31C27C',
     borderRadius: 1,
   },
-  // ── 背景氛围微光 ────────────────────────────
+  // ── 背景氛围微光（品牌绿呼吸光晕，与主题统一）──
   ambientAura: {
     position: 'absolute',
-    backgroundColor: 'rgba(245, 166, 35, 0.06)',
+    backgroundColor: 'rgba(49, 196, 124, 0.07)',
     shadowColor: '#31C27C',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.30,
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   },
   labelRing: {
     borderWidth: 1,
-    borderColor: 'rgba(245, 166, 35, 0.28)',
+    borderColor: 'rgba(49, 196, 124, 0.30)',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
@@ -503,11 +503,12 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     letterSpacing: 0.6,
   },
+  // 中央转轴孔：深空底盘 + 品牌绿细环，消除橙色突兀感，与主题统一
   spindleHole: {
     position: 'absolute',
-    backgroundColor: '#B45309',
+    backgroundColor: 'rgba(49, 196, 124, 0.16)',
     borderWidth: 2,
-    borderColor: '#F59E0B',
+    borderColor: 'rgba(49, 196, 124, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000000',
@@ -517,6 +518,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   spindleCore: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#31C27C',
   },
 })

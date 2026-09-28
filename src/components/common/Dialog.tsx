@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native'
 import Modal, { type ModalType } from './Modal'
 import { Icon } from '@/components/common/Icon'
 import { useKeyboard } from '@/utils/hooks'
+import { useNavigationBarHeight } from '@/store/common/hook'
 import Text from './Text'
 import { colors, radius } from '@/theme/tokens'
 
@@ -17,6 +18,8 @@ export interface DialogProps {
   children: React.ReactNode | React.ReactNode[]
   height?: number | `${number}%`
   position?: 'bottom' | 'center'
+  /** 暗色沉浸主题：用于悬浮在深色播放页之上的弹窗（毛玻璃质感） */
+  theme?: 'light' | 'dark'
 }
 
 export interface DialogType {
@@ -32,9 +35,12 @@ export default forwardRef<DialogType, DialogProps>(({
   children,
   height,
   position = 'bottom',
+  theme = 'light',
 }: DialogProps, ref) => {
   const { keyboardShown, keyboardHeight } = useKeyboard()
+  const navigationBarHeight = useNavigationBarHeight()
   const modalRef = useRef<ModalType>(null)
+  const isDark = theme === 'dark'
 
   useImperativeHandle(ref, () => ({
     setVisible(visible: boolean) {
@@ -46,44 +52,45 @@ export default forwardRef<DialogType, DialogProps>(({
     return closeBtn
       ? (
           <TouchableOpacity
-            style={styles.closeBtn}
+            style={[styles.closeBtn, isDark && styles.closeBtnDark]}
             activeOpacity={0.7}
             onPress={() => modalRef.current?.setVisible(false)}
           >
-            <Icon name="close" color={colors.inkSecondary} size={13} />
+            <Icon name="close" color={isDark ? 'rgba(255,255,255,0.7)' : colors.inkSecondary} size={13} />
           </TouchableOpacity>
         )
       : null
-  }, [closeBtn])
+  }, [closeBtn, isDark])
 
   const isBottom = position === 'bottom'
 
   return (
-    <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor="rgba(0, 0, 0, 0.45)" ref={modalRef}>
+    <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor={isDark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(0, 0, 0, 0.45)'} ref={modalRef}>
       <View
         style={[
           isBottom ? styles.bottomView : styles.centeredView,
-          { paddingBottom: keyboardShown ? keyboardHeight : (isBottom ? 20 : 0) },
+          { paddingBottom: keyboardShown ? keyboardHeight : 0 },
         ]}
       >
         <View
           style={[
             isBottom ? styles.bottomSheetCard : styles.centeredModalCard,
+            isDark && styles.cardDark,
             height ? { height } : null,
           ]}
           onStartShouldSetResponder={() => true}
         >
           {isBottom ? (
             <View style={styles.handleContainer}>
-              <View style={styles.handleBar} />
+              <View style={[styles.handleBar, isDark && styles.handleBarDark]} />
             </View>
           ) : null}
 
           {title || closeBtn ? (
-            <View style={styles.header}>
+            <View style={[styles.header, isDark && styles.headerDark]}>
               <View style={styles.headerTitleBox}>
                 <View style={styles.headerDot} />
-                <Text style={styles.title} size={15} color={colors.ink} numberOfLines={1}>
+                <Text style={styles.title} size={15} color={isDark ? '#FFFFFF' : colors.ink} numberOfLines={1}>
                   {title}
                 </Text>
               </View>
@@ -91,7 +98,11 @@ export default forwardRef<DialogType, DialogProps>(({
             </View>
           ) : null}
 
-          <View style={styles.body}>
+          <View style={[
+            styles.body,
+            isDark && styles.bodyDark,
+            isBottom && { paddingBottom: Math.max(navigationBarHeight, 18) },
+          ]}>
             {children}
           </View>
         </View>
@@ -134,6 +145,9 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: '#D1D5DB',
+  },
+  handleBarDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
   },
 
   // 居中模式（轻量确认弹窗专用）
@@ -195,5 +209,20 @@ const styles = StyleSheet.create({
   },
   body: {
     backgroundColor: '#FFFFFF',
+  },
+  // ── 暗色沉浸主题（悬浮于深色播放页）────────────
+  cardDark: {
+    backgroundColor: 'rgba(28, 30, 38, 0.96)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  headerDark: {
+    backgroundColor: 'rgba(28, 30, 38, 0.96)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  bodyDark: {
+    backgroundColor: 'rgba(28, 30, 38, 0.96)',
+  },
+  closeBtnDark: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
 })

@@ -150,7 +150,7 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
   }
 
   return visible ? (
-    <Dialog ref={dialogRef} title="睡眠定时关闭">
+    <Dialog ref={dialogRef} title="睡眠定时关闭" theme="dark">
       <View style={styles.container}>
         {/* 当前状态卡片 */}
         <View style={styles.statusCard}>
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: radius.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontSize: 13,
-    color: colors.inkSecondary,
+    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '500',
   },
   statusVal: {
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: colors.inkSecondary,
+    color: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 8,
   },
   presetRow: {
@@ -275,17 +275,17 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: radius.pill,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   presetPillActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.15)',
+    backgroundColor: 'rgba(49, 196, 124, 0.18)',
     borderWidth: 1,
     borderColor: colors.brand,
   },
   presetText: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.ink,
+    color: '#FFFFFF',
   },
   presetTextActive: {
     color: colors.brand,
@@ -299,11 +299,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 40,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: radius.md,
     paddingHorizontal: 12,
     fontSize: 13.5,
-    color: colors.ink,
+    color: '#FFFFFF',
   },
   confirmSmallBtn: {
     height: 40,
@@ -326,19 +326,19 @@ const styles = StyleSheet.create({
   checkboxRow: {
     paddingVertical: 6,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#F3F4F6',
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   cancelTimerBtn: {
     marginTop: 12,
     paddingVertical: 10,
     borderRadius: radius.pill,
-    backgroundColor: '#FEE2E2',
+    backgroundColor: 'rgba(220, 38, 38, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelTimerText: {
     fontSize: 13.5,
     fontWeight: '600',
-    color: '#DC2626',
+    color: '#FCA5A5',
   },
 })

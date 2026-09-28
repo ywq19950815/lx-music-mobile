@@ -400,7 +400,6 @@ export const handleGetOnlinePicUrl = async({ musicInfo, isRefresh, onToggleSourc
   return reqPromise.then((url: string) => {
     return { musicInfo, url, isFromCache: false }
   }).catch(async(err: any) => {
-    console.log(err)
     if (!allowToggleSource) throw err
     onToggleSource()
     // eslint-disable-next-line @typescript-eslint/promise-function-async
@@ -419,6 +418,21 @@ export const handleGetOnlinePicUrl = async({ musicInfo, isRefresh, onToggleSourc
   })
 }
 
+
+/**
+ * 歌词请求超时守卫（毫秒）。
+ * 音源偶发把连接挂住不返回（resolve 也不 reject），会导致歌词永远停留在「加载中/获取失败」。
+ * 这里统一加超时竞速，超时即视为该源失败，进入换源兜底，避免整条链路卡死。
+ */
+const LYRIC_REQUEST_TIMEOUT = 8000
+const withLyricTimeout = <T,>(promise: Promise<T>, timeoutMs = LYRIC_REQUEST_TIMEOUT): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<never>((_resolve, reject) => {
+      setTimeout(() => { reject(new Error('lyric request timeout')) }, timeoutMs)
+    }),
+  ])
+}
 
 export const getOnlineOtherSourceLyricInfo = async({ musicInfos, onToggleSource, isRefresh, retryedSource = [] }: {
   musicInfos: LX.Music.MusicInfoOnline[]
@@ -449,8 +463,8 @@ export const getOnlineOtherSourceLyricInfo = async({ musicInfos, onToggleSource,
 
   let reqPromise
   try {
-    // TODO: remove any type
-    reqPromise = (musicSdk[musicInfo.source].getLyric(toOldMusicInfo(musicInfo)) as any).promise
+    // 换源歌词同样加上 6000ms 快速超时，防止换源依然被卡住
+    reqPromise = withLyricTimeout((musicSdk[musicInfo.source].getLyric(toOldMusicInfo(musicInfo)) as any).promise, 6000)
   } catch (err: any) {
     reqPromise = Promise.reject(err)
   }
@@ -485,7 +499,7 @@ export const handleGetOnlineLyricInfo = async({ musicInfo, onToggleSource, isRef
   let reqPromise
   try {
     // TODO: remove any type
-    reqPromise = (musicSdk[musicInfo.source].getLyric(toOldMusicInfo(musicInfo)) as any).promise
+    reqPromise = withLyricTimeout((musicSdk[musicInfo.source].getLyric(toOldMusicInfo(musicInfo)) as any).promise)
   } catch (err) {
     reqPromise = Promise.reject(err)
   }
@@ -496,7 +510,6 @@ export const handleGetOnlineLyricInfo = async({ musicInfo, onToggleSource, isRef
       isFromCache: false,
     } : Promise.reject(new Error('failed'))
   }).catch(async(err: any) => {
-    console.log(err)
     if (!allowToggleSource) throw err
 
     onToggleSource()

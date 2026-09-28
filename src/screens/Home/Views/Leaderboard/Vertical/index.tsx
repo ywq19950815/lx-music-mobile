@@ -25,6 +25,27 @@ export default () => {
   const [isDetailView, setIsDetailView] = useState(false)
   const [boards, setBoards] = useState<BoardItem[]>([])
   const [activeBoardId, setActiveBoardId] = useState<string>('')
+  const [boardsLoading, setBoardsLoading] = useState(true)
+  const [boardsError, setBoardsError] = useState(false)
+
+  // 拉取榜单列表（带加载/失败状态）
+  const loadBoards = useCallback((source: LX.OnlineSource, after?: (list: BoardItem[]) => void) => {
+    setBoardsLoading(true)
+    setBoardsError(false)
+    void getBoardsList(source).then(list => {
+      setBoards(list)
+      setBoardsLoading(false)
+      after?.(list)
+    }).catch(() => {
+      setBoardsLoading(false)
+      setBoardsError(true)
+    })
+  }, [])
+
+  // 重试（失败态点击）
+  const handleRetryBoards = useCallback(() => {
+    loadBoards(boundInfo.current.source)
+  }, [loadBoards])
 
   const handleBoundChange = (source: LX.OnlineSource, id: string) => {
     setActiveBoardId(id)
@@ -38,8 +59,7 @@ export default () => {
   const onBoundChange: BoardsListProps['onBoundChange'] = (id) => {
     boundInfo.current.id = id
     setActiveBoardId(id)
-    void getBoardsList(boundInfo.current.source).then(list => {
-      setBoards(list)
+    loadBoards(boundInfo.current.source, (list) => {
       requestAnimationFrame(() => {
         const bound = list.find(l => l.id == id)
         headerBarRef.current?.setBound(boundInfo.current.source, id, bound?.name ?? 'Unknown')
@@ -77,8 +97,7 @@ export default () => {
   }
 
   const onShowBound = () => {
-    void getBoardsList(boundInfo.current.source).then(list => {
-      setBoards(list)
+    loadBoards(boundInfo.current.source, (list) => {
       boardsListRef.current?.setList(list, boundInfo.current.id || list[0]?.id)
       requestAnimationFrame(() => {
         drawer.current?.openDrawer()
@@ -88,8 +107,7 @@ export default () => {
 
   const onSourceChange: HeaderBarProps['onSourceChange'] = (source) => {
     boundInfo.current.source = source
-    void getBoardsList(source).then(list => {
-      setBoards(list)
+    loadBoards(source, (list) => {
       const id = list[0].id
       const name = list[0].name
       setActiveBoardId(id)
@@ -125,13 +143,10 @@ export default () => {
       boundInfo.current.source = source
       boundInfo.current.id = boardId
       setActiveBoardId(boardId)
-      void getBoardsList(source).then(list => {
-        if (!isUnmountedRef.current) {
-          setBoards(list)
-          const bound = list.find(l => l.id == boardId)
-          boardsListRef.current?.setList(list, boardId)
-          headerBarRef.current?.setBound(source, boardId, bound?.name ?? 'Unknown')
-        }
+      loadBoards(source, (list) => {
+        const bound = list.find(l => l.id == boardId)
+        boardsListRef.current?.setList(list, boardId)
+        headerBarRef.current?.setBound(source, boardId, bound?.name ?? 'Unknown')
       })
       musicListRef.current?.loadList(source, boardId)
     })
@@ -163,6 +178,9 @@ export default () => {
           <BoardGallery
             list={boards}
             activeId={activeBoardId}
+            loading={boardsLoading}
+            error={boardsError}
+            onRetry={handleRetryBoards}
             onSelectBoard={handleSelectBoardFromGallery}
           />
         )}

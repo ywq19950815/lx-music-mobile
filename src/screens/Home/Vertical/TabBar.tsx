@@ -8,23 +8,25 @@ import { setNavActiveId } from '@/core/common'
 import type { InitState as CommonState } from '@/store/common/state'
 import { indexMap } from './Main'
 import { usePlayerMusicInfo, useProgress, useIsPlay } from '@/store/player/hook'
-import { collectMusic, uncollectMusic, togglePlay, playList } from '@/core/player/player'
+import { collectMusic, uncollectMusic, togglePlay, playList, playNext } from '@/core/player/player'
+import { removeTempPlayList } from '@/core/player/tempPlayList'
 import playerState from '@/store/player/state'
 import listState from '@/store/list/state'
 import { LIST_IDS } from '@/config/constant'
 import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
-import { colors, motion } from '@/theme/tokens'
-import Popup, { type PopupType } from '@/components/common/Popup'
+import { colors, motion, radius } from '@/theme/tokens'
+import PlayQueueDrawer, { type PlayQueueDrawerType } from '@/components/player/PlayQueueDrawer'
 
 /**
  * 底部导航项配置（QQ 音乐级精致图标 + 标贴体系）
  */
+// 一级菜单已精简为三项：设置页移入「我的」二级菜单。
+// 「我的」图标用唱片（album）代替爱心，避免与「我喜欢」混淆。
 const TAB_META: Record<string, { icon: string; label: string }> = {
   nav_search: { icon: 'search-2', label: '发现' },
   nav_top: { icon: 'leaderboard', label: '排行榜' },
-  nav_love: { icon: 'love', label: '我的' },
-  nav_setting: { icon: 'setting', label: '设置' },
+  nav_love: { icon: 'album', label: '我的' },
 }
 
 const TABS: Array<{ id: CommonState['navActiveId']; icon: string; label: string }> =
@@ -167,40 +169,6 @@ const NowPlayingRow = ({ onOpenList }: { onOpenList: () => void }) => {
 }
 
 /**
- * 播放队列底部弹窗
- */
-const PlayListSheet = () => {
-  const activeListId = listState.activeListId || playerState.playMusicInfo.listId || LIST_IDS.DEFAULT
-  const list = listState.allMusicList.get(activeListId) || []
-  const currentId = playerState.playMusicInfo.musicInfo?.id
-  const handlePlay = (index: number) => { void playList(activeListId, index) }
-  return (
-    <FlatList
-      data={list}
-      keyExtractor={(item) => item.id}
-      style={styles.listScroll}
-      contentContainerStyle={styles.listContent}
-      renderItem={({ item, index }) => {
-        const active = item.id === currentId
-        return (
-          <TouchableOpacity
-            style={[styles.listItem, active && styles.listItemActive]}
-            onPress={() => handlePlay(index)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.listItemTitle, active && styles.listItemTitleActive]} numberOfLines={1}>
-              {index + 1}. {item.name}
-            </Text>
-            <Text style={styles.listItemSinger} numberOfLines={1}>{item.singer}</Text>
-          </TouchableOpacity>
-        )
-      }}
-      ListEmptyComponent={<Text style={styles.listEmpty}>播放列表为空</Text>}
-    />
-  )
-}
-
-/**
  * 底部导航栏：播放胶囊与 Tab 融为一体（QQ 音乐式）
  * - 顶部「现在播放」行：封面 + 歌曲信息 + 播放/暂停 / 喜欢 / 列表
  * - 底部 Tab 行：发现 / 歌单 / 排行榜 / 我的 / 设置
@@ -208,11 +176,11 @@ const PlayListSheet = () => {
 const TabBar = () => {
   const activeId = useNavActiveId()
   const navigationBarHeight = useNavigationBarHeight()
-  const popupRef = useRef<PopupType>(null)
+  const queueRef = useRef<PlayQueueDrawerType>(null)
 
   return (
     <View style={[styles.container, { height: PLAY_ROW_HEIGHT + TAB_ROW_HEIGHT + navigationBarHeight, paddingBottom: navigationBarHeight }]}>
-      <NowPlayingRow onOpenList={() => popupRef.current?.setVisible(true)} />
+      <NowPlayingRow onOpenList={() => queueRef.current?.show()} />
 
       <View style={styles.tabRow}>
         {TABS.map(({ id, icon, label }) => {
@@ -235,9 +203,7 @@ const TabBar = () => {
         })}
       </View>
 
-      <Popup ref={popupRef} position="bottom" title="播放队列">
-        <PlayListSheet />
-      </Popup>
+      <PlayQueueDrawer ref={queueRef} />
     </View>
   )
 }
@@ -369,45 +335,5 @@ const styles = StyleSheet.create({
   tabLabelInactive: {
     color: '#8A919E',
     fontWeight: '500',
-  },
-  // ===== 播放队列弹窗 =====
-  listScroll: {
-    maxHeight: 360,
-  },
-  listContent: {
-    paddingBottom: 16,
-  },
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#F0F1F4',
-  },
-  listItemActive: {
-    backgroundColor: 'rgba(49, 196, 125, 0.08)',
-  },
-  listItemTitle: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.ink,
-    fontWeight: '500',
-  },
-  listItemTitleActive: {
-    color: '#31C27C',
-    fontWeight: '700',
-  },
-  listItemSinger: {
-    fontSize: 11,
-    color: colors.inkTertiary,
-    marginLeft: 12,
-    maxWidth: 100,
-  },
-  listEmpty: {
-    textAlign: 'center',
-    padding: 30,
-    color: colors.inkTertiary,
-    fontSize: 13,
   },
 })

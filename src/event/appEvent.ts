@@ -226,6 +226,10 @@ export class AppEvent extends Event {
   showGlobalAlert(options: GlobalAlertOptions) {
     this.emit('showGlobalAlert', options)
   }
+
+  openPlayQueue() {
+    this.emit('openPlayQueue')
+  }
 }
 
 

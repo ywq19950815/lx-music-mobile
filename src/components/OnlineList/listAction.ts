@@ -22,8 +22,10 @@ export const handlePlayLater = (musicInfo: LX.Music.MusicInfoOnline, selectedLis
   if (selectedList.length) {
     addTempPlayList(selectedList.map(s => ({ listId: '', musicInfo: s })))
     onCancelSelect()
+    toast(`已添加 ${selectedList.length} 首歌曲到稍后播放`)
   } else {
     addTempPlayList([{ listId: '', musicInfo }])
+    toast(`已将《${musicInfo.name}》加入稍后播放`)
   }
 }
 

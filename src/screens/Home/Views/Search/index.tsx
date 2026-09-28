@@ -39,9 +39,11 @@ export default () => {
       switch (info.type) {
         case 'music':
           headerBarRef.current?.setSourceList(searchMusicState.sources, info.source)
+          headerBarRef.current?.setPlaceholder('搜索单曲、歌手、专辑...')
           break
         case 'songlist':
           headerBarRef.current?.setSourceList(searchSonglistState.sources, info.source)
+          headerBarRef.current?.setPlaceholder('搜索歌单、精选集...')
           break
       }
       headerBarRef.current?.setText(searchState.searchText)
@@ -51,6 +53,16 @@ export default () => {
     const handleTypeChange = (type: SearchType) => {
       searchInfo.current.searchType = type
       void saveSearchSetting({ type })
+      switch (type) {
+        case 'music':
+          headerBarRef.current?.setSourceList(searchMusicState.sources, searchInfo.current.source)
+          headerBarRef.current?.setPlaceholder('搜索单曲、歌手、专辑...')
+          break
+        case 'songlist':
+          headerBarRef.current?.setSourceList(searchSonglistState.sources, searchInfo.current.source)
+          headerBarRef.current?.setPlaceholder('搜索歌单、精选集...')
+          break
+      }
       listRef.current?.loadList(searchState.searchText, searchInfo.current.source, type)
     }
     global.app_event.on('searchTypeChanged', handleTypeChange)

@@ -6,6 +6,7 @@ import Text from '@/components/common/Text'
 
 export interface SearchInputProps {
   prefix?: React.ReactNode
+  placeholder?: string
   onChangeText: (text: string) => void
   onSubmit: (text: string) => void
   onBlur: () => void
@@ -14,17 +15,22 @@ export interface SearchInputProps {
 
 export interface SearchInputType {
   setText: (text: string) => void
+  setPlaceholder: (holder: string) => void
   focus: () => void
   blur: () => void
 }
 
-export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, onChangeText, onSubmit, onBlur, onTouchStart }, ref) => {
+export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, placeholder = '搜索单曲、歌手、专辑...', onChangeText, onSubmit, onBlur, onTouchStart }, ref) => {
   const [text, setText] = useState('')
+  const [currentHolder, setCurrentHolder] = useState(placeholder)
   const inputRef = useRef<InputType>(null)
 
   useImperativeHandle(ref, () => ({
     setText(newText) {
       setText(newText)
+    },
+    setPlaceholder(holder) {
+      setCurrentHolder(holder)
     },
     focus() {
       inputRef.current?.focus()
@@ -65,7 +71,7 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, onChange
         </View>
         <Input
           ref={inputRef}
-          placeholder="搜索音乐、歌手、歌单..."
+          placeholder={currentHolder}
           placeholderTextColor="#9AA0AA"
           value={text}
           onChangeText={handleChangeText}

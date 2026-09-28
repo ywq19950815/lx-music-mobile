@@ -81,6 +81,14 @@ export const getPicUrl = async({ musicInfo, listId, isRefresh, allowToggleSource
     return url
   })
 }
+// 兜底空歌词：所有音源均失败时使用，保证 UI 展示「暂无歌词」而非错误态
+const EMPTY_LYRIC_INFO = {
+  lyric: '',
+  tlyric: '',
+  rlyric: '',
+  lxlyric: '',
+} as LX.Music.LyricInfo
+
 export const getLyricInfo = async({ musicInfo, isRefresh, allowToggleSource = true, onToggleSource = () => {} }: {
   musicInfo: LX.Music.MusicInfoOnline
   isRefresh: boolean
@@ -93,6 +101,8 @@ export const getLyricInfo = async({ musicInfo, isRefresh, allowToggleSource = tr
   }
 
   // lrcRequest = music[musicInfo.source].getLyric(musicInfo)
+  // 全源（含换源）都拿不到歌词时，不再向上抛错：
+  // 返回一份空歌词，让界面稳定展示「暂无歌词」，而不是卡在加载中或报错态。
   return handleGetOnlineLyricInfo({ musicInfo, onToggleSource, isRefresh, allowToggleSource }).then(async({ lyricInfo, musicInfo: targetMusicInfo, isFromCache }) => {
     // lrcRequest = null
     if (isFromCache) return buildLyricInfo(lyricInfo)
@@ -100,5 +110,5 @@ export const getLyricInfo = async({ musicInfo, isRefresh, allowToggleSource = tr
     else void saveLyric(targetMusicInfo, lyricInfo)
 
     return buildLyricInfo(lyricInfo)
-  })
+  }).catch(() => buildLyricInfo(EMPTY_LYRIC_INFO))
 }

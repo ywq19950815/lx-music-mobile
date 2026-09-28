@@ -34,6 +34,8 @@ public final class LyricSwitchView extends TextSwitcher {
   private boolean isKaraoke = true;
   private int unplayColor = Color.WHITE;
   private int playedColor = Color.parseColor("#07c556");
+  private int lastPlayedChars = -1;
+  private String lastText = "";
 
   public LyricSwitchView(Context context, boolean isSingleLine, boolean isShowAnima) {
     super(context);
@@ -59,6 +61,7 @@ public final class LyricSwitchView extends TextSwitcher {
       for (TextView v : viewArray) {
 //        v.setShadowLayer(0.2f, 0, 0, Color.BLACK);
         v.setEllipsize(TextUtils.TruncateAt.END);
+        v.setTextColor(unplayColor);
       }
     }
     setAnima();
@@ -237,12 +240,24 @@ public final class LyricSwitchView extends TextSwitcher {
         if (firstLineEnd < 0) firstLineEnd = str.length();
 
         int clampedPlayed = Math.min(firstLineEnd, Math.max(0, playedChars));
+        if (clampedPlayed == lastPlayedChars && str.equals(lastText)) {
+          return;
+        }
+        lastPlayedChars = clampedPlayed;
+        lastText = str;
+
+        int previewAlpha = 180;
+        int previewColor = Color.argb(previewAlpha, Color.red(unplayColor), Color.green(unplayColor), Color.blue(unplayColor));
+
         SpannableString span = new SpannableString(str);
         if (clampedPlayed > 0) {
           span.setSpan(new ForegroundColorSpan(playedColor), 0, clampedPlayed, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
-        if (clampedPlayed < str.length()) {
-          span.setSpan(new ForegroundColorSpan(unplayColor), clampedPlayed, str.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (clampedPlayed < firstLineEnd) {
+          span.setSpan(new ForegroundColorSpan(unplayColor), clampedPlayed, firstLineEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        if (firstLineEnd < str.length()) {
+          span.setSpan(new ForegroundColorSpan(previewColor), firstLineEnd, str.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         tv.setText(span, TextView.BufferType.SPANNABLE);
       }

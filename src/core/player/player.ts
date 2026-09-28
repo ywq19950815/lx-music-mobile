@@ -189,6 +189,14 @@ const handleRestorePlay = async(restorePlayInfo: LX.Player.SavedPlayInfo) => {
   }).catch((err) => {
     console.log(err)
     if (musicInfo.id != playMusicInfo.musicInfo?.id) return
+    setMusicInfo({
+      lrc: '',
+      tlrc: '',
+      lxlrc: '',
+      rlrc: '',
+      rawlrc: '',
+    })
+    global.app_event.lyricUpdated()
     setStatusText(global.i18n.t('lyric__load_error'))
   })
 
@@ -221,6 +229,14 @@ const debouncePlay = debounceBackgroundTimer((musicInfo: LX.Player.PlayMusic) =>
   }).catch((err) => {
     console.log(err)
     if (musicInfo.id != playerState.playMusicInfo.musicInfo?.id) return
+    setMusicInfo({
+      lrc: '',
+      tlrc: '',
+      lxlrc: '',
+      rlrc: '',
+      rawlrc: '',
+    })
+    global.app_event.lyricUpdated()
     setStatusText(global.i18n.t('lyric__load_error'))
   })
 }, 200)

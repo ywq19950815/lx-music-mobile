@@ -3,7 +3,6 @@ import { View } from 'react-native'
 import Search from '../Views/Search'
 import Mylist from '../Views/Mylist'
 import Leaderboard from '../Views/Leaderboard'
-import Setting from '../Views/Setting'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
 import PagerView, { type PageScrollStateChangedNativeEvent, type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
@@ -120,42 +119,24 @@ const MylistPage = () => {
 
   return visible ? component : null
 }
-const SettingPage = () => {
-  const [visible, setVisible] = useState(commonState.navActiveId == 'nav_setting')
-  const component = useMemo(() => <Setting />, [])
-  useEffect(() => {
-    const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
-      if (id == 'nav_setting') {
-        requestAnimationFrame(() => {
-          setVisible(true)
-        })
-      }
-    }
-    global.state_event.on('navActiveIdUpdated', handleNavIdUpdate)
-
-    return () => {
-      global.state_event.off('navActiveIdUpdated', handleNavIdUpdate)
-    }
-  }, [])
-  return visible ? component : null
-}
-
 /**
  * PagerView 各页面的顺序（唯一真实来源）。
  * 底部 TabBar 直接复用这个数组，保证「Tab 顺序」与「左滑翻页顺序」永远一致。
+ */
+/**
+ * 底部 Tab 顺序（唯一真实来源）。
+ * 已精简：设置页从一级 Tab 移入「我的」作为二级菜单，一级只保留发现/排行榜/我的。
  */
 export const indexMap = [
   'nav_search',
   'nav_top',
   'nav_love',
-  'nav_setting',
 ] as const
 
 const viewMap = {
   nav_search: 0,
   nav_top: 1,
   nav_love: 2,
-  nav_setting: 3,
 }
 
 const Main = () => {
@@ -210,7 +191,8 @@ const Main = () => {
 
   useEffect(() => {
     const handleUpdate = (id: CommonState['navActiveId']) => {
-      const index = viewMap[id]
+      // viewMap 已移除 setting，做兜底避免越界
+      const index = viewMap[id as keyof typeof viewMap] ?? 0
       activeIndexRef.current = index
       pagerViewRef.current?.setPageWithoutAnimation(index)
       requestAnimationFrame(() => {
@@ -249,9 +231,6 @@ const Main = () => {
       </View>
       <View collapsable={false} key="nav_love" style={styles.pageStyle}>
         <MylistPage />
-      </View>
-      <View collapsable={false} key="nav_setting" style={styles.pageStyle}>
-        <SettingPage />
       </View>
     </PagerView>
   ), [onPageScrollStateChanged, onPageSelected])
