@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import MusicList, { type MusicListType } from './MusicList'
@@ -9,6 +9,9 @@ import { type ListInfoItem } from '@/store/songlist/state'
 import PlayerBar from '@/components/player/PlayerBar'
 import { ListInfoContext } from './state'
 import { colors } from '@/theme/tokens'
+import { useBackHandler } from '@/utils/hooks/useBackHandler'
+import { pop } from '@/navigation'
+import commonActions from '@/store/common/action'
 
 export default ({ componentId, info }: { componentId: string, info: ListInfoItem }) => {
   const musicListRef = useRef<MusicListType>(null)
@@ -23,9 +26,15 @@ export default ({ componentId, info }: { componentId: string, info: ListInfoItem
 
     return () => {
       isUnmountedRef.current = true
+      commonActions.removeComponentId(componentId)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [componentId])
+
+  useBackHandler(useCallback(() => {
+    void pop(componentId)
+    return true
+  }, [componentId]))
 
   return (
     <View style={styles.container}>

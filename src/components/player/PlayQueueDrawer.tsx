@@ -19,6 +19,7 @@ import { updateSetting } from '@/core/common'
 import { radius } from '@/theme/tokens'
 import { toast } from '@/utils/tools'
 import { useI18n } from '@/lang'
+import { getListMusics, getListMusicSync } from '@/utils/listManage'
 
 export interface PlayQueueDrawerType {
   show: () => void
@@ -42,13 +43,36 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
   const [activeListId, setActiveListId] = useState<string>(() => listState.activeListId || playerState.playMusicInfo.listId || LIST_IDS.DEFAULT)
   const [musicList, setMusicList] = useState<LX.Music.MusicInfo[]>(() => listState.allMusicList.get(activeListId) || [])
 
-  // 刷新当前稍后播放与主列表数据
+  // 刷新当前稍后播放与主列表数据（支持优先读取当前播放列表、异步数据加载与单曲兜底）
   const syncData = useCallback(() => {
     setTempList([...playerState.tempPlayList])
-    const currentListId = listState.activeListId || playerState.playMusicInfo.listId || LIST_IDS.DEFAULT
+    const currentListId = playerState.playMusicInfo.listId || listState.activeListId || LIST_IDS.DEFAULT
     setActiveListId(currentListId)
-    setMusicList([...(listState.allMusicList.get(currentListId) || [])])
-  }, [activeListId])
+    const syncList = getListMusicSync(currentListId)
+    if (syncList && syncList.length) {
+      setMusicList([...syncList])
+    } else {
+      void getListMusics(currentListId).then(list => {
+        if (list && list.length) {
+          setMusicList([...list])
+        } else if (playerState.playMusicInfo.musicInfo) {
+          const raw = 'progress' in playerState.playMusicInfo.musicInfo
+            ? playerState.playMusicInfo.musicInfo.metadata.musicInfo
+            : playerState.playMusicInfo.musicInfo
+          setMusicList([raw as LX.Music.MusicInfo])
+        } else {
+          setMusicList([])
+        }
+      }).catch(() => {
+        if (playerState.playMusicInfo.musicInfo) {
+          const raw = 'progress' in playerState.playMusicInfo.musicInfo
+            ? playerState.playMusicInfo.musicInfo.metadata.musicInfo
+            : playerState.playMusicInfo.musicInfo
+          setMusicList([raw as LX.Music.MusicInfo])
+        }
+      })
+    }
+  }, [])
 
   const show = useCallback(() => {
     syncData()
@@ -70,8 +94,9 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
     const handleListChange = () => syncData()
 
     global.state_event.on('playTempPlayListChanged', handleTempChange)
-    global.state_event.on('mylistUpdated', handleListChange)
+    global.app_event.on('myListMusicUpdate', handleListChange)
     global.state_event.on('playMusicInfoChanged', handleListChange)
+    global.app_event.on('musicToggled', handleListChange)
 
     const handleGlobalOpen = () => {
       show()
@@ -80,8 +105,9 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
 
     return () => {
       global.state_event.off('playTempPlayListChanged', handleTempChange)
-      global.state_event.off('mylistUpdated', handleListChange)
+      global.app_event.off('myListMusicUpdate', handleListChange)
       global.state_event.off('playMusicInfoChanged', handleListChange)
+      global.app_event.off('musicToggled', handleListChange)
       global.app_event.off('openPlayQueue', handleGlobalOpen)
     }
   }, [syncData, show])

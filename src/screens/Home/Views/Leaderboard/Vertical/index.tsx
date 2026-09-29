@@ -8,10 +8,11 @@ import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/comm
 import HeaderBar, { type HeaderBarType, type HeaderBarProps } from './HeaderBar'
 import BoardsList, { type BoardsListType, type BoardsListProps } from '../BoardsList'
 import BoardGallery from './BoardGallery'
-import type { InitState as CommonState } from '@/store/common/state'
+import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { getBoardsList } from '@/core/leaderboard'
 import { handleCollect, handlePlay } from '../listAction'
 import boardState, { type BoardItem } from '@/store/leaderboard/state'
+import { useBackHandler } from '@/utils/hooks/useBackHandler'
 
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
@@ -23,6 +24,8 @@ export default () => {
 
   // 视图状态：默认 false 展示大三联复合卡片流；true 展示某个榜单的歌曲详情
   const [isDetailView, setIsDetailView] = useState(false)
+  const isDetailViewRef = useRef(false)
+  isDetailViewRef.current = isDetailView
   const [boards, setBoards] = useState<BoardItem[]>([])
   const [activeBoardId, setActiveBoardId] = useState<string>('')
   const [boardsLoading, setBoardsLoading] = useState(true)
@@ -85,6 +88,30 @@ export default () => {
   const handleBackToGallery = useCallback(() => {
     setIsDetailView(false)
   }, [])
+
+  // 监听 Android 侧滑返回：若处于单榜歌曲流内页，则返回大三联画廊
+  useBackHandler(useCallback(() => {
+    if (commonState.navActiveId !== 'nav_top') return false
+    if (isDetailViewRef.current) {
+      handleBackToGallery()
+      return true
+    }
+    return false
+  }, [handleBackToGallery]))
+
+  useEffect(() => {
+    const handleHomeBack = (callback: (consumed: boolean) => void) => {
+      if (commonState.navActiveId !== 'nav_top') return
+      if (isDetailViewRef.current) {
+        handleBackToGallery()
+        callback(true)
+      }
+    }
+    global.app_event.on('homeBackPress', handleHomeBack)
+    return () => {
+      global.app_event.off('homeBackPress', handleHomeBack)
+    }
+  }, [handleBackToGallery])
 
   const onPlay: BoardsListProps['onPlay'] = (id) => {
     boundInfo.current.id = id
@@ -160,7 +187,7 @@ export default () => {
   return (
     <DrawerLayoutFixed
       ref={drawer}
-      title="🏆 官方排行榜单"
+      title="切换排行榜"
       renderNavigationView={navigationView}
     >
       <View style={styles.container}>

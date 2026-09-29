@@ -68,8 +68,7 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
           style={styles.backBtn}
           activeOpacity={0.7}
         >
-          <Icon name="chevron-left" size={15} color={colors.ink} />
-          <Text style={styles.backBtnText}>主页</Text>
+          <Icon name="chevron-left" size={18} color="#1A1C20" />
         </TouchableOpacity>
       ) : null}
 
@@ -80,11 +79,11 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
         activeOpacity={0.7}
       >
         <View style={styles.pillTag}>
-          <Icon name="chevron-right" size={13} color={colors.inkSecondary} />
-          {fetching ? <Loading color={colors.ink} style={styles.loading} /> : null}
+          {fetching ? <Loading color="#31C27C" style={styles.loading} /> : null}
           <Text style={styles.listTitle} numberOfLines={1}>
             {currentListName}
           </Text>
+          <Icon name="chevron-right" size={13} color="#8A919E" />
         </View>
       </TouchableOpacity>
 
@@ -92,9 +91,9 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
       <TouchableOpacity
         style={styles.searchBtn}
         onPress={onShowSearchBar}
-        activeOpacity={0.6}
+        activeOpacity={0.7}
       >
-        <Icon color={colors.inkSecondary} name="search-2" size={16} />
+        <Icon color="#5A616B" name="search-2" size={16} />
       </TouchableOpacity>
     </View>
   )
@@ -102,29 +101,23 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
 
 const styles = StyleSheet.create({
   container: {
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#ECEEF1',
   },
   backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 8,
-  },
-  backBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.ink,
   },
   pillBtn: {
     flex: 1,
@@ -135,23 +128,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
     backgroundColor: '#F3F4F6',
-    gap: 5,
+    gap: 6,
   },
   loading: {
-    marginRight: 4,
+    marginRight: 2,
   },
   listTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-    color: colors.ink,
+    color: '#1A1C20',
+    maxWidth: 200,
   },
   searchBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',

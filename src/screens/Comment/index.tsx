@@ -15,6 +15,9 @@ import PageContent from '@/components/PageContent'
 import playerState from '@/store/player/state'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { BorderWidths } from '@/theme'
+import { useBackHandler } from '@/utils/hooks/useBackHandler'
+import { pop } from '@/navigation'
+import commonActions from '@/store/common/action'
 
 type ActiveId = 'hot' | 'new'
 
@@ -89,8 +92,17 @@ export default memo(({ componentId }: {
 
   useEffect(() => {
     setComponentId(COMPONENT_IDS.comment, componentId)
+
+    return () => {
+      commonActions.removeComponentId(componentId)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [componentId])
+
+  useBackHandler(useCallback(() => {
+    void pop(componentId)
+    return true
+  }, [componentId]))
 
   const tabs = useMemo(() => {
     return [

@@ -12,15 +12,33 @@ interface SearchInputProps {
   onSearch: (keywork: string) => void
   placeholder: string
 }
-type SearchInputType = InputType
+export interface SearchInputType {
+  focus: () => void
+  blur: () => void
+  setValue: (text: string) => void
+}
 
 const SearchInput = forwardRef<SearchInputType, SearchInputProps>(({ onSearch, placeholder }, ref) => {
   const [text, setText] = useState('')
+  const inputRef = useRef<InputType>(null)
 
   const handleChangeText = (text: string) => {
     setText(text)
     onSearch(text.trim())
   }
+
+  useImperativeHandle(ref, () => ({
+    focus() {
+      inputRef.current?.focus()
+    },
+    blur() {
+      inputRef.current?.blur()
+    },
+    setValue(val: string) {
+      setText(val)
+      onSearch(val.trim())
+    },
+  }))
 
   return (
     <Input
@@ -29,7 +47,7 @@ const SearchInput = forwardRef<SearchInputType, SearchInputProps>(({ onSearch, p
       value={text}
       style={styles.input}
       clearBtn
-      ref={ref}
+      ref={inputRef}
     />
   )
 })
@@ -42,6 +60,7 @@ export interface ListSearchBarProps {
 export interface ListSearchBarType {
   show: () => void
   hide: () => void
+  setText: (keyword: string) => void
 }
 
 /**
@@ -64,6 +83,9 @@ export default forwardRef<ListSearchBarType, ListSearchBarProps>(({ onSearch, on
     },
     hide() {
       handleHide()
+    },
+    setText(keyword: string) {
+      searchInputRef.current?.setValue(keyword)
     },
   }))
 

@@ -148,39 +148,42 @@ export const initTrackInfo = async(musicInfo: LX.Player.PlayMusic, mInfo: LX.Pla
 
 
 const handlePlayMusic = async(musicInfo: LX.Player.PlayMusic, url: string, time: number) => {
-// console.log(tracks, time)
-  const tracks = buildTracks(musicInfo, url)
-  const track = tracks[0]
-  // await updateMusicInfo(track)
-  const currentTrackIndex = await TrackPlayer.getCurrentTrack()
-  await TrackPlayer.add(tracks).then(() => list.push(...tracks))
-  const queue = await TrackPlayer.getQueue() as LX.Player.Track[]
-  await TrackPlayer.skip(queue.findIndex(t => t.id == track.id))
+  try {
+    const tracks = buildTracks(musicInfo, url)
+    const track = tracks[0]
+    const currentTrackIndex = await TrackPlayer.getCurrentTrack()
+    await TrackPlayer.add(tracks).then(() => list.push(...tracks))
+    const queue = await TrackPlayer.getQueue() as LX.Player.Track[]
+    const targetIndex = queue.findIndex(t => t.id == track.id)
+    if (targetIndex >= 0) {
+      await TrackPlayer.skip(targetIndex)
+    }
 
-  if (currentTrackIndex == null) {
-    if (!isTempTrack(track.id as string)) {
-      if (time) await TrackPlayer.seekTo(time)
-      if (global.lx.restorePlayInfo) {
-        await TrackPlayer.pause()
-        // let startupAutoPlay = settingState.setting['player.startupAutoPlay']
-        global.lx.restorePlayInfo = null
-
-      // TODO startupAutoPlay
-      // if (startupAutoPlay) store.dispatch(playerAction.playMusic())
-      } else {
+    if (currentTrackIndex == null) {
+      if (!isTempTrack(track.id as string)) {
+        if (time) await TrackPlayer.seekTo(time)
+        if (global.lx.restorePlayInfo) {
+          await TrackPlayer.pause()
+          global.lx.restorePlayInfo = null
+        } else {
+          await TrackPlayer.play()
+        }
+      }
+    } else {
+      await TrackPlayer.pause()
+      if (!isTempTrack(track.id as string)) {
+        if (time) await TrackPlayer.seekTo(time)
         await TrackPlayer.play()
       }
     }
-  } else {
-    await TrackPlayer.pause()
-    if (!isTempTrack(track.id as string)) {
-      await TrackPlayer.seekTo(time)
-      await TrackPlayer.play()
-    }
-  }
 
-  if (queue.length > 2) {
-    void TrackPlayer.remove(Array(queue.length - 2).fill(null).map((_, i) => i)).then(() => list.splice(0, list.length - 2))
+    if (queue.length > 2) {
+      void TrackPlayer.remove(Array(queue.length - 2).fill(null).map((_, i) => i))
+        .then(() => list.splice(0, list.length - 2))
+        .catch(() => {})
+    }
+  } catch (err: any) {
+    console.warn('handlePlayMusic catch error:', err)
   }
 }
 let playPromise = Promise.resolve()
@@ -189,7 +192,7 @@ export const playMusic = (musicInfo: LX.Player.PlayMusic, url: string, time: num
   const id = actionId = Math.random()
   void playPromise.finally(() => {
     if (id != actionId) return
-    playPromise = handlePlayMusic(musicInfo, url, time)
+    playPromise = handlePlayMusic(musicInfo, url, time).catch(() => {})
   })
 }
 

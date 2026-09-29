@@ -179,11 +179,11 @@ const handleRestorePlay = async(restorePlayInfo: LX.Player.SavedPlayInfo) => {
   void getLyricInfo({ musicInfo }).then((lyricInfo) => {
     if (musicInfo.id != playMusicInfo.musicInfo?.id) return
     setMusicInfo({
-      lrc: lyricInfo.lyric,
-      tlrc: lyricInfo.tlyric,
-      lxlrc: lyricInfo.lxlyric,
-      rlrc: lyricInfo.rlyric,
-      rawlrc: lyricInfo.rawlrcInfo.lyric,
+      lrc: lyricInfo?.lyric ?? '',
+      tlrc: lyricInfo?.tlyric ?? '',
+      lxlrc: lyricInfo?.lxlyric ?? '',
+      rlrc: lyricInfo?.rlyric ?? '',
+      rawlrc: lyricInfo?.rawlrcInfo?.lyric ?? lyricInfo?.lyric ?? '',
     })
     global.app_event.lyricUpdated()
   }).catch((err) => {
@@ -219,11 +219,11 @@ const debouncePlay = debounceBackgroundTimer((musicInfo: LX.Player.PlayMusic) =>
   void getLyricInfo({ musicInfo }).then((lyricInfo) => {
     if (musicInfo.id != playerState.playMusicInfo.musicInfo?.id) return
     setMusicInfo({
-      lrc: lyricInfo.lyric,
-      tlrc: lyricInfo.tlyric,
-      lxlrc: lyricInfo.lxlyric,
-      rlrc: lyricInfo.rlyric,
-      rawlrc: lyricInfo.rawlrcInfo.lyric,
+      lrc: lyricInfo?.lyric ?? '',
+      tlrc: lyricInfo?.tlyric ?? '',
+      lxlrc: lyricInfo?.lxlyric ?? '',
+      rlrc: lyricInfo?.rlyric ?? '',
+      rawlrc: lyricInfo?.rawlrcInfo?.lyric ?? lyricInfo?.lyric ?? '',
     })
     global.app_event.lyricUpdated()
   }).catch((err) => {

@@ -63,13 +63,13 @@ const DrawerLayoutFixed = forwardRef<DrawerLayoutFixedType, DrawerLayoutFixedPro
   const displayTitle = title || drawerTitle || (() => {
     switch (navActiveId) {
       case 'nav_love':
-        return '📋 我的歌单与分类'
+        return '我的歌单与分类'
       case 'nav_songlist':
-        return '🏷️ 歌单分类标签'
+        return '歌单分类标签'
       case 'nav_top':
-        return '🏆 官方排行榜单'
+        return '切换排行榜'
       default:
-        return '📋 分类与列表'
+        return '分类与列表'
     }
   })()
 

@@ -64,17 +64,16 @@ export default forwardRef<ListType, ListProps>(({ onBoundChange, onShowMenu }, r
   return (
     <ScrollView
       style={styles.scrollView}
-      contentContainerStyle={{ paddingBottom: 90, paddingHorizontal: 6 }}
+      contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps={'always'}
-      // App 靠手指滑动浏览，隐藏 Web 滚动条
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
     >
-      <View style={styles.drawerHeader}>
-        <Text style={styles.drawerTitle}>🏆 榜单分类</Text>
-        <Text style={styles.drawerSub}>点击选择切换</Text>
+      <View style={styles.subHeader}>
+        <Text style={styles.subTitle}>官方榜单</Text>
+        <Text style={styles.subDesc}>共 {list.length} 个 · 长按项快捷操作</Text>
       </View>
-      <View>
+      <View style={styles.gridContainer}>
         {
           list.map((item, index) => {
             return (
@@ -100,22 +99,32 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     backgroundColor: colors.surface,
   },
-  drawerHeader: {
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+  scrollContent: {
+    paddingBottom: 40,
+    paddingHorizontal: 8,
+  },
+  subHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
     marginBottom: 6,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.hairline,
   },
-  drawerTitle: {
-    fontSize: 13,
+  subTitle: {
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.ink,
+    color: '#8A92A0',
+    letterSpacing: 0.5,
   },
-  drawerSub: {
+  subDesc: {
     fontSize: 11,
     fontWeight: '500',
-    color: colors.inkTertiary,
-    marginTop: 2,
+    color: '#9CA3AF',
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 })

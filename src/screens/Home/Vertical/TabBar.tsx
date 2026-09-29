@@ -17,6 +17,8 @@ import { navigations } from '@/navigation'
 import commonState from '@/store/common/state'
 import { colors, motion, radius } from '@/theme/tokens'
 import PlayQueueDrawer, { type PlayQueueDrawerType } from '@/components/player/PlayQueueDrawer'
+import { getListMusics, getListMusicSync } from '@/utils/listManage'
+import { toast } from '@/utils/tools'
 
 /**
  * 底部导航项配置（QQ 音乐级精致图标 + 标贴体系）
@@ -93,20 +95,32 @@ const NowPlayingRow = ({ onOpenList }: { onOpenList: () => void }) => {
   const [isLove, setIsLove] = useState(false)
 
   const hasTrack = !!musicInfo.id
+  const hasTempTrack = playerState.tempPlayList.length > 0
 
-  // 实时计算当前歌曲是否已收藏到「我喜欢」
+  // 实时计算当前歌曲是否已收藏到「我喜欢」（支持冷启动异步兜底与实时事件同步）
   useEffect(() => {
+    let cancel = false
     const update = () => {
-      if (!musicInfo.id) { setIsLove(false); return }
-      const loveList = listState.allMusicList.get(LIST_IDS.LOVE) || []
-      setIsLove(loveList.some(m => m.id === musicInfo.id))
+      if (!musicInfo.id) {
+        setIsLove(false)
+        return
+      }
+      const syncList = getListMusicSync(LIST_IDS.LOVE)
+      if (syncList && syncList.length) {
+        setIsLove(syncList.some(m => m.id === musicInfo.id))
+      } else {
+        void getListMusics(LIST_IDS.LOVE).then((list) => {
+          if (!cancel) setIsLove(list.some(m => m.id === musicInfo.id))
+        }).catch(() => {})
+      }
     }
     update()
     global.state_event.on('playMusicInfoChanged', update)
-    global.state_event.on('mylistUpdated', update)
+    global.app_event.on('myListMusicUpdate', update)
     return () => {
+      cancel = true
       global.state_event.off('playMusicInfoChanged', update)
-      global.state_event.off('mylistUpdated', update)
+      global.app_event.off('myListMusicUpdate', update)
     }
   }, [musicInfo.id])
 
@@ -120,14 +134,27 @@ const NowPlayingRow = ({ onOpenList }: { onOpenList: () => void }) => {
   }
 
   const handleTogglePlay = () => {
-    if (!hasTrack) return
+    if (!hasTrack) {
+      toast('当前没有正在播放的歌曲')
+      return
+    }
     togglePlay()
   }
 
   const handleToggleLove = () => {
-    if (!hasTrack) return
-    if (isLove) uncollectMusic()
-    else collectMusic()
+    if (!hasTrack) {
+      toast('当前没有正在播放的歌曲')
+      return
+    }
+    if (isLove) {
+      setIsLove(false)
+      uncollectMusic()
+      toast('已从「我喜欢」中移除')
+    } else {
+      setIsLove(true)
+      collectMusic()
+      toast('已添加到「我喜欢」')
+    }
   }
 
   return (
@@ -150,18 +177,28 @@ const NowPlayingRow = ({ onOpenList }: { onOpenList: () => void }) => {
         <Text style={styles.singer} numberOfLines={1}>{hasTrack ? (musicInfo.singer || '未知歌手') : '点击选择歌曲播放'}</Text>
       </TouchableOpacity>
 
-      {/* 右侧控制区 */}
+      {/* 右侧控制区：QQ 音乐级精致三圆钮协调体系（32x32，严格对称、水平居中） */}
       <View style={styles.right}>
+        {/* 1. 播放/暂停键（绿色主胶囊） */}
         <ScaleBtn onPress={handleTogglePlay} testID="tabbar-toggle">
           <View style={[styles.toggleBtn, !hasTrack && styles.toggleBtnDisabled]}>
             <Icon name={isPlay ? 'pause' : 'play'} color="#FFFFFF" size={15} />
           </View>
         </ScaleBtn>
+
+        {/* 2. 喜欢键（32x32 精致圆形容器，红心高亮/淡红微光） */}
         <ScaleBtn onPress={handleToggleLove} testID="tabbar-love">
-          <Icon name="love" color={isLove ? '#EF4444' : '#5A616B'} size={20} />
+          <View style={[styles.actionBtn, isLove && styles.actionBtnLoved]}>
+            <Icon name="love" color={isLove ? '#EF4444' : '#5A616B'} size={17} />
+          </View>
         </ScaleBtn>
+
+        {/* 3. 播放队列键（32x32 精致圆形容器，带稍后播状态微标） */}
         <ScaleBtn onPress={onOpenList} testID="tabbar-list">
-          <Icon name="list-order" color="#5A616B" size={20} />
+          <View style={styles.actionBtn}>
+            <Icon name="list-order" color="#5A616B" size={17} />
+            {hasTempTrack && <View style={styles.queueDot} />}
+          </View>
         </ScaleBtn>
       </View>
     </View>
@@ -278,14 +315,13 @@ const styles = StyleSheet.create({
   right: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
     flexShrink: 0,
     marginLeft: 6,
   },
   scaleBtn: {
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 4,
   },
   toggleBtn: {
     width: 32,
@@ -303,6 +339,27 @@ const styles = StyleSheet.create({
   toggleBtnDisabled: {
     backgroundColor: '#C8CDD4',
     shadowOpacity: 0,
+  },
+  actionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  actionBtnLoved: {
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+  },
+  queueDot: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#31C27C',
   },
   // ===== Tab 行 =====
   tabRow: {

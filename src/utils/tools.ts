@@ -586,7 +586,7 @@ export const cheatTip = async() => {
     message: `1. 本项目无微信公众号之类的所谓「官方账号」，也未在小米、华为、vivo 等应用商店发布应用，商店内的「Andy Music」「安迪音乐」相关的应用全部属于假冒应用，谨防被骗！\n
 2. 本软件完全无广告且无引流（如需要加群、关注公众号之类才能使用或者升级）的行为，若你使用过程中遇到广告或者引流的信息，则表明你当前运行的软件是第三方修改版。\n
 3. 请仅从可信的官方渠道获取本应用，其他渠道均为第三方转载发布，可信度请自行鉴别。`,
-    btnText: '我知道了 (Close)',
+    btnText: '我知道了',
     bgClose: true,
   }).then(() => {
     void saveData(storageDataPrefix.cheatTip, true)
@@ -600,7 +600,7 @@ export const remoteLyricTip = async() => {
   return tipDialog({
     title: '有点温馨的提示',
     message: '若你将本功能用于汽车，请记住这个：\n道路千万条，安全第一条！\n道路千万条，安全第一条！！\n道路千万条，安全第一条！！！',
-    btnText: '我知道了 (Close)',
+    btnText: '我知道了',
     bgClose: true,
   }).then(() => {
     void saveData(storageDataPrefix.remoteLyricTip, true)

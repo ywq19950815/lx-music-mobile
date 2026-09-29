@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import Text from '@/components/common/Text'
 import Button, { type BtnType } from '@/components/common/Button'
 import { type BoardItem } from '@/store/leaderboard/state'
@@ -32,8 +32,8 @@ export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemPr
     <Button
       ref={buttonRef}
       style={[
-        styles.button,
-        active ? styles.buttonActive : styles.buttonInactive,
+        styles.card,
+        active ? styles.cardActive : styles.cardInactive,
       ]}
       key={item.id}
       onLongPress={setPosition}
@@ -41,50 +41,86 @@ export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemPr
         onBoundChange(item)
       }}
     >
-      {active ? (
-        <Icon style={styles.listActiveIcon} name="chevron-right" size={13} color={colors.brand} />
-      ) : null}
-      <Text
-        style={[styles.listName, active && styles.listNameActive]}
-        size={13}
-        numberOfLines={1}
-      >
-        {item.name}
-      </Text>
+      <View style={[styles.badgeIconWrap, active ? styles.badgeIconWrapActive : styles.badgeIconWrapInactive]}>
+        <Icon
+          name="trophy"
+          size={13}
+          color={active ? '#FFFFFF' : '#8A92A0'}
+        />
+      </View>
+      <View style={styles.textWrap}>
+        <Text
+          style={[styles.listName, active && styles.listNameActive]}
+          size={13}
+          numberOfLines={1}
+        >
+          {item.name}
+        </Text>
+      </View>
+      {active && (
+        <View style={styles.activeCheckWrap}>
+          <Icon name="check" size={12} color="#31C27C" />
+        </View>
+      )}
     </Button>
   )
 }
 
 const styles = StyleSheet.create({
-  button: {
-    paddingLeft: 12,
-    paddingRight: 12,
-    paddingVertical: 7,
+  card: {
+    width: '48.5%',
+    height: 48,
+    paddingHorizontal: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: radius.pill,
-    marginHorizontal: 4,
-    marginVertical: 3,
+    borderRadius: radius.md,
+    marginBottom: 8,
   },
-  buttonActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+  cardActive: {
+    backgroundColor: 'rgba(49, 194, 124, 0.08)',
+    borderWidth: 1.5,
+    borderColor: '#31C27C',
+  },
+  cardInactive: {
+    backgroundColor: '#F7F8FA',
     borderWidth: 1,
-    borderColor: colors.brand,
+    borderColor: '#ECEEF1',
   },
-  buttonInactive: {
-    backgroundColor: '#F3F4F6',
-    borderWidth: 1,
-    borderColor: 'transparent',
+  badgeIconWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
   },
-  listActiveIcon: {
+  badgeIconWrapActive: {
+    backgroundColor: '#31C27C',
+  },
+  badgeIconWrapInactive: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 0.5,
+    borderColor: '#E5E7EB',
+  },
+  textWrap: {
+    flex: 1,
+    minWidth: 0,
     marginRight: 4,
   },
   listName: {
     fontWeight: '500',
-    color: colors.inkSecondary,
+    color: '#2C3038',
   },
   listNameActive: {
     fontWeight: '700',
-    color: '#B36B00',
+    color: '#15803D',
+  },
+  activeCheckWrap: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(49, 194, 124, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })

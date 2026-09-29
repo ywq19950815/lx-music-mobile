@@ -20,14 +20,24 @@ export default () => {
       drawer.current?.closeDrawer()
     }
 
+    const handleHomeBack = (callback: (consumed: boolean) => void) => {
+      if (commonState.navActiveId !== 'nav_songlist') return
+      if (drawer.current?.isOpen) {
+        drawer.current.closeDrawer()
+        callback(true)
+      }
+    }
+
     global.state_event.on('navActiveIdUpdated', handleFixDrawer)
     global.app_event.on('showSonglistTagList', handleShow)
     global.app_event.on('hideSonglistTagList', handleHide)
+    global.app_event.on('homeBackPress', handleHomeBack)
 
     return () => {
       global.state_event.off('navActiveIdUpdated', handleFixDrawer)
       global.app_event.off('showSonglistTagList', handleShow)
       global.app_event.off('hideSonglistTagList', handleHide)
+      global.app_event.off('homeBackPress', handleHomeBack)
     }
   }, [])
 
@@ -36,7 +46,7 @@ export default () => {
   return (
     <DrawerLayoutFixed
       ref={drawer}
-      title="🏷️ 歌单分类标签"
+      title="歌单分类标签"
       renderNavigationView={navigationView}
     >
       <Content />

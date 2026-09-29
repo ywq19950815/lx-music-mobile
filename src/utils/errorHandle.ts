@@ -6,6 +6,14 @@ import { toast, tipDialog } from './tools'
 const errorHandler = (e: Error, isFatal: boolean) => {
   const excludedErrors = [
     'Failed to construct \'Response\'',
+    'Network request failed',
+    'Failed to fetch',
+    'timeout',
+    'Cannot read property \'lyric\'',
+    'The track index',
+    'The player is not initialized',
+    'source init failed',
+    'toggle_source_failed',
   ]
   if (isFatal) {
     if (excludedErrors.some((excludedError) => e.message.includes(excludedError))) {
@@ -18,7 +26,7 @@ const errorHandler = (e: Error, isFatal: boolean) => {
 Error:
 ${isFatal ? 'Fatal:' : ''} ${e.name} ${e.message}
 `,
-        btnText: '关闭 (Close)',
+        btnText: '关闭',
       })
     }
   }

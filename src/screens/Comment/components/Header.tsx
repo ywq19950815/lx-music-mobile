@@ -20,7 +20,6 @@ const HEADER_HEIGHT = scaleSizeH(_HEADER_HEIGHT)
 export default memo(({ musicInfo }: {
   musicInfo: LX.Music.MusicInfo
 }) => {
-  const t = useI18n()
   const statusBarHeight = useStatusbarHeight()
 
   const back = () => {
@@ -28,45 +27,70 @@ export default memo(({ musicInfo }: {
   }
 
   return (
-    <View style={{ height: HEADER_HEIGHT + statusBarHeight, paddingTop: statusBarHeight }}>
+    <View style={[styles.root, { height: 56 + statusBarHeight, paddingTop: statusBarHeight }]}>
       <StatusBar />
-      <View style={{ ...styles.container }}>
-        <TouchableOpacity onPress={back} style={{ ...styles.button, width: HEADER_HEIGHT }}>
+      <View style={styles.container}>
+        {/* 左侧圆形返回按钮 */}
+        <TouchableOpacity onPress={back} style={styles.backBtn} activeOpacity={0.7}>
           <Icon name="chevron-left" size={18} color={colors.ink} />
         </TouchableOpacity>
-        <Text numberOfLines={1} size={16} style={styles.title}>{t('comment_title', { name: musicInfo.name, singer: musicInfo.singer })}</Text>
-        {/* <TouchableOpacity onPress={back} style={{ ...styles.button }}>
-          <Icon name="available_updates" style={{ color: theme.normal }} size={24} />
-        </TouchableOpacity> */}
+
+        {/* 中间双行标题 */}
+        <View style={styles.center}>
+          <Text numberOfLines={1} style={styles.mainTitle}>歌曲评论</Text>
+          <Text numberOfLines={1} style={styles.subTitle}>
+            《{musicInfo.name}》{musicInfo.singer ? ` · ${musicInfo.singer}` : ''}
+          </Text>
+        </View>
+
+        {/* 右侧占位保持对称 */}
+        <View style={styles.rightPlaceholder} />
       </View>
     </View>
   )
 })
 
 
-const styles = createStyle({
+const styles = StyleSheet.create({
+  root: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ECEEF1',
+  },
   container: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    height: '100%',
-    paddingRight: 40,
-    backgroundColor: colors.surface,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.hairline,
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
   },
-  button: {
-    width: '100%',
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
+  center: {
     flex: 1,
-    textAlign: 'center',
-    color: colors.ink,
-    fontWeight: '600',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
   },
-  icon: {
-    paddingLeft: 4,
-    paddingRight: 4,
+  mainTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A1C20',
+  },
+  subTitle: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#8A919E',
+    marginTop: 2,
+  },
+  rightPlaceholder: {
+    width: 36,
+    height: 36,
   },
 })

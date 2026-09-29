@@ -5,8 +5,9 @@ import { setComponentId } from '@/core/common'
 import { COMPONENT_IDS } from '@/config/constant'
 import Vertical from './Vertical'
 import Horizontal from './Horizontal'
-import { navigations } from '@/navigation'
+import { navigations, pop } from '@/navigation'
 import settingState from '@/store/setting/state'
+import commonState from '@/store/common/state'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 import { Navigation } from 'react-native-navigation'
 import { exitApp, toast } from '@/utils/tools'
@@ -52,10 +53,36 @@ export default ({ componentId }: Props) => {
   }, [])
 
   const handleBack = useCallback(() => {
-    // 子页面（歌单/评论/设置/播放页）在栈上时，HOME 被覆盖 → 返回 false 让 RNN 自动 pop 子页面
+    // 1. 深度检测：是否有原生二级子页面压在 Home 之上（SonglistDetail、Comment、PlayDetail）
+    // 只要 commonState.componentIds 里有任何非 home 的组件存在，说明绝对不在首页！
+    const subScreenIds = (Object.entries(commonState.componentIds) as Array<[COMPONENT_IDS, string]>)
+      .filter(([name, id]) => name !== COMPONENT_IDS.home && !!id)
+
+    if (subScreenIds.length > 0) {
+      // 存在原生二级页面，获取最顶层的子页面主动 pop，绝不弹出退出提示！
+      const [topName, topId] = subScreenIds[subScreenIds.length - 1]
+      void pop(topId)
+      if (topName === COMPONENT_IDS.playDetail) {
+        globalThis.app_event?.emit('closePlayDetail')
+        if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
+          (window as any).__lxTogglePlayDetail(false)
+        }
+      }
+      return true
+    }
+
+    // 2. 如果 isVisibleRef 明确为 false（被其他原生层完全遮挡），直接让权给系统
     if (!isVisibleRef.current) return false
 
-    // 首页栈顶：双击退出，避免误触直接退出到桌面
+    // 3. 内部二级/三级页面与状态拦截：
+    // 通过事件向当前活跃的视图派发 backPress 事件，询问是否有二级页面需要回退
+    let consumedBySubView = false
+    global.app_event?.emit('homeBackPress', (consumed: boolean) => {
+      if (consumed) consumedBySubView = true
+    })
+    if (consumedBySubView) return true
+
+    // 4. 只有当没有原生二级页面压栈、内部也没有任何子视图拦截时，才是真正的首页顶层，此时才双击退出
     if (backRef.current) {
       backRef.current = false
       exitApp()

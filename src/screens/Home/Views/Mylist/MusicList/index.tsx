@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 
 import listState from '@/store/list/state'
 import ListMenu, { type ListMenuType, type Position, type SelectInfo } from './ListMenu'
@@ -16,6 +16,8 @@ import MusicPositionModal, { type MusicPositionModalType } from './MusicPosition
 import MetadataEditModal, { type MetadataEditType, type MetadataEditProps } from '@/components/MetadataEditModal'
 import MusicToggleModal, { type MusicToggleModalType } from './MusicToggleModal'
 import { scaleSizeH } from '@/utils/pixelRatio'
+import { useBackHandler } from '@/utils/hooks/useBackHandler'
+import commonState from '@/store/common/state'
 
 // 顶部操作条高度：ActiveList 内容高 32 + 上下 padding 6*2 + 底边 2.5，取整对齐
 const TOP_BAR_HEIGHT = scaleSizeH(48)
@@ -101,6 +103,52 @@ export default ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => {
     listRef.current?.scrollToInfo(info)
     handleExitSearch()
   }, [handleExitSearch])
+  const handleSelectKeyword = useCallback((keyword: string) => {
+    listSearchBarRef.current?.setText(keyword)
+    listMusicSearchRef.current?.search(keyword, layoutHeightRef.current)
+  }, [])
+
+  useBackHandler(useCallback(() => {
+    if (commonState.navActiveId !== 'nav_love') return false
+    if (isShowSearchBarModeBar.current) {
+      handleExitSearch()
+      return true
+    }
+    if (isShowMultipleModeBar.current) {
+      hancelExitSelect()
+      return true
+    }
+    if (onBackToDashboard) {
+      onBackToDashboard()
+      return true
+    }
+    return false
+  }, [handleExitSearch, hancelExitSelect, onBackToDashboard]))
+
+  useEffect(() => {
+    const handleHomeBack = (callback: (consumed: boolean) => void) => {
+      if (commonState.navActiveId !== 'nav_love') return
+      if (isShowSearchBarModeBar.current) {
+        handleExitSearch()
+        callback(true)
+        return
+      }
+      if (isShowMultipleModeBar.current) {
+        hancelExitSelect()
+        callback(true)
+        return
+      }
+      if (onBackToDashboard) {
+        onBackToDashboard()
+        callback(true)
+      }
+    }
+    global.app_event.on('homeBackPress', handleHomeBack)
+    return () => {
+      global.app_event.off('homeBackPress', handleHomeBack)
+    }
+  }, [handleExitSearch, hancelExitSelect, onBackToDashboard])
+
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const h = e.nativeEvent.layout.height
     // 忽略 0 值：搜索建议浮层依赖非零高度才会展开
@@ -160,6 +208,7 @@ export default ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => {
         <ListMusicSearch
           ref={listMusicSearchRef}
           onScrollToInfo={handleScrollToInfo}
+          onSelectKeyword={handleSelectKeyword}
         />
       </View>
       <ListMusicAdd ref={listMusicAddRef} onAdded={hancelExitSelect} />

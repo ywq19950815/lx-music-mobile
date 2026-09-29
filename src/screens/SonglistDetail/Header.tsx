@@ -118,17 +118,21 @@ export default forwardRef<HeaderType, HeaderProps>(({ componentId }: { component
 
   return (
     <View style={[styles.container, { paddingTop: statusBarHeight }]}>
-      {/* 顶部导航栏 */}
+      {/* 顶部现代精致导航栏 */}
       <View style={styles.navBar}>
         <TouchableOpacity
           style={styles.backBtn}
-          activeOpacity={0.6}
+          activeOpacity={0.7}
           onPress={handleBack}
         >
-          <Icon name="chevron-left" size={17} color="#1A1C20" />
+          <Icon name="chevron-left" size={18} color="#1A1C20" />
         </TouchableOpacity>
 
-        <Text style={styles.navTitleText}>歌单详情</Text>
+        <View style={styles.navCenter}>
+          <Text style={styles.navTitleText} numberOfLines={1}>
+            {detailInfo.name || '歌单详情'}
+          </Text>
+        </View>
 
         <View style={styles.sourceBadge}>
           <Text style={styles.sourceBadgeText}>{info.source?.toUpperCase() || 'NET'}</Text>
@@ -168,36 +172,43 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ECEEF1',
   },
   navBar: {
-    height: 48,
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    marginBottom: 4,
+    paddingHorizontal: 14,
+    marginBottom: 6,
   },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'transparent',
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navCenter: {
+    flex: 1,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   navTitleText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1A1C20',
+    textAlign: 'center',
   },
   sourceBadge: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   sourceBadgeText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#5A616B',
+    fontWeight: '700',
+    color: '#31C27C',
   },
   cardContainer: {
     marginHorizontal: 12,

@@ -12,7 +12,8 @@ import ListImportExport, { type ListImportExportType } from './MyList/ListImport
 import ListMenu, { type ListMenuType } from './MyList/ListMenu'
 import { handleRemove, handleSync } from './MyList/listAction'
 import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/common/DrawerLayoutFixed'
-import type { InitState as CommonState } from '@/store/common/state'
+import commonState, { type InitState as CommonState } from '@/store/common/state'
+import { useBackHandler } from '@/utils/hooks/useBackHandler'
 
 // 二级视图：'dashboard' 资产大盘 / 'detail' 歌单歌曲流 / 'setting' 设置（原一级 Tab 已精简移入此处）
 type SubView = 'dashboard' | 'detail' | 'setting'
@@ -20,11 +21,37 @@ type SubView = 'dashboard' | 'detail' | 'setting'
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
   const [subView, setSubView] = useState<SubView>('dashboard')
+  const subViewRef = useRef<SubView>('dashboard')
+  subViewRef.current = subView
 
   // 弹窗引用
   const listNameEditRef = useRef<ListNameEditType>(null)
   const listImportExportRef = useRef<ListImportExportType>(null)
   const listMenuRef = useRef<ListMenuType>(null)
+
+  // 处理 Android 侧滑返回：当处于设置或歌单二级页时，返回主资产大盘
+  useBackHandler(useCallback(() => {
+    if (commonState.navActiveId !== 'nav_love') return false
+    if (subViewRef.current !== 'dashboard') {
+      setSubView('dashboard')
+      return true
+    }
+    return false
+  }, []))
+
+  useEffect(() => {
+    const handleHomeBack = (callback: (consumed: boolean) => void) => {
+      if (commonState.navActiveId !== 'nav_love') return
+      if (subViewRef.current !== 'dashboard') {
+        setSubView('dashboard')
+        callback(true)
+      }
+    }
+    global.app_event.on('homeBackPress', handleHomeBack)
+    return () => {
+      global.app_event.off('homeBackPress', handleHomeBack)
+    }
+  }, [])
 
   useEffect(() => {
     const handleFixDrawer = (id: CommonState['navActiveId']) => {
@@ -94,7 +121,7 @@ export default () => {
   return (
     <DrawerLayoutFixed
       ref={drawer}
-      title="📋 我的歌单与分类"
+      title="我的歌单与分类"
       renderNavigationView={navigationView}
     >
       <View style={styles.container}>
@@ -102,11 +129,15 @@ export default () => {
           <MusicList onBackToDashboard={handleBackToDashboard} />
         ) : subView === 'setting' ? (
           <View style={styles.settingWrapper}>
-            <View style={styles.settingBackBar}>
+            <View style={styles.settingNavBar}>
               <TouchableOpacity style={styles.settingBackBtn} activeOpacity={0.7} onPress={handleBackFromSetting}>
-                <Icon name="chevron-left" size={16} color={colors.ink} />
-                <Text style={styles.settingBackText}>返回我的</Text>
+                <Icon name="chevron-left" size={18} color="#1A1C20" />
               </TouchableOpacity>
+              <View style={styles.settingNavCenter}>
+                <Text style={styles.settingNavTitle}>应用设置</Text>
+                <Text style={styles.settingNavSub}>个性化偏好 · 音频与服务配置</Text>
+              </View>
+              <View style={styles.settingNavRightPlaceholder} />
             </View>
             <Setting />
           </View>
@@ -149,22 +180,42 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 0,
   },
-  settingBackBar: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  settingNavBar: {
+    height: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#ECEEF1',
     backgroundColor: '#FFFFFF',
   },
   settingBackBtn: {
-    flexDirection: 'row',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
+    justifyContent: 'center',
   },
-  settingBackText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.ink,
+  settingNavCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingNavTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A1C20',
+  },
+  settingNavSub: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#8A919E',
+    marginTop: 1,
+  },
+  settingNavRightPlaceholder: {
+    width: 36,
+    height: 36,
   },
 })
