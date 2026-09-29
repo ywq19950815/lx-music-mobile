@@ -19,6 +19,19 @@ import { colors } from '@/theme/tokens'
 
 type Sources = Readonly<Array<LX.OnlineSource | 'all'>>
 
+/**
+ * 各音源的品牌识别色与单字标识：
+ * 让「5 个平台」一眼可辨，而不是一排神秘代号。
+ */
+const SOURCE_META: Record<string, { char: string; color: string }> = {
+  all: { char: '聚', color: '#31C27C' },
+  kw: { char: '蜗', color: '#FE9403' },
+  kg: { char: '枸', color: '#00A9FF' },
+  tx: { char: '秋', color: '#31C27C' },
+  wy: { char: '芸', color: '#EC4141' },
+  mg: { char: '蜜', color: '#018BE6' },
+}
+
 export interface SourceSelectorProps<S extends Sources> {
   fontSize?: number
   center?: boolean
@@ -145,65 +158,61 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     flex: 1,
   },
-  // 2 列卡片网格
-  gridWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 10,
+  // 单列平台列表：每行 = 品牌色圆标 + 名称 + 一句话介绍
+  listWrap: {
+    gap: 8,
   },
-  sourceCard: {
-    width: '48.3%',
-    height: 52,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+  sourceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 12,
+    height: 60,
+    borderRadius: 14,
+    paddingHorizontal: 12,
   },
-  sourceCardActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.10)',
+  sourceRowActive: {
+    backgroundColor: 'rgba(49, 194, 124, 0.10)',
     borderWidth: 1.5,
-    borderColor: '#10B981',
+    borderColor: colors.brand,
   },
-  sourceCardInactive: {
+  sourceRowInactive: {
     backgroundColor: '#F8F9FA',
     borderWidth: 1,
     borderColor: '#EAECEF',
   },
-  sourceLeft: {
-    flexDirection: 'row',
+  sourceAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
-    gap: 8,
-    flex: 1,
+    justifyContent: 'center',
   },
-  indicatorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  indicatorDotActive: {
-    backgroundColor: '#10B981',
-  },
-  indicatorDotInactive: {
-    backgroundColor: '#D1D5DB',
-  },
-  sourceLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.ink,
-    flexShrink: 1,
-  },
-  activeBadge: {
-    backgroundColor: '#10B981',
-    borderRadius: 4,
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-  },
-  activeBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
+  sourceAvatarText: {
+    fontSize: 16,
+    fontWeight: '800',
     color: '#FFFFFF',
+  },
+  rowTextWrap: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  rowLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.ink,
+  },
+  rowDesc: {
+    fontSize: 11.5,
+    color: colors.inkSecondary,
+  },
+  checkBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: colors.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
 
@@ -317,43 +326,44 @@ const Component = <S extends Sources>(
                 <View style={styles.tipBar}>
                   <Icon name="help" size={13} color={colors.inkSecondary} />
                   <Text style={styles.tipText} numberOfLines={1}>
-                    不同音源拥有不同版权曲库，切换将刷新当前列表
+                    内容由 5 家平台提供，曲库互不相通，切换将刷新当前列表
                   </Text>
                 </View>
 
-                {/* 2 列音源波普大卡片列表 */}
+                {/* 单列音源平台列表 */}
                 <ScrollView
-                  style={{ maxHeight: 280 }}
+                  style={{ maxHeight: 300 }}
                   showsVerticalScrollIndicator={false}
                   bounces={false}
                 >
-                  <View style={styles.gridWrap}>
+                  <View style={styles.listWrap}>
                     {sourceList_t.map((item) => {
                       const isActive = item.action === source
+                      const meta = SOURCE_META[item.action] ?? { char: item.label.slice(1, 2), color: colors.brand }
                       return (
                         <TouchableOpacity
                           key={item.action}
                           style={[
-                            styles.sourceCard,
-                            isActive ? styles.sourceCardActive : styles.sourceCardInactive,
+                            styles.sourceRow,
+                            isActive ? styles.sourceRowActive : styles.sourceRowInactive,
                           ]}
                           activeOpacity={0.8}
                           onPress={() => handleSelectSource(item.action as S[number])}
                         >
-                          <View style={styles.sourceLeft}>
-                            <View
-                              style={[
-                                styles.indicatorDot,
-                                isActive ? styles.indicatorDotActive : styles.indicatorDotInactive,
-                              ]}
-                            />
-                            <Text style={styles.sourceLabel} numberOfLines={1}>
+                          <View style={[styles.sourceAvatar, { backgroundColor: meta.color }]}>
+                            <Text style={styles.sourceAvatarText}>{meta.char}</Text>
+                          </View>
+                          <View style={styles.rowTextWrap}>
+                            <Text style={styles.rowLabel} numberOfLines={1}>
                               {item.label}
+                            </Text>
+                            <Text style={styles.rowDesc} numberOfLines={1}>
+                              {t(`source_desc_${item.action}`)}
                             </Text>
                           </View>
                           {isActive && (
-                            <View style={styles.activeBadge}>
-                              <Text style={styles.activeBadgeText}>当前</Text>
+                            <View style={styles.checkBadge}>
+                              <Icon name="check" size={12} color="#FFFFFF" />
                             </View>
                           )}
                         </TouchableOpacity>

@@ -13,6 +13,7 @@ import { getBoardsList } from '@/core/leaderboard'
 import { handleCollect, handlePlay } from '../listAction'
 import boardState, { type BoardItem } from '@/store/leaderboard/state'
 import { setNavActiveId } from '@/core/common'
+import { openSearchOverlay } from '@/core/searchOverlay'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 
 export default () => {
@@ -101,9 +102,9 @@ export default () => {
     }
   }, [])
 
-  // 页头搜索圆钮：跳转发现页
-  const handleGoSearch = useCallback(() => {
-    setNavActiveId('nav_search')
+  // 页头搜索圆钮：打开独立搜索页（矩形为圆钮屏幕坐标，用于圆钮→搜索框的 Q 弹形变）
+  const handleGoSearch = useCallback((rect: { x: number, y: number, width: number, height: number }) => {
+    openSearchOverlay(rect)
   }, [])
 
   // 榜单大卡「播放全部」

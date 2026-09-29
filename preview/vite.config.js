@@ -33,6 +33,69 @@ const sourceStubs = [
   { find: /^infSign\.min(\.js)?$/, replacement: r('./mocks/inf-sign.js') },
 ]
 
+// ── 预览专用：本地代理转发跨域音乐 API（配合 mocks/cors-proxy.js）──────────
+// 真机 RN fetch 无跨域概念，浏览器里音乐 API 全被 CORS 拦截 → 客户端把跨域 fetch
+// 改写为 /__musicproxy（原 URL 与原始请求头放自定义头），这里服务端代为转发。
+const PROXY_UA_FALLBACK = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
+const HOP_HEADERS = new Set(['host', 'connection', 'content-length', 'accept-encoding', 'origin', 'referer', 'user-agent'])
+
+const musicCorsProxy = () => ({
+  name: 'preview-music-cors-proxy',
+  configureServer(server) {
+    server.middlewares.use('/__musicproxy', async (req, res) => {
+      const fail = (code, msg) => {
+        res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*' })
+        res.end(JSON.stringify({ err: msg }))
+      }
+      const target = req.headers['x-preview-proxy-url']
+      if (!target || !/^https?:\/\//i.test(target)) return fail(400, 'missing/invalid x-preview-proxy-url')
+      try {
+        // 还原客户端捕获的原始请求头（可能含浏览器无法直发的受限头）
+        let headers = {}
+        try { headers = JSON.parse(decodeURIComponent(req.headers['x-preview-proxy-headers'] || '{}')) } catch { /* 容错 */ }
+        const chunks = []
+        for await (const chunk of req) chunks.push(chunk)
+        const body = chunks.length ? Buffer.concat(chunks) : undefined
+        const method = (req.method || 'GET').toUpperCase()
+
+        const fwd = {}
+        for (const [k, v] of Object.entries(headers)) {
+          const key = String(k).toLowerCase()
+          if (HOP_HEADERS.has(key)) continue
+          fwd[key] = v
+        }
+        if (!fwd['user-agent']) fwd['user-agent'] = PROXY_UA_FALLBACK
+        if (!fwd.referer) {
+          try { fwd.referer = new URL(target).origin + '/' } catch { /* 忽略 */ }
+        }
+
+        const upstream = await fetch(target, {
+          method,
+          headers: fwd,
+          body: body && method !== 'GET' && method !== 'HEAD' ? body : undefined,
+          redirect: 'follow',
+        })
+        const buf = Buffer.from(await upstream.arrayBuffer())
+        const out = {}
+        upstream.headers.forEach((v, k) => {
+          if (['content-encoding', 'content-length', 'transfer-encoding', 'connection', 'set-cookie'].includes(k.toLowerCase())) return
+          out[k] = v
+        })
+        // set-cookie 多值原样透传（浏览器端 getSetCookie 可读，kw 源提 token 依赖）
+        if (typeof upstream.headers.getSetCookie === 'function') {
+          const sc = upstream.headers.getSetCookie()
+          if (sc.length) out['set-cookie'] = sc
+        }
+        out['access-control-allow-origin'] = '*'
+        res.writeHead(upstream.status, out)
+        res.end(buf)
+      } catch (err) {
+        fail(502, String((err && err.message) || err))
+      }
+    })
+  },
+})
+
 export default defineConfig({
   plugins: [
     {
@@ -63,6 +126,7 @@ export default defineConfig({
       },
     },
     react(),
+    musicCorsProxy(),
   ],
   resolve: {
     alias: [

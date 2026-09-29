@@ -14,7 +14,7 @@ export interface HeaderBarProps {
   onSourceChange: (source: LX.OnlineSource) => void
   isDetailView?: boolean
   onBackToGallery?: () => void
-  onGoSearch?: () => void
+  onGoSearch?: (rect: { x: number, y: number, width: number, height: number }) => void
   onSubTabPress?: (index: number) => void
 }
 
@@ -33,6 +33,7 @@ const SUB_TABS = ['官方榜单', '分类流派', '新碟首发', '数字专区'
 export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourceChange, isDetailView, onBackToGallery, onGoSearch, onSubTabPress }, ref) => {
   const activeListNameRef = useRef<ActiveListNameType>(null)
   const sourceSelectorRef = useRef<SourceSelectorType>(null)
+  const searchBtnRef = useRef<TouchableOpacity>(null)
 
   useImperativeHandle(ref, () => ({
     setBound(source, id, name) {
@@ -69,9 +70,14 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
         </View>
         <View style={styles.titleActions}>
           <TouchableOpacity
+            ref={searchBtnRef}
             style={styles.circleBtn}
             activeOpacity={0.7}
-            onPress={() => { onGoSearch?.() }}
+            onPress={() => {
+              searchBtnRef.current?.measureInWindow((x, y, width, height) => {
+                onGoSearch?.({ x, y, width, height })
+              })
+            }}
           >
             <Icon name="search-2" size={16} color={colors.brand} />
           </TouchableOpacity>

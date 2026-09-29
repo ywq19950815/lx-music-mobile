@@ -1,6 +1,7 @@
 import { useRef, useCallback } from 'react'
 import { TouchableOpacity, View, StyleSheet, Animated } from 'react-native'
 import { Icon } from '@/components/common/Icon'
+import MediaSkipIcon from '@/components/common/MediaSkipIcon'
 import { useIsPlay, usePlayerMusicInfo } from '@/store/player/hook'
 import { playNext, playPrev, togglePlay, playList } from '@/core/player/player'
 import { useHorizontalMode } from '@/utils/hooks'
@@ -53,7 +54,7 @@ const PlayNextBtn = () => {
         style={styles.sideBtn}
         hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}
       >
-        <Icon name="nextMusic" color="#64748B" size={18} />
+        <MediaSkipIcon direction="next" color="#64748B" size={18} />
       </TouchableOpacity>
     </Animated.View>
   )
@@ -71,7 +72,7 @@ const PlayPrevBtn = () => {
         style={styles.sideBtn}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 6 }}
       >
-        <Icon name="prevMusic" color="#64748B" size={18} />
+        <MediaSkipIcon direction="prev" color="#64748B" size={18} />
       </TouchableOpacity>
     </Animated.View>
   )

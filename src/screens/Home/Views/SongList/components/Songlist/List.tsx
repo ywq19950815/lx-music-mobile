@@ -10,6 +10,7 @@ import { useI18n } from '@/lang'
 import { scaleSizeW } from '@/utils/pixelRatio'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
+import ListError from '@/components/common/ListError'
 
 type FlatListType = FlatListProps<ListInfoItem>
 
@@ -84,6 +85,10 @@ export default forwardRef<ListType, ListProps>(({ onRefresh, onLoadMore, onOpenD
       onRefresh={onRefresh} />
   ), [status, onRefresh, theme])
   const footerComponent = useMemo(() => {
+    // 列表为空且加载失败 → 居中完整错误态（替代孤零零一行小字）
+    if (status == 'error' && currentList.length === 0) {
+      return <ListError onRetry={onLoadMore} />
+    }
     let label: FooterLabel
     switch (status) {
       case 'refreshing': return null
@@ -105,7 +110,7 @@ export default forwardRef<ListType, ListProps>(({ onRefresh, onLoadMore, onOpenD
         <Footer label={label} onLoadMore={onLoadMore} />
       </View>
     )
-  }, [onLoadMore, status])
+  }, [onLoadMore, status, currentList.length])
 
 
   // const itemWidth = useMemo(() => {

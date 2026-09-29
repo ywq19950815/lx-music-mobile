@@ -1,3 +1,6 @@
+// ── 跨域代理垫片（必须最先挂载，拦截所有跨域 fetch 走本地代理）──
+import './mocks/cors-proxy.js'
+
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Buffer } from 'buffer'

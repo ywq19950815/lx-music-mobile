@@ -30,11 +30,12 @@ const Title = () => {
   )
 }
 
-export default memo(() => {
+export default memo(({ componentId }: { componentId?: string }) => {
   const popupRef = useRef<SettingPopupType>(null)
 
   const back = () => {
-    void pop(commonState.componentIds.playDetail!)
+    const compId = componentId ?? commonState.componentIds.playDetail
+    if (compId) void pop(compId)
   }
   const showSetting = () => {
     popupRef.current?.show()
@@ -51,7 +52,7 @@ export default memo(() => {
         <CommentBtn />
         <Btn icon="slider" onPress={showSetting} />
       </View>
-      <SettingPopup ref={popupRef} position="left" direction="horizontal" />
+      <SettingPopup ref={popupRef} direction="horizontal" />
     </View>
   )
 })

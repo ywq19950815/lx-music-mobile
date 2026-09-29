@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from 'react-native'
 import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
+import { getPosition } from '@/plugins/player'
 import { useSettingValue } from '@/store/setting/hook'
 import { useIsPlay } from '@/store/player/hook'
 import Text from '@/components/common/Text'
@@ -33,6 +34,7 @@ interface LineProps {
   idleColor: string
   inactiveColor: string
   extendedColor: (alpha: number) => string
+  variant: 'half' | 'full'
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 
@@ -74,12 +76,16 @@ const LrcLine = memo(({
   idleColor,
   inactiveColor,
   extendedColor,
+  variant,
   onLayout,
 }: LineProps) => {
   const active = activeLine === lineNum
-  const baseSize = lrcFontSize / 10
-  // 激活行放大加粗为视觉主体大字（1.42x），未激活行收敛为背景副字（0.88x），层级极分明
-  const size = active ? baseSize * 1.42 : baseSize * 0.88
+  // 半屏（黑胶下方）空间有限，整体紧凑缩放，保证三行上下文能完整呈现
+  const sizeScale = variant === 'half' ? 0.82 : 1
+  const baseSize = (lrcFontSize / 10) * sizeScale
+  // 当前正在唱的这句：显著放大加粗为视觉主体大字（1.5x）；
+  // 其它未激活句：收敛为小字号背景副字（0.78x），层级极分明，绝不会反。
+  const size = active ? baseSize * 1.5 : baseSize * 0.78
   const lineHeight = setSpText(size) * 1.44
   const isPlay = useIsPlay()
 
@@ -104,16 +110,22 @@ const LrcLine = memo(({
     return clock.baseTime + (Date.now() - clock.baseStamp)
   }, [line])
 
-  // 进度广播校准时钟；检测 seek 跳变（>600ms）触发行级动画重启
+  // 进度广播校准时钟：以权威播放位置（getPosition 秒→毫秒）重新校准基准，
+  // 彻底规避 nowPlayTime 在工程中"秒/毫秒"单位不一致的坑（否则第一次进度事件会把基准覆盖成秒，
+  // 毫秒级的逐字/行级时间戳瞬间匹配不上，卡拉OK染色一两个字后整行熄灭）
   useEffect(() => {
     if (!active) return
-    const handleProgress = ({ nowPlayTime }: { nowPlayTime: number }) => {
+    const handleProgress = () => {
       const prevT = getCurTime()
-      clockRef.current.baseTime = nowPlayTime
-      clockRef.current.baseStamp = Date.now()
-      frozenTRef.current = null
-      const newT = getCurTime()
-      if (Math.abs(newT - prevT) > 600) setSeekTick(t => t + 1)
+      void getPosition().then((pos) => {
+        if (pos == null) return
+        const t = pos * 1000
+        clockRef.current.baseTime = t
+        clockRef.current.baseStamp = Date.now()
+        frozenTRef.current = null
+        const newT = getCurTime()
+        if (Math.abs(newT - prevT) > 600) setSeekTick(s => s + 1)
+      })
     }
     global.state_event.on('playProgressChanged', handleProgress)
     return () => {
@@ -329,6 +341,7 @@ const LrcLine = memo(({
   if (prevProps.idleColor !== nextProps.idleColor) return false
   if (prevProps.inactiveColor !== nextProps.inactiveColor) return false
   if (prevProps.extendedColor !== nextProps.extendedColor) return false
+  if (prevProps.variant !== nextProps.variant) return false
   const prevActive = prevProps.activeLine === prevProps.lineNum
   const nextActive = nextProps.activeLine === nextProps.lineNum
   return prevActive === nextActive
@@ -336,7 +349,7 @@ const LrcLine = memo(({
 
 const wait = async() => new Promise(resolve => setTimeout(resolve, 80))
 
-export default () => {
+export default ({ variant = 'full' }: { variant?: 'half' | 'full' }) => {
   const lyricLines = useLrcSet()
   const { line } = useLrcPlay()
   const flatListRef = useRef<FlatList>(null)
@@ -352,14 +365,15 @@ export default () => {
   const theme = useContext(ThemeContext)
   const lyricColors = useLyricColors()
 
-  // 原生硬件加速平滑滚动到激活行，杜绝 JS 线程 10ms 频繁步进造成的掉帧与卡死
+  // 原生硬件加速平滑滚动到激活行：当前句居中（viewPosition 0.5），
+  // 这样正唱的这句在中间，上下都能看见前一句和下一句
   const handleScrollToActive = useCallback((index = lineRef.current.line) => {
     if (index < 0 || !flatListRef.current) return
     try {
       flatListRef.current.scrollToIndex({
         index,
         animated: true,
-        viewPosition: 0.42,
+        viewPosition: 0.5,
       })
     } catch {
       // 容错兜底
@@ -490,6 +504,7 @@ export default () => {
         idleColor={lyricColors.idle}
         inactiveColor={lyricColors.inactive}
         extendedColor={lyricColors.extended}
+        variant={variant}
         onLayout={handleLineLayout}
       />
     )
@@ -498,8 +513,8 @@ export default () => {
   const getkey: FlatListType['keyExtractor'] = (item, index) => `${index}${item.text}`
 
   const spaceComponent = useMemo(() => (
-    <View style={styles.space} onLayout={handleSpaceLayout} />
-  ), [handleSpaceLayout])
+    <View style={[styles.space, { paddingTop: variant === 'half' ? 24 : 56 }]} onLayout={handleSpaceLayout} />
+  ), [handleSpaceLayout, variant])
 
   const statusText = useStatusText()
   const emptyComponent = useMemo(() => (
@@ -528,7 +543,7 @@ export default () => {
         ListEmptyComponent={emptyComponent}
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
-        fadingEdgeLength={100}
+        fadingEdgeLength={variant === 'half' ? 28 : 80}
         initialNumToRender={Math.max(line + 15, 20)}
         maxToRenderPerBatch={10}
         windowSize={7}

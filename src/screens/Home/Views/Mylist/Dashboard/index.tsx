@@ -20,7 +20,7 @@ export interface DashboardProps {
 /**
  * 个人音乐中心（2026-09-29 设计稿）：
  * - MY MUSIC PROFILE 顶栏（通知 / 设置圆钮）
- * - 用户信息卡：品牌绿描边头像 + Hi-Fi 徽章 + 听歌资产统计 + 尊享特权条
+ * - 用户信息卡：品牌绿描边头像 + 真实资产统计（歌曲数 / 歌单数）
  * - 快捷入口四宫格（本地下载 / 最近播放 / 已购音乐 / 车载互联）
  * - 歌单 Tab（自建歌单 / 收藏歌单 / 关注歌手）
  * - 「我喜欢」心动模式大卡 + 自建歌单卡片流
@@ -95,34 +95,11 @@ export default memo(({ onSelectList, onCreateList, onImportList, onOpenSetting, 
             </View>
           </View>
           <View style={styles.profileInfo}>
-            <View style={styles.profileNameRow}>
-              <Text style={styles.profileName} numberOfLines={1}>我的音乐空间</Text>
-              <View style={styles.vipBadge}>
-                <Text style={styles.vipBadgeText}>Hi-Fi</Text>
-              </View>
-            </View>
+            <Text style={styles.profileName} numberOfLines={1}>我的音乐</Text>
             <Text style={styles.profileSub}>
-              已收纳 {totalMusics} 首歌曲 · {allList.length} 个歌单
+              {totalMusics} 首歌曲 · {allList.length} 个歌单
             </Text>
-            <View style={styles.profileStats}>
-              <Text style={styles.profileStat}><Text style={styles.profileStatNum}>{loveCount}</Text> 喜欢</Text>
-              <Text style={styles.profileStatDivider}>·</Text>
-              <Text style={styles.profileStat}><Text style={styles.profileStatNum}>{defaultCount}</Text> 试听</Text>
-              <Text style={styles.profileStatDivider}>·</Text>
-              <Text style={styles.profileStat}><Text style={styles.profileStatNum}>{totalMusics}</Text> 收藏</Text>
-            </View>
           </View>
-        </View>
-
-        {/* VIP 特权条 */}
-        <View style={styles.privilegeStrip}>
-          <View style={styles.privilegeLeft}>
-            <Icon name="thumbs-up" size={14} color={colors.brand} />
-            <Text style={styles.privilegeText} numberOfLines={1}>尊享 24bit 超清母带音质与黑胶动效</Text>
-          </View>
-          <TouchableOpacity style={styles.privilegeBtn} activeOpacity={0.7} onPress={onOpenSetting}>
-            <Text style={styles.privilegeBtnText}>特权中心</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -363,88 +340,16 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
   },
-  profileNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   profileName: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.ink,
     flexShrink: 1,
   },
-  vipBadge: {
-    backgroundColor: colors.brand,
-    borderRadius: radius.sm,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-  },
-  vipBadgeText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
   profileSub: {
     fontSize: 11.5,
     color: colors.inkSecondary,
     marginTop: 4,
-  },
-  profileStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 10,
-  },
-  profileStat: {
-    fontSize: 12,
-    color: colors.inkSecondary,
-  },
-  profileStatNum: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.ink,
-  },
-  profileStatDivider: {
-    fontSize: 11,
-    color: colors.inkTertiary,
-  },
-
-  // VIP 特权条
-  privilegeStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.hairline,
-    marginTop: 14,
-    paddingTop: 12,
-  },
-  privilegeLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    flex: 1,
-    minWidth: 0,
-  },
-  privilegeText: {
-    fontSize: 11.5,
-    fontWeight: '500',
-    color: colors.ink,
-    flexShrink: 1,
-  },
-  privilegeBtn: {
-    backgroundColor: colors.muted,
-    borderRadius: radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginLeft: 8,
-  },
-  privilegeBtnText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.brand,
   },
 
   // ── 3. 快捷四宫格 ────────────────────────

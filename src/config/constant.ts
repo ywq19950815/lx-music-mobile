@@ -103,7 +103,7 @@ export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 export const NAV_MENUS = [
   { id: 'nav_search', icon: 'search-2' },
   { id: 'nav_top', icon: 'album' },
-  { id: 'nav_love', icon: 'single' },
+  { id: 'nav_love', icon: 'user' },
   // { id: 'download', icon: 'download-2' },
 ] as const
 

@@ -15,7 +15,7 @@ export interface SortTabType {
 
 /**
  * 歌单分类切换条：现代微胶囊风格。
- * 激活项带有浅金底色、细金边与高亮金文字。
+ * 激活项带有浅绿底色、细绿边与高亮绿文字（品牌色系）。
  */
 export default forwardRef<SortTabType, SortTabProps>(({ onSortChange }, ref) => {
   const [sortList, setSortList] = useState<SortInfo[]>([])
@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   pillActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
-    borderColor: '#10B981',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: colors.brand,
   },
   pillText: {
     fontSize: 12,
@@ -97,6 +97,6 @@ const styles = StyleSheet.create({
   },
   pillTextActive: {
     fontWeight: '700',
-    color: '#B36B00',
+    color: colors.brandDeep,
   },
 })

@@ -1,6 +1,7 @@
 import { useRef, useCallback, useMemo } from 'react'
 import { TouchableOpacity, View, StyleSheet, Animated } from 'react-native'
 import { Icon } from '@/components/common/Icon'
+import MediaSkipIcon from '@/components/common/MediaSkipIcon'
 import { playNext, playPrev, togglePlay } from '@/core/player/player'
 import { useIsPlay } from '@/store/player/hook'
 import { useWindowSize } from '@/utils/hooks'
@@ -32,7 +33,7 @@ const PrevBtn = ({ size, iconColor }: { size: number, iconColor: string }) => {
         onPressIn={pressIn}
         onPressOut={pressOut}
       >
-        <Icon name="prevMusic" color={iconColor} rawSize={26} />
+        <MediaSkipIcon direction="prev" color={iconColor} size={26} />
       </TouchableOpacity>
     </Animated.View>
   )
@@ -58,7 +59,7 @@ const NextBtn = ({ size, iconColor }: { size: number, iconColor: string }) => {
         onPressIn={pressIn}
         onPressOut={pressOut}
       >
-        <Icon name="nextMusic" color={iconColor} rawSize={26} />
+        <MediaSkipIcon direction="next" color={iconColor} size={26} />
       </TouchableOpacity>
     </Animated.View>
   )

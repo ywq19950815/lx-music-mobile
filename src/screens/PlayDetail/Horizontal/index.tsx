@@ -56,7 +56,7 @@ export default memo(({ componentId }: { componentId: string }) => {
       <StatusBar />
       <View style={{ ...styles.container, paddingTop: statusBarHeight }}>
         <View style={styles.left}>
-          <Header />
+          <Header componentId={componentId} />
           <View style={styles.leftContent}>
             <MoreBtn />
             <Pic componentId={componentId} />

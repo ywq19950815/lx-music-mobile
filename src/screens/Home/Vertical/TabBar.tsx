@@ -23,7 +23,7 @@ import { navigations } from '@/navigation'
 const TAB_META: Record<string, { icon: string; label: string }> = {
   nav_search: { icon: 'search-2', label: '发现' },
   nav_top: { icon: 'album', label: '音乐馆' },
-  nav_love: { icon: 'single', label: '我的' },
+  nav_love: { icon: 'user', label: '我的' },
 }
 
 const TABS: Array<{ id: CommonState['navActiveId']; icon: string; label: string }> =

@@ -2,17 +2,16 @@ import { memo, useMemo, useEffect, useRef, useState, useCallback } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
 import Header from './components/Header'
-import { Icon } from '@/components/common/Icon'
 import CommentHot from './CommentHot'
 import CommentNew from './CommentNew'
-import { createStyle, toast } from '@/utils/tools'
+import { createStyle } from '@/utils/tools'
 import { useTheme } from '@/store/theme/hook'
 import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import { COMPONENT_IDS } from '@/config/constant'
 import { setComponentId } from '@/core/common'
 import PageContent from '@/components/PageContent'
-import playerState from '@/store/player/state'
+import { usePlayMusicInfo } from '@/store/player/hook'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { BorderWidths } from '@/theme'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
@@ -85,10 +84,18 @@ export default memo(({ componentId }: {
 }) => {
   const pagerViewRef = useRef<PagerView>(null)
   const [activeId, setActiveId] = useState<ActiveId>('hot')
-  const [musicInfo, setMusicInfo] = useState<LX.Music.MusicInfo | null>(getMusicInfo(playerState.playMusicInfo.musicInfo))
+  const playMusicInfo = usePlayMusicInfo()
+  const [musicInfo, setMusicInfo] = useState<LX.Music.MusicInfo | null>(getMusicInfo(playMusicInfo.musicInfo))
   const t = useI18n()
   const theme = useTheme()
   const [total, setTotal] = useState({ hot: 0, new: 0 })
+
+  // 跟随当前播放歌曲：切歌后评论自动刷新（接管原「刷新按钮」职责）
+  useEffect(() => {
+    const raw = getMusicInfo(playMusicInfo.musicInfo)
+    if (!raw) return
+    setMusicInfo(prev => (prev && prev.id == raw.id ? prev : raw))
+  }, [playMusicInfo])
 
   useEffect(() => {
     setComponentId(COMPONENT_IDS.comment, componentId)
@@ -120,18 +127,6 @@ export default memo(({ componentId }: {
     setActiveId(TABS[nativeEvent.position])
   }, [])
 
-  const refreshComment = useCallback(() => {
-    if (!playerState.playMusicInfo.musicInfo) return
-    let playerMusicInfo = playerState.playMusicInfo.musicInfo
-    if ('progress' in playerMusicInfo) playerMusicInfo = playerMusicInfo.metadata.musicInfo
-
-    if (musicInfo && musicInfo.id == playerMusicInfo.id) {
-      toast(t('comment_refresh', { name: musicInfo.name }))
-      return
-    }
-    setMusicInfo(playerMusicInfo)
-  }, [musicInfo, t])
-
   const setHotTotal = useCallback((total: number) => {
     setTotal(totalInfo => ({ ...totalInfo, hot: total }))
   }, [])
@@ -145,11 +140,6 @@ export default memo(({ componentId }: {
         <View style={{ ...styles.tabHeader, borderBottomColor: theme['c-border-background'], height: BAR_HEIGHT }}>
           <View style={styles.left}>
             {tabs.map(({ id, label }) => <HeaderItem id={id} label={label} key={id} isActive={activeId == id} onPress={toggleTab} />)}
-          </View>
-          <View>
-            <TouchableOpacity onPress={refreshComment} style={{ ...styles.btn, width: BAR_HEIGHT }}>
-              <Icon name="available_updates" size={20} color={theme['c-600']} />
-            </TouchableOpacity>
           </View>
         </View>
         <PagerView
@@ -167,7 +157,7 @@ export default memo(({ componentId }: {
         </PagerView>
       </View>
     )
-  }, [activeId, musicInfo, onPageSelected, refreshComment, setHotTotal, setNewTotal, tabs, theme, toggleTab])
+  }, [activeId, musicInfo, onPageSelected, setHotTotal, setNewTotal, tabs, theme, toggleTab])
 
   return (
     <PageContent>
@@ -212,12 +202,6 @@ const styles = createStyle({
     // flex: 1,
     paddingLeft: 10,
     paddingRight: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  btn: {
-    // flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     height: '100%',

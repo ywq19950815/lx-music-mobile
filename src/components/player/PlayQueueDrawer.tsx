@@ -16,7 +16,7 @@ import listState from '@/store/list/state'
 import { LIST_IDS, MUSIC_TOGGLE_MODE, MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'
 import { useSettingValue } from '@/store/setting/hook'
 import { updateSetting } from '@/core/common'
-import { radius } from '@/theme/tokens'
+import { darkColors as c } from '@/theme/tokens'
 import { toast } from '@/utils/tools'
 import { useI18n } from '@/lang'
 import { getListMusics, getListMusicSync } from '@/utils/listManage'
@@ -248,7 +248,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
             activeOpacity={0.7}
             onPress={handleTogglePlayMode}
           >
-            <Icon name={playModeMeta.icon} size={15} color="#A0A5B1" />
+            <Icon name={playModeMeta.icon} size={15} color={c.brandLight} />
             <Text style={styles.modeText}>{playModeMeta.label}</Text>
           </TouchableOpacity>
 
@@ -266,7 +266,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyBox}>
-              <Icon name="logo" size={32} color="rgba(255,255,255,0.18)" />
+              <Icon name="logo" size={32} color={c.inkTertiary} />
               <Text style={styles.emptyText}>播放队列为空</Text>
             </View>
           }
@@ -284,7 +284,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                       activeOpacity={0.7}
                       onPress={item.onClear}
                     >
-                      <Icon name="eraser" size={12} color="#8A909E" />
+                      <Icon name="eraser" size={12} color={c.inkTertiary} />
                       <Text style={styles.clearBtnText}>清空</Text>
                     </TouchableOpacity>
                   ) : null}
@@ -301,7 +301,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                 >
                   {item.isActive ? (
                     <View style={styles.activeIconBox}>
-                      <Icon name="play" size={12} color="#10B981" />
+                      <Icon name="play" size={10} color="#FFFFFF" />
                     </View>
                   ) : null}
 
@@ -331,7 +331,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                     onPress={item.onRemove}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Icon name="close" size={13} color="#7A808E" />
+                    <Icon name="close" size={13} color={c.inkTertiary} />
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -348,41 +348,43 @@ export default memo(PlayQueueDrawer)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
   },
   subBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 10,
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 6,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: c.hairline,
+    marginBottom: 4,
   },
   modeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
+    backgroundColor: c.ghost,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.35)',
   },
   modeText: {
     fontSize: 12,
-    color: '#D1D5DB',
+    color: c.ink,
     fontWeight: '500',
   },
   countBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    backgroundColor: c.muted,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   countBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#A0A5B1',
+    color: c.inkSecondary,
   },
   list: {
     flex: 1,
@@ -395,7 +397,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 12,
+    paddingTop: 14,
     paddingBottom: 6,
     paddingHorizontal: 4,
   },
@@ -405,61 +407,67 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
-    color: '#10B981',
+    color: c.inkTertiary,
+    letterSpacing: 1,
   },
   sectionCount: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '500',
-    color: '#717684',
+    color: c.inkTertiary,
   },
   clearBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: c.ghost,
   },
   clearBtnText: {
-    fontSize: 12,
-    color: '#8A909E',
+    fontSize: 11,
+    color: c.inkSecondary,
   },
   songRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 9,
-    paddingHorizontal: 8,
-    borderRadius: radius.md,
-    marginVertical: 1.5,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginVertical: 2,
   },
   songRowActive: {
-    backgroundColor: 'rgba(49, 194, 124, 0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.14)',
   },
   songMain: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   activeIconBox: {
-    width: 16,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: c.brand,
   },
   tempBadge: {
-    backgroundColor: 'rgba(49, 194, 124, 0.18)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(49, 194, 124, 0.45)',
-    borderRadius: 4,
-    paddingHorizontal: 5,
+    backgroundColor: 'rgba(16, 185, 129, 0.16)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(16, 185, 129, 0.45)',
+    borderRadius: 5,
+    paddingHorizontal: 6,
     paddingVertical: 1.5,
   },
   tempBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#10B981',
+    color: c.brandLight,
   },
   songMeta: {
     flex: 1,
@@ -468,18 +476,18 @@ const styles = StyleSheet.create({
   songTitle: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#E5E7EB',
+    color: c.ink,
   },
   songTitleActive: {
-    color: '#10B981',
+    color: c.brandLight,
     fontWeight: '700',
   },
   songSinger: {
     fontSize: 11.5,
-    color: '#787E8C',
+    color: c.inkTertiary,
   },
   removeBtn: {
-    padding: 6,
+    padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -491,6 +499,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 13,
-    color: '#656A76',
+    color: c.inkTertiary,
   },
 })

@@ -85,3 +85,7 @@ release/
 /shot_playing.png
 /preview/*.png
 /preview/*.txt
+/preview/capture_queue_view.mjs
+/preview/test_play_queue.mjs
+/preview/screenshots/
+/preview/tools/

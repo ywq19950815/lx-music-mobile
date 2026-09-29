@@ -40,13 +40,16 @@ const Title = () => {
   )
 }
 
-export default memo(() => {
+export default memo(({ componentId }: { componentId?: string }) => {
   const popupRef = useRef<SettingPopupType>(null)
   const statusBarHeight = useStatusbarHeight()
 
   const back = () => {
-    void pop(commonState.componentIds.playDetail!)
-    global.app_event?.closePlayDetail()
+    // 优先用屏幕自身的 componentId（与系统返回/下拉手势同一链路），
+    // 避免 commonState 注册时序/过期问题导致 pop 静默失败
+    const compId = componentId ?? commonState.componentIds.playDetail
+    if (compId) void pop(compId)
+    global.app_event?.closePlayDetail?.()
     if ((globalThis as any).__lxTogglePlayDetail) {
       (globalThis as any).__lxTogglePlayDetail(false)
     }

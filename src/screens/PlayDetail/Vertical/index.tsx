@@ -72,12 +72,13 @@ export default memo(({ componentId }: { componentId: string }) => {
   const panY = useRef(new Animated.Value(0)).current
 
   const handleClose = useCallback(() => {
-    void pop(commonState.componentIds.playDetail!)
-    global.app_event?.closePlayDetail()
+    const compId = componentId ?? commonState.componentIds.playDetail
+    if (compId) void pop(compId)
+    global.app_event?.closePlayDetail?.()
     if ((globalThis as any).__lxTogglePlayDetail) {
       (globalThis as any).__lxTogglePlayDetail(false)
     }
-  }, [])
+  }, [componentId])
 
   const panResponder = useRef(
     PanResponder.create({
@@ -117,7 +118,7 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   return (
     <Animated.View style={[styles.root, { backgroundColor: c.canvas, transform: [{ translateY: panY }] }]}>
-      <Header />
+      <Header componentId={componentId} />
 
       <View style={[styles.container, { backgroundColor: c.canvas }]}>
         {/* 滑动翻页系统：Page 0 唱机同屏 + Page 1 全屏歌词 */}
@@ -139,14 +140,14 @@ export default memo(({ componentId }: { componentId: string }) => {
               activeOpacity={0.92}
               onPress={() => handleSwitchPage(1)}
             >
-              <Lyric />
+              <Lyric variant="half" />
             </TouchableOpacity>
           </View>
 
           {/* ── Page 1：全屏大歌词（带卡拉OK逐字变色，沉浸大字） ── */}
           <View key="page_lyric" style={styles.pageWrap}>
             <View style={styles.fullLyricArea}>
-              <Lyric />
+              <Lyric variant="full" />
             </View>
           </View>
         </PagerView>

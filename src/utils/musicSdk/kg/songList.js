@@ -214,7 +214,8 @@ export default {
       this.getSongListUrl(sortId, tagId, page),
     )
     return this._requestObj_list.promise.then(({ body }) => {
-      if (!body || body.status !== 1) return this.getSongList(sortId, tagId, page, ++tryNum)
+      // 容错：接口偶发不回 status 字段，只要有歌单数据即视为成功
+      if (!body || !(body.status === 1 || Array.isArray(body.special_db))) return this.getSongList(sortId, tagId, page, ++tryNum)
       return this.filterList(body.special_db)
     })
   },
@@ -242,7 +243,7 @@ export default {
       },
     )
     return this._requestObj_listRecommend.promise.then(({ body }) => {
-      if (body.status !== 1) return this.getSongListRecommend(++tryNum)
+      if (!(body.status === 1 || (body.data && Array.isArray(body.data.special_list)))) return this.getSongListRecommend(++tryNum)
       return this.filterList(body.data.special_list)
     })
   },
@@ -974,7 +975,7 @@ export default {
     if (tryNum > 2) return Promise.reject(new Error('try max num'))
     this._requestObj_tags = httpFetch(this.getInfoUrl())
     return this._requestObj_tags.promise.then(({ body }) => {
-      if (body.status !== 1) return this.getTags(++tryNum)
+      if (!(body.status === 1 || (body.data && (body.data.hotTag || body.data.tagids)))) return this.getTags(++tryNum)
       return {
         hotTag: this.filterInfoHotTag(body.data.hotTag),
         tags: this.filterTagInfo(body.data.tagids),

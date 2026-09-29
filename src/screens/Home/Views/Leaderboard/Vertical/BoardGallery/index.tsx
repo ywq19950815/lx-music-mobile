@@ -7,6 +7,7 @@ import { type BoardItem } from '@/store/leaderboard/state'
 import { colors, radius } from '@/theme/tokens'
 import { getListDetail } from '@/core/leaderboard'
 import { setNavActiveId } from '@/core/common'
+import { openSearchOverlay } from '@/core/searchOverlay'
 
 export interface BoardGalleryProps {
   list: BoardItem[]
@@ -76,10 +77,9 @@ const NEW_RELEASES = [
   },
 ] as const
 
-/** 跨页快捷搜索：切回发现页并执行关键词搜索 */
+/** 跨页快捷搜索：直接打开独立搜索页并自动搜索该关键词（不再切换发现页） */
 const goQuickSearch = (keyword: string) => {
-  setNavActiveId('nav_search')
-  global.app_event.quickSearch(keyword)
+  openSearchOverlay(undefined, keyword)
 }
 
 // ── 骨架屏 ──────────────────────────────

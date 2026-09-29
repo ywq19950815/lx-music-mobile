@@ -1,10 +1,9 @@
-import { updateSetting } from '@/core/common'
-import { setDesktopLyricColor } from '@/core/desktopLyric'
-import { useI18n } from '@/lang'
 import { memo, useMemo } from 'react'
 import { StyleSheet, View, TouchableOpacity } from 'react-native'
 
-import SubTitle from '../../components/SubTitle'
+import { updateSetting } from '@/core/common'
+import { setDesktopLyricColor } from '@/core/desktopLyric'
+import { useI18n } from '@/lang'
 import { useSettingValue } from '@/store/setting/hook'
 import { colors, radius } from '@/theme/tokens'
 
@@ -37,20 +36,17 @@ const toRgb = (c: string): [number, number, number] | null => {
 }
 
 /**
- * NeoThemeSwatch: 波普色卡
- * - 30×30 方块 + 2px 纯黑描边 + 硬偏移阴影（与全局实体按键/徽章同一套语言）
- * - 选中态：物理下沉（阴影收起）+ 对比色加粗对勾，一眼能看出当前用的是哪个
- *   对勾颜色取该主题的阴影色（即歌词投影色），天然与色块形成对比：
- *   纯黑块 → 白勾，其余 → 黑勾。
+ * ThemeSwatch：主题色卡
+ * - 32×32 圆形色块 + 柔和投影，落在白卡片上干净清爽
+ * - 选中态：品牌色描边 + 轻微放大，一眼能看出当前用的是哪个
  */
-const ThemeItem = ({ color, active, change }: {
+const ThemeSwatch = ({ color, active, change }: {
   color: Theme
   active: boolean
   change: (color: Theme) => void
 }) => {
-  // 纯黑主题用白色对勾，其余用深色或白色
+  // 深色卡用白勾，浅色卡用深勾，保证任何底色上都可见
   const checkColor = color[0] === '#000000' || color[0] === '#019ce4' || color[0] === '#ff1222' || color[0] === '#c851d4' ? '#FFFFFF' : '#0F172A'
-
   return (
     <TouchableOpacity
       style={styles.item}
@@ -60,14 +56,13 @@ const ThemeItem = ({ color, active, change }: {
       accessibilityState={{ selected: active }}
     >
       <View style={[styles.swatch, { backgroundColor: color[0] }, active ? styles.swatchActive : null]}>
-        {active ? <View style={[styles.checkMark, { width: 11, height: 6, borderColor: checkColor }]} /> : null}
+        {active ? <View style={[styles.checkMark, { borderColor: checkColor }]} /> : null}
       </View>
     </TouchableOpacity>
   )
 }
 
 export default memo(() => {
-  const t = useI18n()
   const playedColor = useSettingValue('desktopLyric.style.lyricPlayedColor')
 
   const activeIndex = useMemo(() => {
@@ -86,15 +81,13 @@ export default memo(() => {
   }
 
   return (
-    <SubTitle title={t('setting_lyric_desktop_theme')}>
-      <View style={styles.list}>
-        {
-          themes.map((c, i) => (
-            <ThemeItem key={c[0] + i.toString()} color={c} active={i === activeIndex} change={setThemeDesktopLyric} />
-          ))
-        }
-      </View>
-    </SubTitle>
+    <View style={styles.list}>
+      {
+        themes.map((c, i) => (
+          <ThemeSwatch key={c[0] + i.toString()} color={c} active={i === activeIndex} change={setThemeDesktopLyric} />
+        ))
+      }
+    </View>
   )
 })
 
@@ -104,7 +97,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 10,
     alignItems: 'center',
-    paddingVertical: 6,
+    marginTop: 12,
+    marginBottom: 4,
+    paddingHorizontal: 2,
   },
   item: {
     alignItems: 'center',
@@ -130,8 +125,11 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.08 }],
   },
   checkMark: {
+    width: 11,
+    height: 6,
     borderLeftWidth: 2,
     borderBottomWidth: 2,
+    borderColor: '#FFFFFF',
     borderStyle: 'solid',
     transform: [{ rotate: '-45deg' }],
     marginTop: -2,

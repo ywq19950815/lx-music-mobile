@@ -103,10 +103,6 @@ export default ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => {
     listRef.current?.scrollToInfo(info)
     handleExitSearch()
   }, [handleExitSearch])
-  const handleSelectKeyword = useCallback((keyword: string) => {
-    listSearchBarRef.current?.setText(keyword)
-    listMusicSearchRef.current?.search(keyword, layoutHeightRef.current)
-  }, [])
 
   useBackHandler(useCallback(() => {
     if (commonState.navActiveId !== 'nav_love') return false
@@ -210,7 +206,6 @@ export default ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => {
         <ListMusicSearch
           ref={listMusicSearchRef}
           onScrollToInfo={handleScrollToInfo}
-          onSelectKeyword={handleSelectKeyword}
         />
       </View>
       <ListMusicAdd ref={listMusicAddRef} onAdded={hancelExitSelect} />

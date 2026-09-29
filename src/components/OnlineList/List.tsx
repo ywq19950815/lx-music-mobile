@@ -11,6 +11,7 @@ import settingState from '@/store/setting/state'
 import { MULTI_SELECT_BAR_HEIGHT } from './MultipleModeBar'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
+import ListError from '@/components/common/ListError'
 import { handlePlay } from './listAction'
 import { useSettingValue } from '@/store/setting/hook'
 
@@ -204,6 +205,10 @@ const List = forwardRef<ListType, ListProps>(({
       onRefresh={onRefresh} />
   ), [status, onRefresh, theme])
   const footerComponent = useMemo(() => {
+    // 列表为空且加载失败 → 居中完整错误态（替代孤零零一行小字）
+    if (status == 'error' && currentList.length === 0) {
+      return <ListError onRetry={onLoadMore} />
+    }
     let label: FooterLabel
     switch (status) {
       case 'refreshing': return null

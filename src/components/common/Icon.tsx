@@ -4,6 +4,7 @@ import { scaleSizeW } from '@/utils/pixelRatio'
 import { memo, type ComponentProps } from 'react'
 import { useTheme } from '@/store/theme/hook'
 import { type StyleProp, type TextStyle } from 'react-native'
+import UserIcon from './UserIcon'
 
 // import IconAntDesign from 'react-native-vector-icons/AntDesign'
 // import IconEntypo from 'react-native-vector-icons/Entypo'
@@ -37,7 +38,6 @@ const ICON_ALIASES: Record<string, string> = {
   plus: 'add_folder',
   calendar: 'love',
   singer: 'single',
-  user: 'single',
   broadcast: 'list-random',
   radio: 'list-random',
   heart: 'love',
@@ -62,6 +62,11 @@ interface IconProps extends Omit<ComponentProps<IconType>, 'style'> {
 
 export const Icon = memo(({ size = 15, rawSize, color, style, name, ...props }: IconProps) => {
   const theme = useTheme()
+
+  // 「我的」人像：字体库无人像字形，用自绘组件渲染
+  if (name === 'user') {
+    return <UserIcon size={rawSize ?? scaleSizeW(size)} color={(color ?? theme['c-font']) as string} />
+  }
 
   // 解析安全图标名称：直接匹配 -> 别名匹配 -> 安全回退
   const resolvedName = VALID_ICON_SET.has(name)
