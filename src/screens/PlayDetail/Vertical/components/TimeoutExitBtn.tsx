@@ -14,7 +14,7 @@ export default memo(() => {
     <>
       <Btn
         icon="music_time"
-        bg={timeInfo.active ? '#31C27C' : undefined}
+        bg={timeInfo.active ? '#10B981' : undefined}
         color={timeInfo.active ? '#FFFFFF' : undefined}
         onPress={handleShow}
       />

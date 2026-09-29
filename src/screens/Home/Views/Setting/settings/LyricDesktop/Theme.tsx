@@ -49,7 +49,7 @@ const ThemeItem = ({ color, active, change }: {
   change: (color: Theme) => void
 }) => {
   // 纯黑主题用白色对勾，其余用深色或白色
-  const checkColor = color[0] === '#000000' || color[0] === '#019ce4' || color[0] === '#ff1222' || color[0] === '#c851d4' ? '#FFFFFF' : '#1A1C20'
+  const checkColor = color[0] === '#000000' || color[0] === '#019ce4' || color[0] === '#ff1222' || color[0] === '#c851d4' ? '#FFFFFF' : '#0F172A'
 
   return (
     <TouchableOpacity

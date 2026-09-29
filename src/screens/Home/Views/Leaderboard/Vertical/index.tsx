@@ -1,22 +1,24 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { View } from 'react-native'
-import { createStyle } from '@/utils/tools'
+import { createStyle, toast } from '@/utils/tools'
 
 import MusicList, { type MusicListType } from '../MusicList'
 import { getLeaderboardSetting, saveLeaderboardSetting } from '@/utils/data'
 import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/common/DrawerLayoutFixed'
 import HeaderBar, { type HeaderBarType, type HeaderBarProps } from './HeaderBar'
 import BoardsList, { type BoardsListType, type BoardsListProps } from '../BoardsList'
-import BoardGallery from './BoardGallery'
+import BoardGallery, { type BoardGalleryType } from './BoardGallery'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { getBoardsList } from '@/core/leaderboard'
 import { handleCollect, handlePlay } from '../listAction'
 import boardState, { type BoardItem } from '@/store/leaderboard/state'
+import { setNavActiveId } from '@/core/common'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
   const musicListRef = useRef<MusicListType>(null)
+  const boardGalleryRef = useRef<BoardGalleryType>(null)
   const isUnmountedRef = useRef(false)
   const boardsListRef = useRef<BoardsListType>(null)
   const headerBarRef = useRef<HeaderBarType>(null)
@@ -87,6 +89,26 @@ export default () => {
   // 从单榜单歌曲详情返回大三联卡片大盘
   const handleBackToGallery = useCallback(() => {
     setIsDetailView(false)
+  }, [])
+
+  // 音乐馆页头子 Tab：0 官方榜单 / 1 流派分类 / 2 新碟首发 / 其余敬请期待
+  const handleSubTabPress = useCallback((index: number) => {
+    switch (index) {
+      case 0: boardGalleryRef.current?.scrollToSection('charts'); break
+      case 1: boardGalleryRef.current?.scrollToSection('genre'); break
+      case 2: boardGalleryRef.current?.scrollToSection('newRelease'); break
+      default: toast('该专区敬请期待')
+    }
+  }, [])
+
+  // 页头搜索圆钮：跳转发现页
+  const handleGoSearch = useCallback(() => {
+    setNavActiveId('nav_search')
+  }, [])
+
+  // 榜单大卡「播放全部」
+  const handlePlayBoard = useCallback((board: BoardItem) => {
+    void handlePlay(board.id)
   }, [])
 
   // 监听 Android 侧滑返回：若处于单榜歌曲流内页，则返回大三联画廊
@@ -197,18 +219,22 @@ export default () => {
           onSourceChange={onSourceChange}
           isDetailView={isDetailView}
           onBackToGallery={handleBackToGallery}
+          onGoSearch={handleGoSearch}
+          onSubTabPress={handleSubTabPress}
         />
 
         {isDetailView ? (
           <MusicList ref={musicListRef} />
         ) : (
           <BoardGallery
+            ref={boardGalleryRef}
             list={boards}
             activeId={activeBoardId}
             loading={boardsLoading}
             error={boardsError}
             onRetry={handleRetryBoards}
             onSelectBoard={handleSelectBoardFromGallery}
+            onPlayBoard={handlePlayBoard}
           />
         )}
       </View>

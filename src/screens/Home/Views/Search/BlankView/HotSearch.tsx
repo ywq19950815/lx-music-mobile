@@ -40,7 +40,7 @@ const ListItem = ({ keyword, index, onSearch }: {
       <Text
         style={styles.tagText}
         size={12}
-        color={isTop3 ? '#B36B00' : '#2C3038'}
+        color={isTop3 ? '#059669' : '#2C3038'}
       >
         {keyword}
       </Text>
@@ -75,7 +75,7 @@ export default forwardRef<HotSearchType, ListProps>((props, ref) => {
           <View style={styles.container}>
             <View style={styles.header}>
               <View style={styles.accentBar} />
-              <Text style={styles.title} size={14} color="#1A1C20">
+              <Text style={styles.title} size={14} color="#0F172A">
                 {t('search_hot_search')}
               </Text>
             </View>
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   accentBar: {
     width: 3.5,
     height: 13,
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
     borderRadius: 2,
     marginRight: 7,
   },
@@ -132,9 +132,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tagPillTop: {
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(245, 166, 35, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
   },
   tagPillNormal: {
     backgroundColor: '#F3F4F7',
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 5,

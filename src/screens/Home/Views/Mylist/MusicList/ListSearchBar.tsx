@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ECEEF1',
+    borderBottomColor: '#E2E8F0',
   },
   field: {
     flexDirection: 'row',

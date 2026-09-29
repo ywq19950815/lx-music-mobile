@@ -24,8 +24,8 @@ export default memo(({ type = 'normal', children }: {
       case 'normal':
       default:
         return {
-          bgColor: 'rgba(245, 166, 35, 0.12)',
-          textColor: '#B36B00',
+          bgColor: 'rgba(16, 185, 129, 0.12)',
+          textColor: '#059669',
         }
     }
   }, [type])

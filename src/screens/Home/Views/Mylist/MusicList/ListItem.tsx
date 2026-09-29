@@ -32,7 +32,8 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
     // Web 环境优先使用 getBoundingClientRect 获取精准相对容器坐标
     if (el?.getBoundingClientRect) {
       const rect = el.getBoundingClientRect()
-      const rootEl = (typeof document !== 'undefined') ? (document.getElementById('phone') || document.getElementById('root') || document.body) : null
+      const doc = (globalThis as any).document
+      const rootEl = doc ? (doc.getElementById('phone') || doc.getElementById('root') || doc.body) : null
       const rootRect = rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 }
       const posX = Math.max(0, Math.ceil(rect.left - rootRect.left))
       const posY = Math.max(0, Math.ceil(rect.top - rootRect.top))
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   indexBadgeActive: {
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
   },
   indexText: {
     fontSize: 11,

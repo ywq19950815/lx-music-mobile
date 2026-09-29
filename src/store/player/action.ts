@@ -89,8 +89,8 @@ export default {
       }
       return true
     })
-    if (topList.length) arrUnshift(state.tempPlayList, topList.map(({ musicInfo, listId }) => ({ musicInfo, listId, isTempPlay: true })))
-    if (bottomList.length) arrPush(state.tempPlayList, bottomList.map(({ musicInfo, listId }) => ({ musicInfo, listId, isTempPlay: true })))
+    if (topList.length) arrUnshift(state.tempPlayList, topList.map(({ musicInfo, listId }) => ({ musicInfo, listId: listId ?? '', isTempPlay: true } as any)))
+    if (bottomList.length) arrPush(state.tempPlayList, bottomList.map(({ musicInfo, listId }) => ({ musicInfo, listId: listId ?? '', isTempPlay: true } as any)))
 
     global.state_event.playTempPlayListChanged({ ...state.tempPlayList })
   },
@@ -110,8 +110,4 @@ export default {
   setLastLyric(lrc?: string) {
     state.lastLyric = lrc
   },
-}
-
-if (typeof window !== 'undefined') {
-  (window as any).__playerActions = playerActions
 }

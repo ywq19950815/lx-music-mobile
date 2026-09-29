@@ -11,12 +11,12 @@ import { LIST_IDS } from '@/config/constant'
 
 const handlePlayPrev = () => {
   void playPrev()
-  globalThis.player_event?.emit('playPrev')
+  ;(global as any).player_event?.playPrev?.()
 }
 
 const handlePlayNext = () => {
   void playNext()
-  globalThis.player_event?.emit('playNext')
+  ;(global as any).player_event?.playNext?.()
 }
 
 /** 按压弹簧缩放 Hook */
@@ -53,7 +53,7 @@ const PlayNextBtn = () => {
         style={styles.sideBtn}
         hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}
       >
-        <Icon name="nextMusic" color="#5A616B" size={18} />
+        <Icon name="nextMusic" color="#64748B" size={18} />
       </TouchableOpacity>
     </Animated.View>
   )
@@ -71,7 +71,7 @@ const PlayPrevBtn = () => {
         style={styles.sideBtn}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 6 }}
       >
-        <Icon name="prevMusic" color="#5A616B" size={18} />
+        <Icon name="prevMusic" color="#64748B" size={18} />
       </TouchableOpacity>
     </Animated.View>
   )
@@ -144,10 +144,10 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#31C27C',
+    shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.35,
     shadowRadius: 4,

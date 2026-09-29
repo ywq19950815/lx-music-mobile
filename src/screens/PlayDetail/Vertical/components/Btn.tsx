@@ -1,18 +1,23 @@
-import { useState, useRef, useCallback } from 'react'
+import { useRef, useCallback } from 'react'
 import { TouchableOpacity, StyleSheet, View, Animated } from 'react-native'
 import { Icon } from '@/components/common/Icon'
-import { motion } from '@/theme/tokens'
+import { motion, useAppColors, useIsDarkTheme } from '@/theme/tokens'
 
 /**
- * 播放页圆形操作钮：幽灵样式（半透明白底白图标），深色沉浸专用。
- * 激活态（bg 传入品牌金）时用金底。按压 spring 缩放。
+ * 播放页圆形操作钮（2026-09-29 设计稿：浅色白卡描边 / 深色幽灵样式）。
+ * 浅色：白底 + hairline 描边 + 墨色图标（设计稿 bg-card border-border）
+ * 深色：半透明白底幽灵样式
+ * 激活态（bg 传入品牌绿）时用绿底白图标。按压 spring 缩放。
  */
-export default ({ icon, color, bg, onPress }: {
+export default ({ icon, color, bg, onPress, iconStyle }: {
   icon: string
   color?: string
   bg?: string
   onPress: () => void
+  iconStyle?: object
 }) => {
+  const c = useAppColors()
+  const isDark = useIsDarkTheme()
   const scale = useRef(new Animated.Value(1)).current
   const pressIn = useCallback(() => {
     Animated.spring(scale, {
@@ -37,10 +42,16 @@ export default ({ icon, color, bg, onPress }: {
         onPress={onPress}
         onPressIn={pressIn}
         onPressOut={pressOut}
-        style={[styles.button, { backgroundColor: bg ?? 'rgba(255,255,255,0.10)' }]}
+        style={[
+          styles.button,
+          {
+            backgroundColor: bg ?? (isDark ? 'rgba(255,255,255,0.10)' : '#FFFFFF'),
+            borderColor: bg ? 'transparent' : (isDark ? 'rgba(255,255,255,0.08)' : c.hairline),
+          },
+        ]}
         activeOpacity={1}
       >
-        <Icon name={icon} color={color ?? 'rgba(255,255,255,0.88)'} size={17} />
+        <Icon name={icon} color={color ?? (isDark ? 'rgba(255,255,255,0.88)' : c.ink)} size={17} style={iconStyle} />
       </TouchableOpacity>
     </Animated.View>
   )
@@ -60,6 +71,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
   },
 })

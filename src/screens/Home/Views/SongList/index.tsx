@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import Content from './Content'
 import TagList from './TagList'
 import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/common/DrawerLayoutFixed'
-import type { InitState as CommonState } from '@/store/common/state'
+import commonState, { type InitState as CommonState } from '@/store/common/state'
 
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)

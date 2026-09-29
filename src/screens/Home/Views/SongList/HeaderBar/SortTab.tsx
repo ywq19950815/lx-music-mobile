@@ -88,12 +88,12 @@ const styles = StyleSheet.create({
   },
   pillActive: {
     backgroundColor: 'rgba(245, 166, 35, 0.12)',
-    borderColor: '#31C27C',
+    borderColor: '#10B981',
   },
   pillText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#5A616B',
+    color: '#64748B',
   },
   pillTextActive: {
     fontWeight: '700',

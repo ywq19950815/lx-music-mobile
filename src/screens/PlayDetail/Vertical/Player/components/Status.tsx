@@ -2,16 +2,18 @@
 import { useStatusText } from '@/store/player/hook'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
+import { useAppColors } from '@/theme/tokens'
 
 
 export default () => {
   // const { text } = useLrcPlay()
   const statusText = useStatusText()
+  const c = useAppColors()
   // console.log('render status')
 
   // const status = playerStatus.isPlay ? text : playerStatus.statusText
 
-  return <Text style={styles.text} numberOfLines={1} size={13} color="rgba(255,255,255,0.60)">{statusText}</Text>
+  return <Text style={styles.text} numberOfLines={1} size={13} color={c.inkTertiary}>{statusText}</Text>
 }
 
 const styles = createStyle({

@@ -63,9 +63,9 @@ export default ({ componentId }: Props) => {
       const [topName, topId] = subScreenIds[subScreenIds.length - 1]
       void pop(topId)
       if (topName === COMPONENT_IDS.playDetail) {
-        globalThis.app_event?.emit('closePlayDetail')
-        if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
-          (window as any).__lxTogglePlayDetail(false)
+        global.app_event?.closePlayDetail()
+        if ((globalThis as any).__lxTogglePlayDetail) {
+          (globalThis as any).__lxTogglePlayDetail(false)
         }
       }
       return true
@@ -77,7 +77,7 @@ export default ({ componentId }: Props) => {
     // 3. 内部二级/三级页面与状态拦截：
     // 通过事件向当前活跃的视图派发 backPress 事件，询问是否有二级页面需要回退
     let consumedBySubView = false
-    global.app_event?.emit('homeBackPress', (consumed: boolean) => {
+    global.app_event?.homeBackPress((consumed: boolean) => {
       if (consumed) consumedBySubView = true
     })
     if (consumedBySubView) return true

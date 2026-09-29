@@ -24,6 +24,7 @@ export interface DrawerLayoutFixedType {
   openDrawer: () => void
   closeDrawer: () => void
   fixWidth: () => void
+  isOpen: boolean
 }
 
 export interface DrawerLayoutFixedProps {
@@ -120,7 +121,8 @@ const DrawerLayoutFixed = forwardRef<DrawerLayoutFixedType, DrawerLayoutFixedPro
     fixWidth() {
       // 保持向前兼容性 no-op
     },
-  }), [open, close])
+    isOpen: visible,
+  }), [open, close, visible])
 
   return (
     <View style={[styles.rootContainer, style]}>

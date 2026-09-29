@@ -68,7 +68,7 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
           style={styles.backBtn}
           activeOpacity={0.7}
         >
-          <Icon name="chevron-left" size={18} color="#1A1C20" />
+          <Icon name="chevron-left" size={18} color="#0F172A" />
         </TouchableOpacity>
       ) : null}
 
@@ -79,11 +79,11 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
         activeOpacity={0.7}
       >
         <View style={styles.pillTag}>
-          {fetching ? <Loading color="#31C27C" style={styles.loading} /> : null}
+          {fetching ? <Loading color="#10B981" style={styles.loading} /> : null}
           <Text style={styles.listTitle} numberOfLines={1}>
             {currentListName}
           </Text>
-          <Icon name="chevron-right" size={13} color="#8A919E" />
+          <Icon name="chevron-right" size={13} color="#94A3B8" />
         </View>
       </TouchableOpacity>
 
@@ -93,7 +93,7 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
         onPress={onShowSearchBar}
         activeOpacity={0.7}
       >
-        <Icon color="#5A616B" name="search-2" size={16} />
+        <Icon color="#64748B" name="search-2" size={16} />
       </TouchableOpacity>
     </View>
   )
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ECEEF1',
+    borderBottomColor: '#E2E8F0',
   },
   backBtn: {
     width: 36,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   listTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1A1C20',
+    color: '#0F172A',
     maxWidth: 200,
   },
   searchBtn: {

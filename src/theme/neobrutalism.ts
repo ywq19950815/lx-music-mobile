@@ -8,18 +8,18 @@ import { StyleSheet, type ViewStyle, type TextStyle } from 'react-native'
 
 export const neoColors = {
   // 核心中性色
-  black: '#1A1C20',      // 墨色（主文字；作边框/阴影的场景已逐步迁移到 neoBorders.color）
+  black: '#0F172A',      // 墨色（主文字；作边框/阴影的场景已逐步迁移到 neoBorders.color）
   white: '#FFFFFF',
   offWhite: '#FFFFFF',   // 原米白纸 → 纯白表面
-  cream: '#F7F8FA',      // 暖奶油 → 中性浅面
+  cream: '#F8FAFC',      // 暖奶油 → 中性浅面
   gray100: '#F3F4F6',
   gray200: '#E9EAEE',
-  gray700: '#5A616B',
-  gray800: '#1A1C20',
+  gray700: '#64748B',
+  gray800: '#0F172A',
   darkBg: '#20222A',
 
   // 波普高饱和色 → 柔和现代同职能色
-  yellow: '#31C27C',     // 品牌金（Primary）
+  yellow: '#10B981',     // 品牌金（Primary）
   pink: '#FA5151',       // 点赞/激活 → QQ 红
   cyan: '#4A90D9',       // 次强调 → 雾蓝
   purple: '#8E7CC3',     // 标签 → 灰紫

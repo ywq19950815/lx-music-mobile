@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#1A1C20',
+    backgroundColor: '#0F172A',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   qualityBadge: {
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     borderRadius: 4,
     paddingHorizontal: 4,
     paddingVertical: 1,
@@ -142,13 +142,13 @@ const styles = StyleSheet.create({
   qualityBadgeText: {
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#B36B00',
+    color: '#059669',
   },
   closeBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: '#ECEEF1',
+    backgroundColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -407,8 +407,9 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
 
   // 音质标签判定
   const quality = useMemo(() => {
-    if (!musicInfo?.meta?.qualitys) return 'SQ'
-    const qs = musicInfo.meta.qualitys
+    const meta = musicInfo?.meta as any
+    if (!meta?.qualitys) return 'SQ'
+    const qs: string[] = meta.qualitys
     if (qs.includes('flac24bit') || qs.includes('flac')) return 'SQ无损'
     if (qs.includes('320k')) return 'HQ高品'
     return '标准'
@@ -506,8 +507,8 @@ export default forwardRef<MusicActionSheetType, MusicActionSheetProps>((props, r
                         </Text>
                         <View style={styles.musicSubRow}>
                           <Text style={styles.singerText} size={12} numberOfLines={1}>
-                            {musicInfo.singer || t('unknown')}
-                            {musicInfo.meta?.albumName ? ` · ${musicInfo.meta.albumName}` : ''}
+                            {musicInfo.singer || (t as any)('unknown')}
+                            {(musicInfo.meta as any)?.albumName ? ` · ${(musicInfo.meta as any).albumName}` : ''}
                           </Text>
                           <View style={styles.qualityBadge}>
                             <Text style={styles.qualityBadgeText}>{quality}</Text>

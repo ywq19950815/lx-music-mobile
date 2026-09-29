@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef, useCallback } from 'react'
+import { useEffect, useMemo, useState, useRef, useCallback, useContext } from 'react'
 import { View, Animated, StyleSheet, Easing } from 'react-native'
 import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook'
 import { useWindowSize } from '@/utils/hooks'
@@ -8,12 +8,14 @@ import Image from '@/components/common/Image'
 import Text from '@/components/common/Text'
 import commonState from '@/store/common/state'
 import { setLoadErrorPicUrl } from '@/core/player/playInfo'
+import { useAppColors } from '@/theme/tokens'
+import { ThemeContext } from '@/store/theme/state'
 import { PIC_AREA_RATIO } from './constant'
 
 /**
- * 播放详情页唱机系统（Pic）：
- * - 沉浸式曜黑黑胶大唱盘 + 多层同心刻线微纹理 + 完美正圆高品质投影
- * - 柔和金辉呼吸氛围光晕（Ambient Aura）
+ * 播放详情页唱机系统（Pic，2026-09-29 设计稿浅色黑胶 + 深色双主题）：
+ * - 浅色：白瓷唱盘 + 素雅同心刻线 + 翡翠绿描边唱片心 + 中央黄铜轴孔
+ * - 深色：曜黑黑胶大唱盘（原沉浸方案）
  * - 真实声学唱机唱针系统：基座锚定在唱盘右上角（与唱盘同一坐标系、随盘缩放），
  *   播放时针尖精准落在唱盘 1 点钟音轨凹槽上，暂停顺滑抬起休眠
  * - 360° 平滑匀速旋转
@@ -21,6 +23,9 @@ import { PIC_AREA_RATIO } from './constant'
 export default ({ componentId }: { componentId: string }) => {
   const musicInfo = usePlayerMusicInfo()
   const isPlay = useIsPlay()
+  const c = useAppColors()
+  const theme = useContext(ThemeContext)
+  const isDark = theme.isDark
   const { width: winWidth, height: winHeight } = useWindowSize()
 
   const [animated, setAnimated] = useState(!!commonState.componentIds.playDetail)
@@ -110,11 +115,68 @@ export default ({ componentId }: { componentId: string }) => {
     setLoadErrorPicUrl(url as string)
   }, [])
 
+  // ── 唱机色板（浅色 = 设计稿白瓷唱机 / 深色 = 曜黑沉浸）──
+  const p = useMemo(() => isDark ? {
+    diskBg: '#0F1014',
+    diskBorder: '#22252E',
+    diskBorderW: 2,
+    groove1: 'rgba(255, 255, 255, 0.04)',
+    groove2: 'rgba(255, 255, 255, 0.05)',
+    groove3: 'rgba(255, 255, 255, 0.035)',
+    coverBorder: '#000000',
+    coverBg: '#1E2028',
+    pivotBg: '#202228',
+    pivotBorder: 'rgba(255, 255, 255, 0.22)',
+    pivotInner: c.brand,
+    armPole: '#2A2D36',
+    armEdge: 'rgba(255, 255, 255, 0.28)',
+    cartridge: '#16181E',
+    cartridgeBorder: 'rgba(255, 255, 255, 0.25)',
+    stylus: c.brand,
+    auraBg: 'rgba(16, 185, 129, 0.07)',
+    labelBg: '#131419',
+    labelRing: 'rgba(16, 185, 129, 0.30)',
+    labelSub: '#CBD5E1',
+    labelSpec: '#94A3B8',
+    spindleBg: 'rgba(16, 185, 129, 0.16)',
+    spindleBorder: 'rgba(16, 185, 129, 0.6)',
+    diskShadowOpacity: 0.70,
+    diskShadowRadius: 28,
+    diskElevation: 20,
+  } : {
+    diskBg: '#FFFFFF',
+    diskBorder: '#E2E8F0',
+    diskBorderW: 3,
+    groove1: 'rgba(226, 232, 240, 0.75)',
+    groove2: 'rgba(226, 232, 240, 0.55)',
+    groove3: 'rgba(226, 232, 240, 0.40)',
+    coverBorder: 'rgba(16, 185, 129, 0.55)',
+    coverBg: '#F1F5F9',
+    pivotBg: '#FFFFFF',
+    pivotBorder: '#E2E8F0',
+    pivotInner: c.brand,
+    armPole: '#CBD5E1',
+    armEdge: '#FFFFFF',
+    cartridge: '#FFFFFF',
+    cartridgeBorder: '#E2E8F0',
+    stylus: c.brand,
+    auraBg: 'rgba(16, 185, 129, 0.05)',
+    labelBg: '#F8FAFC',
+    labelRing: 'rgba(16, 185, 129, 0.30)',
+    labelSub: '#64748B',
+    labelSpec: '#94A3B8',
+    spindleBg: '#FFFFFF',
+    spindleBorder: 'rgba(16, 185, 129, 0.55)',
+    diskShadowOpacity: 0.14,
+    diskShadowRadius: 22,
+    diskElevation: 10,
+  }, [isDark, c.brand])
+
   return (
     <View style={styles.container}>
       {/* 转盘坐标系：唱针与唱盘同参照，保证针尖永远搭在盘面上 */}
       <View style={[styles.turntable, { width: diskSize, height: diskSize }]}>
-        {/* 1. 背景微光金辉氛围光晕（Ambient Aura） */}
+        {/* 1. 背景品牌绿氛围光晕（Ambient Aura） */}
         <View
           style={[
             styles.ambientAura,
@@ -124,6 +186,7 @@ export default ({ componentId }: { componentId: string }) => {
               borderRadius: (diskSize * 1.06) / 2,
               left: -(diskSize * 0.03),
               top: -(diskSize * 0.03),
+              backgroundColor: p.auraBg,
             },
           ]}
           pointerEvents="none"
@@ -141,22 +204,22 @@ export default ({ componentId }: { componentId: string }) => {
           pointerEvents="none"
         >
           <Animated.View style={[styles.needleArmRotator, { height: needleRotatorH, transform: [{ rotate: needleRotate }] }]}>
-            {/* 金属精密轴承底座 */}
-            <View style={styles.needlePivotBase}>
-              <View style={styles.needlePivotInner} />
+            {/* 精密轴承底座 */}
+            <View style={[styles.needlePivotBase, { backgroundColor: p.pivotBg, borderColor: p.pivotBorder }]}>
+              <View style={[styles.needlePivotInner, { backgroundColor: p.pivotInner, borderColor: p.pivotBorder }]} />
               <View style={styles.needlePivotDot} />
             </View>
 
             {/* 唱针臂（长连杆） */}
-            <View style={[styles.needleArmPole, { height: needlePoleH }]}>
-              <View style={styles.needleHighlightEdge} />
+            <View style={[styles.needleArmPole, { height: needlePoleH, backgroundColor: p.armPole }]}>
+              <View style={[styles.needleHighlightEdge, { backgroundColor: p.armEdge }]} />
             </View>
 
             {/* 弯折唱头架 */}
             <View style={styles.needleHeadshell}>
-              <View style={styles.needleCartridge}>
+              <View style={[styles.needleCartridge, { backgroundColor: p.cartridge, borderColor: p.cartridgeBorder }]}>
                 {/* 唱针触针高亮细线 */}
-                <View style={styles.needleStylusLine} />
+                <View style={[styles.needleStylusLine, { backgroundColor: p.stylus }]} />
               </View>
             </View>
           </Animated.View>
@@ -170,6 +233,9 @@ export default ({ componentId }: { componentId: string }) => {
               width: diskSize,
               height: diskSize,
               borderRadius: diskSize / 2,
+              shadowOpacity: p.diskShadowOpacity,
+              shadowRadius: p.diskShadowRadius,
+              elevation: p.diskElevation,
             },
           ]}
         >
@@ -180,6 +246,9 @@ export default ({ componentId }: { componentId: string }) => {
               width: diskSize,
               height: diskSize,
               borderRadius: diskSize / 2,
+              backgroundColor: p.diskBg,
+              borderWidth: p.diskBorderW,
+              borderColor: p.diskBorder,
               transform: [{ rotate: diskSpin }],
             },
           ]}
@@ -192,6 +261,7 @@ export default ({ componentId }: { componentId: string }) => {
                 width: diskSize - 14,
                 height: diskSize - 14,
                 borderRadius: (diskSize - 14) / 2,
+                borderColor: p.groove1,
               },
             ]}
           >
@@ -203,6 +273,7 @@ export default ({ componentId }: { componentId: string }) => {
                   width: diskSize - 32,
                   height: diskSize - 32,
                   borderRadius: (diskSize - 32) / 2,
+                  borderColor: p.groove2,
                 },
               ]}
             >
@@ -214,6 +285,7 @@ export default ({ componentId }: { componentId: string }) => {
                     width: diskSize - 50,
                     height: diskSize - 50,
                     borderRadius: (diskSize - 50) / 2,
+                    borderColor: p.groove3,
                   },
                 ]}
               >
@@ -225,6 +297,8 @@ export default ({ componentId }: { componentId: string }) => {
                       width: centerPicSize,
                       height: centerPicSize,
                       borderRadius: centerPicSize / 2,
+                      borderColor: p.coverBorder,
+                      backgroundColor: p.coverBg,
                     },
                   ]}
                 >
@@ -248,10 +322,11 @@ export default ({ componentId }: { componentId: string }) => {
                           width: centerPicSize,
                           height: centerPicSize,
                           borderRadius: centerPicSize / 2,
+                          backgroundColor: p.labelBg,
                         },
                       ]}
                     >
-                      {/* 同心精细金圈 */}
+                      {/* 同心精细品牌圈 */}
                       <View
                         style={[
                           styles.labelRing,
@@ -259,12 +334,13 @@ export default ({ componentId }: { componentId: string }) => {
                             width: centerPicSize - 18,
                             height: centerPicSize - 18,
                             borderRadius: (centerPicSize - 18) / 2,
+                            borderColor: p.labelRing,
                           },
                         ]}
                       >
                         {/* 上半部：品牌标识 */}
                         <View style={styles.labelUpperSection}>
-                          <Text style={styles.labelBrand}>LX</Text>
+                          <Text style={[styles.labelBrand, { color: c.brand }]}>LX</Text>
                         </View>
 
                         {/* 中间留给转轴孔的环形空隙 */}
@@ -272,14 +348,14 @@ export default ({ componentId }: { componentId: string }) => {
 
                         {/* 下半部：规格信息 */}
                         <View style={styles.labelLowerSection}>
-                          <Text style={styles.labelSub}>AUDIO RECORDING</Text>
-                          <Text style={styles.labelSpec}>33⅓ RPM · HI-FI</Text>
+                          <Text style={[styles.labelSub, { color: p.labelSub }]}>AUDIO RECORDING</Text>
+                          <Text style={[styles.labelSpec, { color: p.labelSpec }]}>33⅓ RPM · HI-FI</Text>
                         </View>
                       </View>
                     </View>
                   )}
 
-                  {/* 唱机中央黄铜转轴孔与固定环 */}
+                  {/* 唱机中央转轴孔与固定环 */}
                   <View
                     style={[
                       styles.spindleHole,
@@ -287,6 +363,8 @@ export default ({ componentId }: { componentId: string }) => {
                         width: spindleHoleSize,
                         height: spindleHoleSize,
                         borderRadius: spindleHoleSize / 2,
+                        backgroundColor: p.spindleBg,
+                        borderColor: p.spindleBorder,
                       },
                     ]}
                   >
@@ -297,6 +375,7 @@ export default ({ componentId }: { componentId: string }) => {
                           width: spindleHoleSize * 0.45,
                           height: spindleHoleSize * 0.45,
                           borderRadius: (spindleHoleSize * 0.45) / 2,
+                          backgroundColor: c.brand,
                         },
                       ]}
                     />
@@ -341,9 +420,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#202228',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.22)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -356,7 +433,6 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: '#31C27C',
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.5)',
   },
@@ -370,7 +446,6 @@ const styles = StyleSheet.create({
   needleArmPole: {
     width: 3.5,
     height: 98,
-    backgroundColor: '#2A2D36',
     borderRadius: 2,
     position: 'relative',
     borderWidth: 0.5,
@@ -382,7 +457,6 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.28)',
   },
   needleHeadshell: {
     alignItems: 'center',
@@ -393,9 +467,7 @@ const styles = StyleSheet.create({
     width: 13,
     height: 22,
     borderRadius: 3,
-    backgroundColor: '#16181E',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -407,50 +479,40 @@ const styles = StyleSheet.create({
   needleStylusLine: {
     width: 2,
     height: 10,
-    backgroundColor: '#31C27C',
     borderRadius: 1,
   },
   // ── 背景氛围微光（品牌绿呼吸光晕，与主题统一）──
   ambientAura: {
     position: 'absolute',
-    backgroundColor: 'rgba(49, 196, 124, 0.07)',
-    shadowColor: '#31C27C',
+    shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.30,
     shadowRadius: 36,
     elevation: 8,
-  },  // ── 悬浮黑胶大唱盘 ──────────────────────────
+  },
+  // ── 悬浮黑胶大唱盘 ──────────────────────────
   diskOuterShadow: {
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.70,
-    shadowRadius: 28,
-    elevation: 20,
   },
   vinylDisk: {
-    backgroundColor: '#0F1014',
-    borderWidth: 2,
-    borderColor: '#22252E',
     justifyContent: 'center',
     alignItems: 'center',
   },
   grooveRing1: {
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.04)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   grooveRing2: {
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   grooveRing3: {
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.035)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -458,18 +520,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1E2028',
     borderWidth: 2,
-    borderColor: '#000000',
   },
   defaultLabel: {
-    backgroundColor: '#131419',
     justifyContent: 'center',
     alignItems: 'center',
   },
   labelRing: {
     borderWidth: 1,
-    borderColor: 'rgba(49, 196, 124, 0.30)',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 10,
@@ -481,7 +539,6 @@ const styles = StyleSheet.create({
   labelBrand: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#31C27C',
     letterSpacing: 2,
   },
   labelCenterGap: {
@@ -494,21 +551,17 @@ const styles = StyleSheet.create({
   labelSub: {
     fontSize: 6.5,
     fontWeight: '700',
-    color: '#CBD5E1',
     letterSpacing: 1.2,
   },
   labelSpec: {
     fontSize: 5.5,
     fontWeight: '500',
-    color: '#94A3B8',
     letterSpacing: 0.6,
   },
-  // 中央转轴孔：深空底盘 + 品牌绿细环，消除橙色突兀感，与主题统一
+  // 中央转轴孔
   spindleHole: {
     position: 'absolute',
-    backgroundColor: 'rgba(49, 196, 124, 0.16)',
     borderWidth: 2,
-    borderColor: 'rgba(49, 196, 124, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000000',
@@ -517,7 +570,5 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  spindleCore: {
-    backgroundColor: '#31C27C',
-  },
+  spindleCore: {},
 })

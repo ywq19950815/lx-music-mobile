@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useContext } from 'react'
 // import { View, StyleSheet } from 'react-native'
 import { useHorizontalMode } from '@/utils/hooks'
 
@@ -11,9 +11,11 @@ import { COMPONENT_IDS } from '@/config/constant'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 import { pop } from '@/navigation'
 import commonActions from '@/store/common/action'
+import { ThemeContext } from '@/store/theme/state'
 
 export default ({ componentId }: { componentId: string }) => {
   const isHorizontalMode = useHorizontalMode()
+  const theme = useContext(ThemeContext)
 
   useEffect(() => {
     setComponentId(COMPONENT_IDS.playDetail, componentId)
@@ -26,16 +28,16 @@ export default ({ componentId }: { componentId: string }) => {
 
   useBackHandler(useCallback(() => {
     void pop(componentId)
-    globalThis.app_event?.emit('closePlayDetail')
-    if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
-      (window as any).__lxTogglePlayDetail(false)
+    global.app_event?.closePlayDetail()
+    if ((globalThis as any).__lxTogglePlayDetail) {
+      (globalThis as any).__lxTogglePlayDetail(false)
     }
     return true
   }, [componentId]))
 
   return (
     <PageContent>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={theme.isDark ? 'light-content' : 'dark-content'} />
       {
         isHorizontalMode
           ? <Horizontal componentId={componentId} />

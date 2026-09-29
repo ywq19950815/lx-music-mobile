@@ -15,8 +15,10 @@ buildscript {
         excludeAppGlideModule = true
     }
     repositories {
-        google()
-        mavenCentral()
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
     }
     dependencies {
         classpath('com.android.tools.build:gradle:8.6.1')
@@ -26,3 +28,47 @@ buildscript {
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+allprojects {
+    buildscript {
+        repositories {
+            all { ArtifactRepository repo ->
+                if (repo instanceof MavenArtifactRepository) {
+                    def url = repo.url.toString()
+                    if (url.contains('repo1.maven.org') || url.contains('repo.maven.apache.org') || url.contains('jcenter.bintray.com')) {
+                        repo.url = uri('https://maven.aliyun.com/repository/public')
+                    }
+                    if (url.contains('dl.google.com') || url.contains('maven.google.com')) {
+                        repo.url = uri('https://maven.aliyun.com/repository/google')
+                    }
+                    if (url.contains('plugins.gradle.org')) {
+                        repo.url = uri('https://maven.aliyun.com/repository/gradle-plugin')
+                    }
+                }
+            }
+            maven { url 'https://maven.aliyun.com/repository/google' }
+            maven { url 'https://maven.aliyun.com/repository/public' }
+            maven { url 'https://maven.aliyun.com/repository/central' }
+            maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        }
+    }
+    repositories {
+        all { ArtifactRepository repo ->
+            if (repo instanceof MavenArtifactRepository) {
+                def url = repo.url.toString()
+                if (url.contains('repo1.maven.org') || url.contains('repo.maven.apache.org') || url.contains('jcenter.bintray.com')) {
+                    repo.url = uri('https://maven.aliyun.com/repository/public')
+                }
+                if (url.contains('dl.google.com') || url.contains('maven.google.com')) {
+                    repo.url = uri('https://maven.aliyun.com/repository/google')
+                }
+                if (url.contains('plugins.gradle.org')) {
+                    repo.url = uri('https://maven.aliyun.com/repository/gradle-plugin')
+                }
+            }
+        }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/central' }
+    }
+}

@@ -1,5 +1,5 @@
 import { memo, useRef, useEffect, useState, useCallback } from 'react'
-import { View, AppState, Animated, PanResponder, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, AppState, Animated, PanResponder, TouchableOpacity } from 'react-native'
 import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view'
 
 import Header from './components/Header'
@@ -13,11 +13,11 @@ import { useNavigationBarHeight } from '@/store/common/hook'
 import { useWindowSize } from '@/utils/hooks'
 import { pop } from '@/navigation'
 import { createStyle } from '@/utils/tools'
-import { motion, colors } from '@/theme/tokens'
+import { motion, useAppColors } from '@/theme/tokens'
 import { PIC_AREA_RATIO } from './constant'
 
 /**
- * QQ 音乐式双层播放交互系统：
+ * QQ 音乐式双层播放交互系统（2026-09-29 设计稿：浅色黑胶台 / 深色双主题）：
  * - Page 0（主视图）：上半黑胶唱机 + 下半同步滚动歌词（轻触歌词可快速平滑进入全屏大歌词）
  * - Page 1（全屏歌词）：沉浸式大屏卡拉OK滚动歌词，逐字染色，向右滑回唱机页
  * - 页面微型指示器：指示当前视图（唱机/歌词），支持点击切换
@@ -28,6 +28,7 @@ export default memo(({ componentId }: { componentId: string }) => {
   const pagerRef = useRef<PagerView>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const navigationBarHeight = useNavigationBarHeight()
+  const c = useAppColors()
   const { height: winHeight } = useWindowSize()
 
   const picAreaHeight = Math.round(Math.min(winHeight * PIC_AREA_RATIO, 420))
@@ -72,9 +73,9 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   const handleClose = useCallback(() => {
     void pop(commonState.componentIds.playDetail!)
-    globalThis.app_event?.emit('closePlayDetail')
-    if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
-      (window as any).__lxTogglePlayDetail(false)
+    global.app_event?.closePlayDetail()
+    if ((globalThis as any).__lxTogglePlayDetail) {
+      (globalThis as any).__lxTogglePlayDetail(false)
     }
   }, [])
 
@@ -115,10 +116,10 @@ export default memo(({ componentId }: { componentId: string }) => {
   }
 
   return (
-    <Animated.View style={[styles.root, { transform: [{ translateY: panY }] }]}>
+    <Animated.View style={[styles.root, { backgroundColor: c.canvas, transform: [{ translateY: panY }] }]}>
       <Header />
 
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: c.canvas }]}>
         {/* 滑动翻页系统：Page 0 唱机同屏 + Page 1 全屏歌词 */}
         <PagerView
           ref={pagerRef}
@@ -153,12 +154,12 @@ export default memo(({ componentId }: { componentId: string }) => {
         {/* 页面微型指示器（左右可滑提示，点击可直接切页） */}
         <View style={styles.indicatorRow}>
           <TouchableOpacity
-            style={[styles.dotBtn, currentPage === 0 ? styles.dotActive : styles.dotIdle]}
+            style={[styles.dotBtn, currentPage === 0 ? styles.dotActive : styles.dotIdle, { backgroundColor: currentPage === 0 ? c.brand : c.hairline }]}
             onPress={() => handleSwitchPage(0)}
             activeOpacity={0.7}
           />
           <TouchableOpacity
-            style={[styles.dotBtn, currentPage === 1 ? styles.dotActive : styles.dotIdle]}
+            style={[styles.dotBtn, currentPage === 1 ? styles.dotActive : styles.dotIdle, { backgroundColor: currentPage === 1 ? c.brand : c.hairline }]}
             onPress={() => handleSwitchPage(1)}
             activeOpacity={0.7}
           />
@@ -169,7 +170,7 @@ export default memo(({ componentId }: { componentId: string }) => {
           <Player />
         </View>
 
-        {/* 沉浸式暗色播放队列抽屉 */}
+        {/* 沉浸式播放队列抽屉 */}
         <PlayQueueDrawer />
       </View>
     </Animated.View>
@@ -181,13 +182,11 @@ const styles = createStyle({
     flex: 1,
     minHeight: 0,
     flexDirection: 'column',
-    backgroundColor: '#131419',
   },
   container: {
     flex: 1,
     minHeight: 0,
     flexDirection: 'column',
-    backgroundColor: '#131419',
     overflow: 'hidden',
     position: 'relative',
   },
@@ -225,10 +224,7 @@ const styles = createStyle({
     borderRadius: 2,
   },
   dotActive: {
-    backgroundColor: colors.brand,
     width: 18,
   },
-  dotIdle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
-  },
+  dotIdle: {},
 })

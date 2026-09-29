@@ -191,6 +191,14 @@ export class AppEvent extends Event {
     this.emit('searchTypeChanged', type)
   }
 
+  /**
+   * 跨页面快捷搜索事件（音乐馆流派 / 新碟等入口跳转发现页并执行搜索）
+   * @param keyword
+   */
+  quickSearch(keyword: string) {
+    this.emit('quickSearch', keyword)
+  }
+
   jumpListPosition() {
     if (commonState.navActiveId == 'nav_love') {
       this.emit('jumpListPosition')
@@ -230,6 +238,22 @@ export class AppEvent extends Event {
   openPlayQueue() {
     this.emit('openPlayQueue')
   }
+
+  openPlayDetail() {
+    this.emit('openPlayDetail')
+  }
+
+  homeBackPress(callback: (consumed: boolean) => void) {
+    this.emit('homeBackPress', callback)
+  }
+
+  openSetting() {
+    this.emit('openSetting')
+  }
+
+  closePlayDetail() {
+    this.emit('closePlayDetail')
+  }
 }
 
 
@@ -239,9 +263,10 @@ type EventMethods = Omit<EventType, keyof Event>
 declare class EventType extends AppEvent {
   on<K extends keyof EventMethods>(event: K, listener: EventMethods[K]): any
   off<K extends keyof EventMethods>(event: K, listener: EventMethods[K]): any
+  emit(eventName: string, ...args: any[]): void
 }
 
-export type AppEventTypes = Omit<EventType, keyof Omit<Event, 'on' | 'off'>>
+export type AppEventTypes = EventType
 export const createAppEventHub = (): AppEventTypes => {
-  return new AppEvent()
+  return new AppEvent() as any
 }

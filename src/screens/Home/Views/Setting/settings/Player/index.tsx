@@ -19,7 +19,7 @@ export default memo(() => {
   // 2. 歌词与界面展示
   const isShowLyricTranslation = useSettingValue('player.isShowLyricTranslation')
   const isShowLyricRoma = useSettingValue('player.isShowLyricRoma')
-  const isS2T = useSettingValue('player.isS2T')
+  const isS2t = useSettingValue('player.isS2t')
   const isShowNotificationImage = useSettingValue('player.isShowNotificationImage')
 
   // 3. 车载与蓝牙
@@ -111,8 +111,8 @@ export default memo(() => {
         <SettingSwitchRow
           title="歌词简繁自动转换"
           desc="将当前播放的歌词文本自动转为繁体中文展示"
-          value={isS2T}
-          onValueChange={(val) => updateSetting({ 'player.isS2T': val })}
+          value={!!isS2t}
+          onValueChange={(val) => updateSetting({ 'player.isS2t': val })}
         />
 
         <SettingSwitchRow

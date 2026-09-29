@@ -7,15 +7,16 @@ import { useProgress } from '@/store/player/hook'
 import { createStyle } from '@/utils/tools'
 import Text from '@/components/common/Text'
 import { useBufferProgress } from '@/plugins/player'
-
-const ON_NIGHT_SECONDARY = 'rgba(255,255,255,0.55)'
+import { useAppColors } from '@/theme/tokens'
 
 const PlayTimeCurrent = ({ timeStr }: { timeStr: string }) => {
-  return <Text color={ON_NIGHT_SECONDARY}>{timeStr}</Text>
+  const c = useAppColors()
+  return <Text color={c.inkSecondary}>{timeStr}</Text>
 }
 
 const PlayTimeMax = memo(({ timeStr }: { timeStr: string }) => {
-  return <Text color={ON_NIGHT_SECONDARY}>{timeStr}</Text>
+  const c = useAppColors()
+  return <Text color={c.inkSecondary}>{timeStr}</Text>
 })
 
 export default () => {

@@ -9,18 +9,19 @@ import { ThemeContext } from '@/store/theme/state'
  */
 
 export const colors = {
-  // 品牌（奇哥 2026-09-28 定调：从暖金改为 QQ音乐绿 #31C27C）
-  brand: '#31C27C', // QQ音乐绿
-  brandDeep: '#1E9E63', // 绿的按压/暂停态
-  brandLight: '#6FD9A4', // 绿的亮部（渐变/光晕用）
+  // 品牌（2026-09-29 设计稿定调：翡翠绿 Emerald #10B981）
+  brand: '#10B981', // 翡翠绿 primary
+  brandDeep: '#059669', // 绿的按压/暂停态
+  brandLight: '#34D399', // 绿的亮部（渐变/光晕用）
 
-  // 浅色世界（浏览场景）
-  canvas: '#F5F6F8', // 页面底
+  // 浅色世界（浏览场景，对齐设计稿 Slate 浅色系）
+  canvas: '#F8FAFC', // 页面底
   surface: '#FFFFFF', // 卡片/条面
-  hairline: '#ECEEF1', // 分隔线
-  ink: '#1A1C20', // 主文字
-  inkSecondary: '#5A616B', // 次要文字
-  inkTertiary: '#9AA1AB', // 弱文字
+  hairline: '#E2E8F0', // 分隔线
+  muted: '#F1F5F9', // 弱底（徽章/次级按钮底）
+  ink: '#0F172A', // 主文字
+  inkSecondary: '#64748B', // 次要文字
+  inkTertiary: '#94A3B8', // 弱文字
 
   // 深色世界（播放页）
   night: '#20222A', // 深空底
@@ -41,13 +42,14 @@ export const darkColors = {
   surface: '#17191E',
   surface2: '#1F2228',
   hairline: 'rgba(255,255,255,0.08)',
+  muted: '#1F2228',
   ink: 'rgba(255,255,255,0.92)',
   inkSecondary: 'rgba(255,255,255,0.60)',
   inkTertiary: 'rgba(255,255,255,0.38)',
   // 品牌系列在深色下保持一致
-  brand: '#31C27C',
-  brandDeep: '#1E9E63',
-  brandLight: '#6FD9A4',
+  brand: '#10B981',
+  brandDeep: '#059669',
+  brandLight: '#34D399',
   night: '#0E0F12',
   nightSurface: '#17191E',
   onNight: 'rgba(255,255,255,0.92)',
@@ -66,6 +68,12 @@ export const useAppColors = () => {
   return getColors(theme.isDark)
 }
 
+/** 直接获取当前是否深色主题 */
+export const useIsDarkTheme = () => {
+  const theme = useContext(ThemeContext)
+  return theme.isDark
+}
+
 /** 间距节奏（4 的倍数） */
 export const spacing = {
   xs: 4,
@@ -76,12 +84,12 @@ export const spacing = {
   xxl: 32,
 }
 
-/** 圆角 */
+/** 圆角（设计稿克制圆角体系 4/8/12/16） */
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 4,
+  md: 8,
+  lg: 12,
+  xl: 16,
   pill: 999,
 }
 

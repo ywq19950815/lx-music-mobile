@@ -23,6 +23,17 @@ export default () => {
     })
   }, [])
 
+  // 监听外部（发现页快捷入口等）触发的搜索类型切换，保持分段控制器状态同步
+  useEffect(() => {
+    const handleTypeChange = (newType: SearchType) => {
+      setType(newType)
+    }
+    global.app_event.on('searchTypeChanged', handleTypeChange)
+    return () => {
+      global.app_event.off('searchTypeChanged', handleTypeChange)
+    }
+  }, [])
+
   const list = useMemo(() => {
     return SEARCH_TYPE_LIST.map(type => ({ label: t(`search_type_${type}`), id: type }))
   }, [t])
@@ -85,6 +96,6 @@ const styles = StyleSheet.create({
   segmentTextActive: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#31C27C',
+    color: '#10B981',
   },
 })

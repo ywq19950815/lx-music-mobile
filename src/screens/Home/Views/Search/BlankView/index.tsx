@@ -4,6 +4,7 @@ import { useSettingValue } from '@/store/setting/hook'
 import { createStyle } from '@/utils/tools'
 import HistorySearch, { type HistorySearchType } from './HistorySearch'
 import HotSearch, { type HotSearchType } from './HotSearch'
+import DiscoverHome from './DiscoverHome'
 import SongList from '@/screens/Home/Views/SongList'
 
 interface BlankViewProps {
@@ -44,10 +45,11 @@ export default forwardRef<BlankViewType, BlankViewProps>(({ onSearch }, ref) => 
 
   if (!visible) return null
 
-  // 歌曲激活：展示纯粹的单曲热门搜索与历史搜索
+  // 歌曲激活：发现页内容流 + 热门搜索 + 历史搜索
   if (activeType === 'music') {
     return (
       <ScrollView style={styles.musicScroll} showsVerticalScrollIndicator={false} contentContainerStyle={styles.musicContent}>
+        <DiscoverHome onSearch={onSearch} />
         <HotSearch ref={hotSearchRef} onSearch={onSearch} />
         {isShowHistorySearch ? <HistorySearch ref={historySearchRef} onSearch={onSearch} /> : null}
       </ScrollView>
@@ -65,13 +67,11 @@ export default forwardRef<BlankViewType, BlankViewProps>(({ onSearch }, ref) => 
 const styles = createStyle({
   musicScroll: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8FAFC',
   },
   musicContent: {
     paddingBottom: 25,
-    paddingLeft: 15,
-    paddingRight: 15,
-    paddingTop: 8,
+    paddingTop: 4,
   },
   songlistArea: {
     flex: 1,

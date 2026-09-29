@@ -133,7 +133,7 @@ export const indexMap = [
   'nav_love',
 ] as const
 
-const viewMap = {
+const viewMap: Record<string, number> = {
   nav_search: 0,
   nav_top: 1,
   nav_love: 2,

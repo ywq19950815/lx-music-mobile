@@ -7,6 +7,7 @@ import { setActiveList } from '@/core/list'
 import { getListMusics } from '@/utils/listManage'
 import { colors, radius } from '@/theme/tokens'
 import { LIST_IDS } from '@/config/constant'
+import { toast } from '@/utils/tools'
 
 export interface DashboardProps {
   onSelectList: (listId: string) => void
@@ -17,12 +18,17 @@ export interface DashboardProps {
 }
 
 /**
- * 我的音乐 - 简洁资产大盘
- * 包含：品牌头部（无头像图片）、四大金刚入口、我的歌单卡片列表。
+ * 个人音乐中心（2026-09-29 设计稿）：
+ * - MY MUSIC PROFILE 顶栏（通知 / 设置圆钮）
+ * - 用户信息卡：品牌绿描边头像 + Hi-Fi 徽章 + 听歌资产统计 + 尊享特权条
+ * - 快捷入口四宫格（本地下载 / 最近播放 / 已购音乐 / 车载互联）
+ * - 歌单 Tab（自建歌单 / 收藏歌单 / 关注歌手）
+ * - 「我喜欢」心动模式大卡 + 自建歌单卡片流
  */
 export default memo(({ onSelectList, onCreateList, onImportList, onOpenSetting, onShowListMenu }: DashboardProps) => {
   const allList = useMyList()
   const [counts, setCounts] = useState<Record<string, number>>({})
+  const [listTab, setListTab] = useState<'self' | 'fav' | 'follow'>('self')
 
   // 统计各歌单歌曲数
   useEffect(() => {
@@ -48,7 +54,7 @@ export default memo(({ onSelectList, onCreateList, onImportList, onOpenSetting, 
     }
   }, [allList])
 
-  // 我喜欢与试听列表数量
+  // 资产统计
   const loveCount = counts[LIST_IDS.LOVE] ?? 0
   const defaultCount = counts[LIST_IDS.DEFAULT] ?? 0
   const totalMusics = useMemo(() => {
@@ -60,118 +66,173 @@ export default memo(({ onSelectList, onCreateList, onImportList, onOpenSetting, 
     return allList.filter(l => l.id !== LIST_IDS.DEFAULT && l.id !== LIST_IDS.LOVE)
   }, [allList])
 
+  const handlePlayLove = () => {
+    setActiveList(LIST_IDS.LOVE)
+    onSelectList(LIST_IDS.LOVE)
+  }
+
   return (
     <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-      {/* 1. 顶部品牌头部（无头像图片） */}
+      {/* ── 1. MY MUSIC PROFILE 顶栏 ─────────────── */}
+      <View style={styles.topBar}>
+        <Text style={styles.topBarLabel}>MY MUSIC PROFILE</Text>
+        <View style={styles.topBarActions}>
+          <TouchableOpacity style={styles.topCircleBtn} activeOpacity={0.7} onPress={() => { toast('暂无新通知') }}>
+            <Icon name="comment" size={16} color={colors.brand} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.topCircleBtn} activeOpacity={0.7} onPress={onOpenSetting}>
+            <Icon name="setting" size={16} color={colors.brand} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* ── 2. 用户信息卡 ────────────────────────── */}
       <View style={styles.profileCard}>
-        <View style={styles.avatarCircle}>
-          <Icon name="logo" size={22} color="#FFFFFF" />
+        <View style={styles.profileRow}>
+          <View style={styles.avatarRing}>
+            <View style={styles.avatarCircle}>
+              <Icon name="logo" size={26} color={colors.brand} />
+            </View>
+          </View>
+          <View style={styles.profileInfo}>
+            <View style={styles.profileNameRow}>
+              <Text style={styles.profileName} numberOfLines={1}>我的音乐空间</Text>
+              <View style={styles.vipBadge}>
+                <Text style={styles.vipBadgeText}>Hi-Fi</Text>
+              </View>
+            </View>
+            <Text style={styles.profileSub}>
+              已收纳 {totalMusics} 首歌曲 · {allList.length} 个歌单
+            </Text>
+            <View style={styles.profileStats}>
+              <Text style={styles.profileStat}><Text style={styles.profileStatNum}>{loveCount}</Text> 喜欢</Text>
+              <Text style={styles.profileStatDivider}>·</Text>
+              <Text style={styles.profileStat}><Text style={styles.profileStatNum}>{defaultCount}</Text> 试听</Text>
+              <Text style={styles.profileStatDivider}>·</Text>
+              <Text style={styles.profileStat}><Text style={styles.profileStatNum}>{totalMusics}</Text> 收藏</Text>
+            </View>
+          </View>
         </View>
-        <View style={styles.profileInfo}>
-          <Text style={styles.profileName} numberOfLines={1}>我的音乐空间</Text>
-          <Text style={styles.profileSubtitle}>
-            已收纳 {totalMusics} 首歌曲 · {allList.length} 个歌单
-          </Text>
+
+        {/* VIP 特权条 */}
+        <View style={styles.privilegeStrip}>
+          <View style={styles.privilegeLeft}>
+            <Icon name="thumbs-up" size={14} color={colors.brand} />
+            <Text style={styles.privilegeText} numberOfLines={1}>尊享 24bit 超清母带音质与黑胶动效</Text>
+          </View>
+          <TouchableOpacity style={styles.privilegeBtn} activeOpacity={0.7} onPress={onOpenSetting}>
+            <Text style={styles.privilegeBtnText}>特权中心</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.settingEntry} activeOpacity={0.7} onPress={onOpenSetting}>
-          <Icon name="setting" size={14} color={colors.brand} />
+      </View>
+
+      {/* ── 3. 快捷入口四宫格 ────────────────────── */}
+      <View style={styles.quickGrid}>
+        <TouchableOpacity
+          style={styles.quickCard}
+          activeOpacity={0.8}
+          onPress={() => { toast('本地与下载管理敬请期待') }}
+        >
+          <Icon name="download-2" size={20} color={colors.brand} />
+          <Text style={styles.quickTitle} numberOfLines={1}>本地下载</Text>
+          <Text style={styles.quickSub}>离线畅听</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickCard}
+          activeOpacity={0.8}
+          onPress={() => {
+            setActiveList(LIST_IDS.DEFAULT)
+            onSelectList(LIST_IDS.DEFAULT)
+          }}
+        >
+          <Icon name="music_time" size={20} color={colors.brand} />
+          <Text style={styles.quickTitle} numberOfLines={1}>最近播放</Text>
+          <Text style={styles.quickSub}>{defaultCount} 首</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickCard}
+          activeOpacity={0.8}
+          onPress={handlePlayLove}
+        >
+          <Icon name="love" size={20} color={colors.brand} />
+          <Text style={styles.quickTitle} numberOfLines={1}>我喜欢</Text>
+          <Text style={styles.quickSub}>{loveCount} 首</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.quickCard}
+          activeOpacity={0.8}
+          onPress={() => { toast('车载互联敬请期待') }}
+        >
+          <Icon name="list-random" size={20} color={colors.brand} />
+          <Text style={styles.quickTitle} numberOfLines={1}>车载互联</Text>
+          <Text style={styles.quickSub}>已就绪</Text>
         </TouchableOpacity>
       </View>
 
-      {/* 2. 我喜欢 - 全宽主视觉大卡（红粉渐变，QQ 式主次分明） */}
-      <TouchableOpacity
-        style={styles.loveHeroCard}
-        activeOpacity={0.85}
-        onPress={() => {
-          setActiveList(LIST_IDS.LOVE)
-          onSelectList(LIST_IDS.LOVE)
-        }}
-      >
-        <View style={styles.loveHeroDecor} />
-        <View style={styles.loveHeroLeft}>
-          <View style={styles.loveHeroIconWrap}>
-            <Icon name="love" size={22} color="#FFFFFF" />
-          </View>
-          <View style={styles.loveHeroInfo}>
-            <Text style={styles.loveHeroTitle}>我喜欢</Text>
-            <Text style={styles.loveHeroSub}>{loveCount} 首歌曲 · 每一首都是心头好</Text>
-          </View>
-        </View>
-        <View style={styles.loveHeroPlay}>
-          <Icon name="play" size={16} color="#E11D48" />
-        </View>
-      </TouchableOpacity>
-
-      {/* 3. 次级入口三宫格（试听 / 最近播放 / 本地缓存） */}
-      <View style={styles.trioRow}>
-        <TouchableOpacity
-          style={styles.trioCard}
-          activeOpacity={0.8}
-          onPress={() => {
-            setActiveList(LIST_IDS.DEFAULT)
-            onSelectList(LIST_IDS.DEFAULT)
-          }}
-        >
-          <View style={[styles.trioIconWrap, { backgroundColor: '#FEF3C7' }]}>
-            <Icon name="play" size={16} color="#D97706" />
-          </View>
-          <Text style={styles.trioTitle} numberOfLines={1}>试听列表</Text>
-          <Text style={styles.trioSub}>{defaultCount} 首</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.trioCard}
-          activeOpacity={0.8}
-          onPress={() => {
-            setActiveList(LIST_IDS.DEFAULT)
-            onSelectList(LIST_IDS.DEFAULT)
-          }}
-        >
-          <View style={[styles.trioIconWrap, { backgroundColor: '#E0E7FF' }]}>
-            <Icon name="music_time" size={16} color="#4F46E5" />
-          </View>
-          <Text style={styles.trioTitle} numberOfLines={1}>最近播放</Text>
-          <Text style={styles.trioSub}>续听回顾</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.trioCard}
-          activeOpacity={0.8}
-          onPress={() => {
-            setActiveList(LIST_IDS.DEFAULT)
-            onSelectList(LIST_IDS.DEFAULT)
-          }}
-        >
-          <View style={[styles.trioIconWrap, { backgroundColor: '#D1FAE5' }]}>
-            <Icon name="download-2" size={16} color="#059669" />
-          </View>
-          <Text style={styles.trioTitle} numberOfLines={1}>本地缓存</Text>
-          <Text style={styles.trioSub}>离线畅听</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* 4. 我的自建歌单专区 */}
+      {/* ── 4. 歌单 Tab ──────────────────────────── */}
       <View style={styles.playlistSection}>
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionTitleRow}>
-            <Text style={styles.sectionTitle}>我的歌单</Text>
-            <Text style={styles.sectionCount}>({userLists.length})</Text>
-          </View>
+        <View style={styles.playlistTabs}>
+          <TouchableOpacity
+            style={styles.playlistTabItem}
+            activeOpacity={0.7}
+            onPress={() => { setListTab('self') }}
+          >
+            <Text style={[styles.playlistTabText, listTab === 'self' && styles.playlistTabTextActive]}>
+              自建歌单 ({userLists.length})
+            </Text>
+            {listTab === 'self' ? <View style={styles.playlistTabIndicator} /> : null}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.playlistTabItem}
+            activeOpacity={0.7}
+            onPress={() => { toast('收藏歌单敬请期待') }}
+          >
+            <Text style={styles.playlistTabText}>收藏歌单</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.playlistTabItem}
+            activeOpacity={0.7}
+            onPress={() => { toast('关注歌手敬请期待') }}
+          >
+            <Text style={styles.playlistTabText}>关注歌手</Text>
+          </TouchableOpacity>
 
-          <View style={styles.sectionActionRow}>
+          <View style={styles.playlistTabActions}>
             <TouchableOpacity style={styles.actionBtn} onPress={onImportList} activeOpacity={0.7}>
-              <Icon name="add-music" size={14} color={colors.inkSecondary} />
+              <Icon name="add-music" size={13} color={colors.inkSecondary} />
               <Text style={styles.actionBtnText}>导入</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrimary]} onPress={onCreateList} activeOpacity={0.7}>
-              <Icon name="add_folder" size={14} color="#FFFFFF" />
+              <Icon name="add_folder" size={13} color="#FFFFFF" />
               <Text style={styles.actionBtnTextPrimary}>新建</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* 歌单列表 */}
+        {/* 我喜欢 · 心动模式大卡 */}
+        <TouchableOpacity style={styles.loveCard} activeOpacity={0.85} onPress={handlePlayLove}>
+          <View style={styles.loveCover}>
+            <Icon name="love" size={26} color="#FFFFFF" />
+            <View style={styles.loveCoverOverlay} />
+          </View>
+          <View style={styles.loveInfo}>
+            <View style={styles.loveTitleRow}>
+              <Text style={styles.loveTitle} numberOfLines={1}>我喜欢</Text>
+              <View style={styles.loveBadge}>
+                <Text style={styles.loveBadgeText}>心动模式</Text>
+              </View>
+            </View>
+            <Text style={styles.loveSub} numberOfLines={1}>{loveCount} 首 · 每一首都是心头好</Text>
+          </View>
+          <View style={styles.lovePlayBtn}>
+            <Icon name="play" size={15} color={colors.brand} />
+          </View>
+        </TouchableOpacity>
+
+        {/* 自建歌单卡片流 */}
         {userLists.length === 0 ? (
           <TouchableOpacity style={styles.emptyPlaylistCard} onPress={onCreateList} activeOpacity={0.8}>
             <View style={styles.emptyIconCircle}>
@@ -195,7 +256,7 @@ export default memo(({ onSelectList, onCreateList, onImportList, onOpenSetting, 
                   }}
                 >
                   <View style={styles.playlistCover}>
-                    <Icon name="album" size={24} color="#FFFFFF" />
+                    <Icon name="album" size={22} color="#FFFFFF" />
                   </View>
 
                   <View style={styles.playlistInfo}>
@@ -227,276 +288,246 @@ export default memo(({ onSelectList, onCreateList, onImportList, onOpenSetting, 
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: colors.canvas,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingHorizontal: 20,
+    paddingTop: 8,
     paddingBottom: 40,
   },
-  // 我喜欢主视觉大卡
-  loveHeroCard: {
+
+  // ── 1. 顶栏 ──────────────────────────────
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F43F5E',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 12,
-    overflow: 'hidden',
-    shadowColor: '#F43F5E',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 4,
+    paddingVertical: 8,
   },
-  loveHeroDecor: {
-    position: 'absolute',
-    top: -40,
-    right: -30,
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+  topBarLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.inkTertiary,
+    letterSpacing: 1.5,
   },
-  loveHeroLeft: {
+  topBarActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    gap: 8,
   },
-  loveHeroIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 13,
-  },
-  loveHeroInfo: {
-    flex: 1,
-  },
-  loveHeroTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 3,
-  },
-  loveHeroSub: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.85)',
-  },
-  loveHeroPlay: {
+  topCircleBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  // 次级入口三宫格
-  trioRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
-  },
-  trioCard: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 12,
     borderWidth: 1,
-    borderColor: '#ECEEF1',
-    alignItems: 'flex-start',
-  },
-  trioIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    borderColor: colors.hairline,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  trioTitle: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: colors.ink,
-    marginBottom: 2,
-  },
-  trioSub: {
-    fontSize: 10.5,
-    color: colors.inkTertiary,
-  },
-  // 个人头部卡片（品牌标识，无头像图片）
+
+  // ── 2. 用户信息卡 ────────────────────────
   profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: '#ECEEF1',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    borderColor: colors.hairline,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
     elevation: 2,
   },
-  avatarCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.brand,
-    justifyContent: 'center',
-    alignItems: 'center',
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  avatarRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: colors.brand,
+    padding: 2,
     marginRight: 14,
   },
-  settingEntry: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(49, 196, 125, 0.1)',
+  avatarCircle: {
+    flex: 1,
+    borderRadius: 28,
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileInfo: {
     flex: 1,
+    minWidth: 0,
+  },
+  profileNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   profileName: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.ink,
-    marginBottom: 4,
+    flexShrink: 1,
   },
-  profileSubtitle: {
+  vipBadge: {
+    backgroundColor: colors.brand,
+    borderRadius: radius.sm,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  vipBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  profileSub: {
+    fontSize: 11.5,
+    color: colors.inkSecondary,
+    marginTop: 4,
+  },
+  profileStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+  },
+  profileStat: {
     fontSize: 12,
     color: colors.inkSecondary,
   },
-  avatarEditHint: {
+  profileStatNum: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.ink,
+  },
+  profileStatDivider: {
+    fontSize: 11,
+    color: colors.inkTertiary,
+  },
+
+  // VIP 特权条
+  privilegeStrip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    justifyContent: 'space-between',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.hairline,
+    marginTop: 14,
+    paddingTop: 12,
+  },
+  privilegeLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    flex: 1,
+    minWidth: 0,
+  },
+  privilegeText: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    color: colors.ink,
+    flexShrink: 1,
+  },
+  privilegeBtn: {
+    backgroundColor: colors.muted,
+    borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: radius.pill,
-    backgroundColor: 'rgba(49, 196, 125, 0.1)',
+    marginLeft: 8,
   },
-  avatarEditText: {
+  privilegeBtnText: {
     fontSize: 11,
     fontWeight: '600',
     color: colors.brand,
   },
-  // 四大金刚卡片 2x2
+
+  // ── 3. 快捷四宫格 ────────────────────────
   quickGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 20,
+    gap: 10,
+    marginBottom: 16,
   },
-  gridCard: {
-    width: '48%',
-    flexBasis: '48%',
-    flexGrow: 1,
+  quickCard: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    padding: 14,
+    borderRadius: radius.xl,
     borderWidth: 1,
-    borderColor: '#ECEEF1',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1.5,
-  },
-  cardLove: {
-    backgroundColor: '#FFF8F8',
-    borderColor: 'rgba(239, 68, 68, 0.15)',
-  },
-  cardDefault: {
-    backgroundColor: '#FFFDF5',
-    borderColor: 'rgba(245, 166, 35, 0.2)',
-  },
-  cardRecent: {
-    backgroundColor: '#F8FAFF',
-    borderColor: 'rgba(99, 102, 241, 0.15)',
-  },
-  cardLocal: {
-    backgroundColor: '#F4FDF9',
-    borderColor: 'rgba(16, 185, 129, 0.15)',
-  },
-  gridHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    borderColor: colors.hairline,
     alignItems: 'center',
-    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    gap: 5,
   },
-  gridIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  miniPlayBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  gridCardTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+  quickTitle: {
+    fontSize: 11.5,
+    fontWeight: '600',
     color: colors.ink,
-    marginBottom: 3,
   },
-  gridCardSub: {
-    fontSize: 11,
+  quickSub: {
+    fontSize: 9.5,
     color: colors.inkTertiary,
   },
-  // 歌单专区
+
+  // ── 4. 歌单区 ────────────────────────────
   playlistSection: {
     marginBottom: 24,
   },
-  sectionHeader: {
+  playlistTabs: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
     marginBottom: 12,
+    gap: 20,
   },
-  sectionTitleRow: {
-    flexDirection: 'row',
+  playlistTabItem: {
     alignItems: 'center',
-    gap: 6,
+    paddingVertical: 8,
+    position: 'relative',
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.ink,
-  },
-  sectionCount: {
-    fontSize: 14,
+  playlistTabText: {
+    fontSize: 13.5,
     fontWeight: '500',
     color: colors.inkTertiary,
   },
-  sectionActionRow: {
+  playlistTabTextActive: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: colors.brand,
+  },
+  playlistTabIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    width: 16,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: colors.brand,
+  },
+  playlistTabActions: {
     flexDirection: 'row',
     gap: 8,
+    marginLeft: 'auto',
+    marginBottom: 4,
   },
   actionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 10,
+    paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: radius.pill,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#ECEEF1',
+    borderColor: colors.hairline,
   },
   actionBtnText: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '600',
     color: colors.inkSecondary,
   },
@@ -505,25 +536,98 @@ const styles = StyleSheet.create({
     borderColor: colors.brand,
   },
   actionBtnTextPrimary: {
-    fontSize: 12,
+    fontSize: 11.5,
     fontWeight: '600',
     color: '#FFFFFF',
   },
+
+  // 我喜欢大卡
+  loveCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.hairline,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  loveCover: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.md,
+    backgroundColor: colors.brand,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    overflow: 'hidden',
+  },
+  loveCoverOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  loveInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+  loveTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+  },
+  loveTitle: {
+    fontSize: 14.5,
+    fontWeight: '700',
+    color: colors.ink,
+  },
+  loveBadge: {
+    backgroundColor: colors.muted,
+    borderRadius: radius.sm,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  loveBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    color: colors.brand,
+  },
+  loveSub: {
+    fontSize: 11,
+    color: colors.inkSecondary,
+    marginTop: 4,
+  },
+  lovePlayBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16, 185, 129, 0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  // 空态
   emptyPlaylistCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: radius.lg,
     padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#ECEEF1',
+    borderColor: colors.hairline,
     borderStyle: 'dashed',
   },
   emptyIconCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(49, 196, 125, 0.1)',
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
@@ -538,6 +642,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.inkTertiary,
   },
+
+  // 自建歌单卡片
   userListContainer: {
     gap: 10,
   },
@@ -545,21 +651,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: radius.lg,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#ECEEF1',
-    shadowColor: '#000000',
+    borderColor: colors.hairline,
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 1,
   },
   playlistCover: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#31C27C',
+    width: 52,
+    height: 52,
+    borderRadius: radius.md,
+    backgroundColor: colors.brand,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -579,34 +685,5 @@ const styles = StyleSheet.create({
   },
   moreBtn: {
     padding: 8,
-  },
-  // 头像选择弹窗
-  avatarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 18,
-    paddingVertical: 22,
-    paddingHorizontal: 16,
-  },
-  avatarOption: {
-    padding: 4,
-  },
-  avatarOptionCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  avatarOptionActive: {
-    borderColor: colors.brand,
-    shadowColor: colors.brand,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
 })

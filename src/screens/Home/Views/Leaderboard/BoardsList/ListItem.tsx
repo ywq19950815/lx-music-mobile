@@ -59,7 +59,7 @@ export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemPr
       </View>
       {active && (
         <View style={styles.activeCheckWrap}>
-          <Icon name="check" size={12} color="#31C27C" />
+          <Icon name="check" size={12} color="#10B981" />
         </View>
       )}
     </Button>
@@ -79,12 +79,12 @@ const styles = StyleSheet.create({
   cardActive: {
     backgroundColor: 'rgba(49, 194, 124, 0.08)',
     borderWidth: 1.5,
-    borderColor: '#31C27C',
+    borderColor: '#10B981',
   },
   cardInactive: {
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#ECEEF1',
+    borderColor: '#E2E8F0',
   },
   badgeIconWrap: {
     width: 26,
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   badgeIconWrapActive: {
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
   },
   badgeIconWrapInactive: {
     backgroundColor: '#FFFFFF',

@@ -51,10 +51,10 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
 
   const handleOpenPlayDetail = () => {
     navigations.pushPlayDetailScreen(commonState.componentIds.home || 'home')
-    if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
-      (window as any).__lxTogglePlayDetail(true)
+    if (typeof globalThis !== 'undefined' && (globalThis as any).__lxTogglePlayDetail) {
+      (globalThis as any).__lxTogglePlayDetail(true)
     }
-    globalThis.app_event?.emit('openPlayDetail')
+    global.app_event.openPlayDetail?.()
   }
 
   return (
@@ -129,11 +129,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1.5,
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
   },
   center: {
     flex: 1,

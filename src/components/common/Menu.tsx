@@ -165,17 +165,17 @@ const Menu = ({
                 style={[
                   styles.menuItem,
                   { width: menuItemStyle.width, height: menuItemStyle.height },
-                  isActive && { backgroundColor: 'rgba(245, 166, 35, 0.10)' },
+                  isActive && { backgroundColor: 'rgba(16, 185, 129, 0.10)' },
                   isLast && { borderBottomWidth: 0 },
                 ]}
-                underlayColor={'rgba(245, 166, 35, 0.08)'}
+                underlayColor={'rgba(16, 185, 129, 0.08)'}
                 onPress={() => { menuPress(menu) }}
               >
                 <Text
                   style={{
                     textAlign: center ? 'center' : 'left',
                     fontWeight: isActive ? '700' : '500',
-                    color: isActive ? '#B36B00' : colors.ink,
+                    color: isActive ? '#059669' : colors.ink,
                   }}
                   size={13.5}
                   numberOfLines={1}

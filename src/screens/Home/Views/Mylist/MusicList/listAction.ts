@@ -14,48 +14,52 @@ import { getListMusicSync } from '@/utils/listManage'
 import { clearMusicUrlByMusic } from '@/utils/data'
 
 export const handlePlay = (listId: SelectInfo['listId'], index: SelectInfo['index']) => {
-  void playList(listId, index)
+  if (listId != null && index != null) void playList(listId, index)
 }
 export const handlePlayLater = (listId: SelectInfo['listId'], musicInfo: SelectInfo['musicInfo'], selectedList: SelectInfo['selectedList'], onCancelSelect: () => void) => {
-  if (selectedList.length) {
-    addTempPlayList(selectedList.map(s => ({ listId, musicInfo: s })))
+  const safeListId = listId ?? ''
+  if (selectedList && selectedList.length) {
+    addTempPlayList(selectedList.map(s => ({ listId: safeListId, musicInfo: s })))
     onCancelSelect()
     toast(`已添加 ${selectedList.length} 首歌曲到稍后播放`)
   } else {
-    addTempPlayList([{ listId, musicInfo }])
+    addTempPlayList([{ listId: safeListId, musicInfo }])
     toast(`已将《${musicInfo.name}》加入稍后播放`)
   }
 }
 
 export const handleRemove = (listId: SelectInfo['listId'], musicInfo: SelectInfo['musicInfo'], selectedList: SelectInfo['selectedList'], onCancelSelect: () => void) => {
-  if (selectedList.length) {
+  const safeListId = listId ?? ''
+  if (selectedList && selectedList.length) {
     void confirmDialog({
       message: global.i18n.t('list_remove_music_multi_tip', { num: selectedList.length }),
       confirmButtonText: global.i18n.t('list_remove_tip_button'),
     }).then(isRemove => {
       if (!isRemove) return
-      void removeListMusics(listId, selectedList.map(s => s.id))
+      void removeListMusics(safeListId, selectedList.map(s => s.id))
       onCancelSelect()
     })
   } else {
-    void removeListMusics(listId, [musicInfo.id])
+    void removeListMusics(safeListId, [musicInfo.id])
   }
 }
 
 export const handleUpdateMusicPosition = (position: number, listId: SelectInfo['listId'], musicInfo: SelectInfo['musicInfo'], selectedList: SelectInfo['selectedList'], onCancelSelect: () => void) => {
-  if (selectedList.length) {
-    void updateListMusicPosition(listId, position, selectedList.map(s => s.id))
+  const safeListId = listId ?? ''
+  if (selectedList && selectedList.length) {
+    void updateListMusicPosition(safeListId, position, selectedList.map(s => s.id))
     onCancelSelect()
   } else {
     // console.log(listId, position, [musicInfo.id])
-    void updateListMusicPosition(listId, position, [musicInfo.id])
+    void updateListMusicPosition(safeListId, position, [musicInfo.id])
   }
 }
 
 export const handleUpdateMusicInfo = (listId: SelectInfo['listId'], musicInfo: LX.Music.MusicInfoLocal, newInfo: Metadata) => {
+  const safeListId = listId ?? ''
   void updateListMusics([
     {
-      id: listId,
+      id: safeListId,
       musicInfo: {
         ...musicInfo,
         name: newInfo.name,

@@ -196,13 +196,13 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
         onClear: handleClearTemp,
       })
       tempList.forEach((item, index) => {
-        const minfo = item.musicInfo
+        const minfo = item.musicInfo as any
         if (!minfo) return
         list.push({
           type: 'song',
           key: `temp-${index}-${minfo.id}`,
           id: minfo.id,
-          title: minfo.name,
+          title: minfo.name ?? '',
           singer: minfo.singer || '未知歌手',
           isTemp: true,
           isActive: minfo.id === currentId,
@@ -301,7 +301,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                 >
                   {item.isActive ? (
                     <View style={styles.activeIconBox}>
-                      <Icon name="play" size={12} color="#31C27C" />
+                      <Icon name="play" size={12} color="#10B981" />
                     </View>
                   ) : null}
 
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#31C27C',
+    color: '#10B981',
   },
   sectionCount: {
     fontSize: 12,
@@ -459,7 +459,7 @@ const styles = StyleSheet.create({
   tempBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#31C27C',
+    color: '#10B981',
   },
   songMeta: {
     flex: 1,
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
     color: '#E5E7EB',
   },
   songTitleActive: {
-    color: '#31C27C',
+    color: '#10B981',
     fontWeight: '700',
   },
   songSinger: {

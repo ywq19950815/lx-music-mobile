@@ -162,9 +162,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   sourceCardActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.10)',
+    backgroundColor: 'rgba(16, 185, 129, 0.10)',
     borderWidth: 1.5,
-    borderColor: '#31C27C',
+    borderColor: '#10B981',
   },
   sourceCardInactive: {
     backgroundColor: '#F8F9FA',
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   indicatorDotActive: {
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
   },
   indicatorDotInactive: {
     backgroundColor: '#D1D5DB',
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   activeBadge: {
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
     borderRadius: 4,
     paddingHorizontal: 5,
     paddingVertical: 1.5,

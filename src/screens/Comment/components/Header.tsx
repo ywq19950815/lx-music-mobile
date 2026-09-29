@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   root: {
     backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ECEEF1',
+    borderBottomColor: '#E2E8F0',
   },
   container: {
     flex: 1,
@@ -81,12 +81,12 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A1C20',
+    color: '#0F172A',
   },
   subTitle: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#8A919E',
+    color: '#94A3B8',
     marginTop: 2,
   },
   rightPlaceholder: {

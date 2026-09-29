@@ -60,7 +60,7 @@ const styles = createStyle({
     width: 26,
     height: 26,
     borderRadius: 8,
-    backgroundColor: 'rgba(49, 196, 125, 0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 9,

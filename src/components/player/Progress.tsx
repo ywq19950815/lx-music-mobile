@@ -9,7 +9,7 @@ const DefaultBar = memo(() => {
     <View
       style={{
         ...styles.progressBar,
-        backgroundColor: '#ECEEF1',
+        backgroundColor: '#E2E8F0',
         position: 'absolute',
         width: '100%',
         left: 0,

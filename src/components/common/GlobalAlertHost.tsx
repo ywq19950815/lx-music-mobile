@@ -26,7 +26,7 @@ export default () => {
     }
 
     // 2. 挂载到 globalThis 上便于 Alert.alert 桥接兜底
-    globalThis.__lxEmitAlert = (title: string, message: string, buttons?: any[]) => {
+    ;(globalThis as any).__lxEmitAlert = (title: string, message: string, buttons?: any[]) => {
       const btns = buttons && buttons.length ? buttons : [{ text: '确定' }]
 
       // 多选项模式（如通知权限 / 电池优化白名单的 3 个选项）→ 纵向按钮列表
@@ -63,7 +63,7 @@ export default () => {
     global.app_event?.on?.('showGlobalAlert', handleShow)
     return () => {
       global.app_event?.off?.('showGlobalAlert', handleShow)
-      globalThis.__lxEmitAlert = null
+      ;(globalThis as any).__lxEmitAlert = null
     }
   }, [])
 

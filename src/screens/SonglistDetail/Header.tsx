@@ -125,7 +125,7 @@ export default forwardRef<HeaderType, HeaderProps>(({ componentId }: { component
           activeOpacity={0.7}
           onPress={handleBack}
         >
-          <Icon name="chevron-left" size={18} color="#1A1C20" />
+          <Icon name="chevron-left" size={18} color="#0F172A" />
         </TouchableOpacity>
 
         <View style={styles.navCenter}>
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ECEEF1',
+    borderBottomColor: '#E2E8F0',
   },
   navBar: {
     height: 52,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   navTitleText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A1C20',
+    color: '#0F172A',
     textAlign: 'center',
   },
   sourceBadge: {
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   sourceBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#31C27C',
+    color: '#10B981',
   },
   cardContainer: {
     marginHorizontal: 12,
@@ -265,13 +265,13 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1A1C20',
+    color: '#0F172A',
     lineHeight: 20,
     marginBottom: 4,
   },
   descText: {
     fontSize: 11.5,
-    color: '#5A616B',
+    color: '#64748B',
     lineHeight: 16,
     fontWeight: '400',
   },

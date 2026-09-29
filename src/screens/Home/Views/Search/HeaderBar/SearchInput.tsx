@@ -67,12 +67,12 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, placehol
           </View>
         ) : null}
         <View style={styles.searchIconBox}>
-          <Icon name="search-2" size={14} color="#8A909B" />
+          <Icon name="search-2" size={14} color="#10B981" />
         </View>
         <Input
           ref={inputRef}
           placeholder={currentHolder}
-          placeholderTextColor="#9AA0AA"
+          placeholderTextColor="#94A3B8"
           value={text}
           onChangeText={handleChangeText}
           style={styles.input}
@@ -103,13 +103,18 @@ const styles = StyleSheet.create({
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E6E8EC',
-    borderRadius: 19,
+    borderColor: '#E2E8F0',
+    borderRadius: 999,
     height: 38,
     paddingLeft: 4,
     paddingRight: 4,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   prefixContainer: {
     flexDirection: 'row',
@@ -119,7 +124,7 @@ const styles = StyleSheet.create({
   verticalDivider: {
     width: 1,
     height: 14,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: '#E2E8F0',
     marginLeft: 2,
     marginRight: 6,
   },
@@ -132,15 +137,15 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '500',
-    color: '#1A1C20',
+    color: '#0F172A',
     height: '100%',
     padding: 0,
   },
   searchBtn: {
-    backgroundColor: '#31C27C',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -336,7 +336,7 @@ const styles = createStyle({
     paddingLeft: 15,
     paddingRight: 15,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ECEEF1',
+    borderBottomColor: '#E2E8F0',
   },
   itemName: {
     flexGrow: 1,
@@ -438,7 +438,7 @@ const recommendStyles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: '#F8F9FA',
     borderWidth: 1,
-    borderColor: '#ECEEF1',
+    borderColor: '#E2E8F0',
   },
   hotTagTop: {
     backgroundColor: 'rgba(245, 158, 11, 0.08)',

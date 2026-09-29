@@ -108,7 +108,7 @@ export default () => {
 
   // 导入歌单
   const handleImportList = useCallback(() => {
-    listImportExportRef.current?.import({ id: 'import', name: '' }, { x: 100, y: 300, w: 100, h: 40 })
+    listImportExportRef.current?.import({ id: 'import', name: '', locationUpdateTime: null }, 0)
   }, [])
 
   // 歌单菜单
@@ -131,7 +131,7 @@ export default () => {
           <View style={styles.settingWrapper}>
             <View style={styles.settingNavBar}>
               <TouchableOpacity style={styles.settingBackBtn} activeOpacity={0.7} onPress={handleBackFromSetting}>
-                <Icon name="chevron-left" size={18} color="#1A1C20" />
+                <Icon name="chevron-left" size={18} color="#0F172A" />
               </TouchableOpacity>
               <View style={styles.settingNavCenter}>
                 <Text style={styles.settingNavTitle}>应用设置</Text>
@@ -174,7 +174,7 @@ export default () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#F8FAFC',
   },
   settingWrapper: {
     flex: 1,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#ECEEF1',
+    borderBottomColor: '#E2E8F0',
     backgroundColor: '#FFFFFF',
   },
   settingBackBtn: {
@@ -206,12 +206,12 @@ const styles = StyleSheet.create({
   settingNavTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1A1C20',
+    color: '#0F172A',
   },
   settingNavSub: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#8A919E',
+    color: '#94A3B8',
     marginTop: 1,
   },
   settingNavRightPlaceholder: {

@@ -102,12 +102,12 @@ export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 // 一级菜单（侧边抽屉 / 平板侧栏）：设置已移入「我的」二级菜单，故此处不再列出
 export const NAV_MENUS = [
   { id: 'nav_search', icon: 'search-2' },
-  { id: 'nav_top', icon: 'leaderboard' },
-  { id: 'nav_love', icon: 'album' },
+  { id: 'nav_top', icon: 'album' },
+  { id: 'nav_love', icon: 'single' },
   // { id: 'download', icon: 'download-2' },
 ] as const
 
-export type NAV_ID_Type = typeof NAV_MENUS[number]['id']
+export type NAV_ID_Type = typeof NAV_MENUS[number]['id'] | 'nav_songlist' | 'nav_setting'
 
 export const LXM_FILE_EXT_RXP = ['json', 'lxmc', 'bin']
 export const USER_API_SOURCE_FILE_EXT_RXP = ['js']

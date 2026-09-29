@@ -156,17 +156,19 @@ export default ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => {
   }, [])
 
   const handleAddMusic = useCallback((info: SelectInfo) => {
-    if (info.selectedList.length) {
-      listMusicMultiAddRef.current?.show({ selectedList: info.selectedList, listId: info.listId, isMove: false })
+    const listId = info.listId ?? ''
+    if (info.selectedList && info.selectedList.length) {
+      listMusicMultiAddRef.current?.show({ selectedList: info.selectedList, listId, isMove: false })
     } else {
-      listMusicAddRef.current?.show({ musicInfo: info.musicInfo, listId: info.listId, isMove: false })
+      listMusicAddRef.current?.show({ musicInfo: info.musicInfo, listId, isMove: false })
     }
   }, [])
   const handleMoveMusic = useCallback((info: SelectInfo) => {
-    if (info.selectedList.length) {
-      listMusicMultiAddRef.current?.show({ selectedList: info.selectedList, listId: info.listId, isMove: true })
+    const listId = info.listId ?? ''
+    if (info.selectedList && info.selectedList.length) {
+      listMusicMultiAddRef.current?.show({ selectedList: info.selectedList, listId, isMove: true })
     } else {
-      listMusicAddRef.current?.show({ musicInfo: info.musicInfo, listId: info.listId, isMove: true })
+      listMusicAddRef.current?.show({ musicInfo: info.musicInfo, listId, isMove: true })
     }
   }, [])
   const handleEditMetadata = useCallback((info: SelectInfo) => {
@@ -214,19 +216,19 @@ export default ({ onBackToDashboard }: { onBackToDashboard?: () => void }) => {
       <ListMusicAdd ref={listMusicAddRef} onAdded={hancelExitSelect} />
       <ListMusicMultiAdd ref={listMusicMultiAddRef} onAdded={hancelExitSelect} />
       <MusicPositionModal ref={musicPositionModalRef}
-        onUpdatePosition={(info, postion) => { handleUpdateMusicPosition(postion, info.listId, info.musicInfo, info.selectedList, hancelExitSelect) }} />
+        onUpdatePosition={(info, postion) => { handleUpdateMusicPosition(postion, info.listId, info.musicInfo, (info as any).selectedList, hancelExitSelect) }} />
       <ListMenu
         ref={listMenuRef}
         onPlay={info => { handlePlay(info.listId, info.index) }}
-        onPlayLater={info => { hancelExitSelect(); handlePlayLater(info.listId, info.musicInfo, info.selectedList, hancelExitSelect) }}
-        onRemove={info => { hancelExitSelect(); handleRemove(info.listId, info.musicInfo, info.selectedList, hancelExitSelect) }}
+        onPlayLater={info => { hancelExitSelect(); handlePlayLater(info.listId, info.musicInfo, (info as any).selectedList, hancelExitSelect) }}
+        onRemove={info => { hancelExitSelect(); handleRemove(info.listId, info.musicInfo, (info as any).selectedList, hancelExitSelect) }}
         onDislikeMusic={info => { void handleDislikeMusic(info.musicInfo) }}
         onMusicSourceDetail={info => { void handleShowMusicSourceDetail(info.musicInfo) }}
         onAdd={handleAddMusic}
         onMove={handleMoveMusic}
         onEditMetadata={handleEditMetadata}
-        onChangePosition={info => musicPositionModalRef.current?.show(info)}
-        onToggleSource={info => musicToggleModalRef.current?.show(info)}
+        onChangePosition={info => musicPositionModalRef.current?.show(info as any)}
+        onToggleSource={info => musicToggleModalRef.current?.show(info as any)}
         onRemoveCache={info => { void clearMusicUrl(info.musicInfo) }}
       />
       <MetadataEditModal

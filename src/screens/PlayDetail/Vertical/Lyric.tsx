@@ -1,4 +1,4 @@
-import { memo, useMemo, useEffect, useRef, useCallback, useState } from 'react'
+import { memo, useMemo, useEffect, useRef, useCallback, useState, useContext } from 'react'
 import {
   View,
   FlatList,
@@ -19,6 +19,7 @@ import { setSpText } from '@/utils/pixelRatio'
 import playerState from '@/store/player/state'
 import PlayLine, { type PlayLineType } from '../components/PlayLine'
 import { colors as designColors } from '@/theme/tokens'
+import { ThemeContext } from '@/store/theme/state'
 
 type FlatListType = FlatListProps<Line>
 
@@ -29,15 +30,28 @@ interface LineProps {
   duration: number
   lrcFontSize: number
   textAlign: any
+  idleColor: string
+  inactiveColor: string
+  extendedColor: (alpha: number) => string
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 
-// QQ 音乐标准歌词配色方案：
-// - 未唱行/非激活行：柔和半透明浅白灰（对比克制，不抢视觉焦点）
-// - 激活行未唱部分：高亮纯白（大字高亮待唱）
-// - 激活行已唱部分/卡拉OK：鲜活 QQ 绿（#31C27C 唱过即逐字染色）
-const COLOR_IDLE = 'rgba(255, 255, 255, 0.68)'
-const COLOR_INACTIVE = 'rgba(255, 255, 255, 0.40)'
+// 歌词配色方案（2026-09-29 双主题）：
+// - 浅色：墨色主字 + 灰阶副字（设计稿 muted-foreground 体系）
+// - 深色：柔和半透明浅白灰
+// - 激活行已唱部分/卡拉OK：鲜活品牌绿逐字染色
+const useLyricColors = () => {
+  const theme = useContext(ThemeContext)
+  return useMemo(() => theme.isDark ? {
+    idle: 'rgba(255, 255, 255, 0.68)',
+    inactive: 'rgba(255, 255, 255, 0.40)',
+    extended: (alpha: number) => `rgba(255, 255, 255, ${alpha})`,
+  } : {
+    idle: '#0F172A',
+    inactive: '#94A3B8',
+    extended: (alpha: number) => `rgba(15, 23, 42, ${alpha})`,
+  }, [theme.isDark])
+}
 const COLOR_SUNG = designColors.brand
 
 /**
@@ -57,6 +71,9 @@ const LrcLine = memo(({
   duration,
   lrcFontSize,
   textAlign,
+  idleColor,
+  inactiveColor,
+  extendedColor,
   onLayout,
 }: LineProps) => {
   const active = activeLine === lineNum
@@ -187,7 +204,7 @@ const LrcLine = memo(({
     outputRange: ['0%', '100%'],
   })
 
-  const renderExtended = (alpha: number, sizeRatio: number, fontWeight: string) => (
+  const renderExtended = (alpha: number, sizeRatio: number, fontWeight: any) => (
     line.extendedLyrics.map((lrc, index) => (
       <Text
         key={index}
@@ -198,7 +215,7 @@ const LrcLine = memo(({
             lineHeight: lineHeight * 0.8,
             fontSize: size * sizeRatio,
             fontWeight,
-            color: `rgba(255, 255, 255, ${alpha})`,
+            color: extendedColor(alpha),
           },
         ]}
         textBreakStrategy="simple"
@@ -217,7 +234,7 @@ const LrcLine = memo(({
         textBreakStrategy="simple"
       >
         {words.map((word, index) => (
-          <Text key={index} style={{ color: index <= wordIdx ? COLOR_SUNG : COLOR_IDLE }}>
+          <Text key={index} style={{ color: index <= wordIdx ? COLOR_SUNG : idleColor }}>
             {word.text}
           </Text>
         ))}
@@ -246,7 +263,7 @@ const LrcLine = memo(({
                 lineHeight,
                 fontSize: size,
                 fontWeight: '700',
-                color: COLOR_IDLE,
+                color: idleColor,
               },
             ]}
             onLayout={handleTextLayout}
@@ -292,7 +309,7 @@ const LrcLine = memo(({
                 lineHeight,
                 fontSize: size,
                 fontWeight: '500',
-                color: COLOR_INACTIVE,
+                color: inactiveColor,
               },
             ]}
             textBreakStrategy="simple"
@@ -309,6 +326,9 @@ const LrcLine = memo(({
   if (prevProps.line !== nextProps.line) return false
   if (prevProps.lrcFontSize !== nextProps.lrcFontSize) return false
   if (prevProps.textAlign !== nextProps.textAlign) return false
+  if (prevProps.idleColor !== nextProps.idleColor) return false
+  if (prevProps.inactiveColor !== nextProps.inactiveColor) return false
+  if (prevProps.extendedColor !== nextProps.extendedColor) return false
   const prevActive = prevProps.activeLine === prevProps.lineNum
   const nextActive = nextProps.activeLine === nextProps.lineNum
   return prevActive === nextActive
@@ -329,6 +349,8 @@ export default () => {
   const isShowLyricProgressSetting = useSettingValue('playDetail.isShowLyricProgressSetting')
   const lrcFontSize = useSettingValue('playDetail.vertical.style.lrcFontSize')
   const textAlign = useSettingValue('playDetail.style.align')
+  const theme = useContext(ThemeContext)
+  const lyricColors = useLyricColors()
 
   // 原生硬件加速平滑滚动到激活行，杜绝 JS 线程 10ms 频繁步进造成的掉帧与卡死
   const handleScrollToActive = useCallback((index = lineRef.current.line) => {
@@ -465,6 +487,9 @@ export default () => {
         duration={duration}
         lrcFontSize={lrcFontSize}
         textAlign={textAlign}
+        idleColor={lyricColors.idle}
+        inactiveColor={lyricColors.inactive}
+        extendedColor={lyricColors.extended}
         onLayout={handleLineLayout}
       />
     )
@@ -479,14 +504,15 @@ export default () => {
   const statusText = useStatusText()
   const emptyComponent = useMemo(() => (
     <View style={styles.emptyContainer}>
-      <View style={styles.emptyCard}>
+      <View style={[styles.emptyCard, { backgroundColor: theme.isDark ? 'rgba(255, 255, 255, 0.08)' : '#FFFFFF', borderColor: theme.isDark ? 'transparent' : '#E2E8F0' }]}>
         <Text style={styles.emptyIcon}>🎵</Text>
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyText, { color: theme.isDark ? 'rgba(255, 255, 255, 0.9)' : '#0F172A' }]}>
           {playerState.musicInfo.id ? (statusText || '正在加载歌词...') : '暂无播放歌曲'}
         </Text>
       </View>
     </View>
-  ), [statusText])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [statusText, theme.isDark])
 
   return (
     <>
@@ -530,8 +556,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 16,
+    borderWidth: 1,
     paddingHorizontal: 20,
     paddingVertical: 14,
     alignItems: 'center',

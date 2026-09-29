@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   accentBar: {
     width: 3.5,
     height: 13,
-    backgroundColor: '#31C27C',
+    backgroundColor: '#10B981',
     marginRight: 8,
     borderRadius: 2,
   },

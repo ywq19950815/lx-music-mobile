@@ -15,10 +15,10 @@ export default ({ isHome }: { isHome: boolean }) => {
 
   const handlePress = () => {
     navigations.pushPlayDetailScreen(commonState.componentIds.home || 'home')
-    if (typeof window !== 'undefined' && (window as any).__lxTogglePlayDetail) {
-      (window as any).__lxTogglePlayDetail(true)
+    if (typeof globalThis !== 'undefined' && (globalThis as any).__lxTogglePlayDetail) {
+      (globalThis as any).__lxTogglePlayDetail(true)
     }
-    globalThis.app_event?.emit('openPlayDetail')
+    global.app_event.openPlayDetail?.()
   }
 
   const handleLongPress = () => {

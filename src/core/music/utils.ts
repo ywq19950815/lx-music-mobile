@@ -469,7 +469,7 @@ export const getOnlineOtherSourceLyricInfo = async({ musicInfos, onToggleSource,
     reqPromise = Promise.reject(err)
   }
   // retryedSource.includes(musicInfo.source)
-  return reqPromise.then(async(lyricInfo: LX.Music.LyricInfo) => {
+  return (reqPromise as Promise<any>).then(async(lyricInfo: LX.Music.LyricInfo) => {
     return existTimeExp.test(lyricInfo.lyric) ? {
       lyricInfo,
       musicInfo,
@@ -503,7 +503,7 @@ export const handleGetOnlineLyricInfo = async({ musicInfo, onToggleSource, isRef
   } catch (err) {
     reqPromise = Promise.reject(err)
   }
-  return reqPromise.then(async(lyricInfo: LX.Music.LyricInfo) => {
+  return (reqPromise as Promise<any>).then(async(lyricInfo: LX.Music.LyricInfo) => {
     return existTimeExp.test(lyricInfo.lyric) ? {
       musicInfo,
       lyricInfo,

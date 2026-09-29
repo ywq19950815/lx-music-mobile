@@ -3,7 +3,7 @@ import Btn from './Btn'
 
 export default memo(() => {
   const handleOpenPlayQueue = () => {
-    globalThis.app_event?.emit('openPlayQueue')
+    global.app_event.openPlayQueue()
   }
 
   return <Btn icon="list-order" onPress={handleOpenPlayQueue} />

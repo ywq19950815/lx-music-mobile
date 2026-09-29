@@ -67,8 +67,22 @@ export default () => {
     }
     global.app_event.on('searchTypeChanged', handleTypeChange)
 
+    // 跨页面快捷搜索（音乐馆流派 / 新碟入口 → 发现页执行搜索）
+    const handleQuickSearch = (keyword: string) => {
+      if (!keyword) return
+      setTimeout(() => {
+        searchTipListRef.current?.search(keyword, layoutHeightRef.current)
+        headerBarRef.current?.setText(keyword)
+        headerBarRef.current?.blur()
+        void addHistoryWord(keyword)
+        listRef.current?.loadList(keyword, searchInfo.current.source, searchInfo.current.searchType)
+      }, 60)
+    }
+    global.app_event.on('quickSearch', handleQuickSearch)
+
     return () => {
       global.app_event.off('searchTypeChanged', handleTypeChange)
+      global.app_event.off('quickSearch', handleQuickSearch)
     }
   }, [])
 
