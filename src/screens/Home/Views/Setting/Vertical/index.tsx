@@ -1,10 +1,10 @@
 import { View, StyleSheet } from 'react-native'
 import Main from './Main'
 
-const Content = () => {
+const Content = ({ onBack }: { onBack?: () => void }) => {
   return (
     <View style={styles.container}>
-      <Main />
+      <Main onBack={onBack} />
     </View>
   )
 }

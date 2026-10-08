@@ -9,7 +9,11 @@ import { setNavActiveId } from '@/core/common'
 
 export type { SettingScreenIds } from './Main'
 
-export default () => {
+export interface SettingProps {
+  onBack?: () => void
+}
+
+export default ({ onBack }: SettingProps) => {
   const isHorizontalMode = useHorizontalMode()
   useBackHandler(useCallback(() => {
     if (Object.keys(commonState.componentIds).length == 1 && commonState.navActiveId == 'nav_setting') {
@@ -21,5 +25,5 @@ export default () => {
 
   return isHorizontalMode
     ? <Horizontal />
-    : <Vertical />
+    : <Vertical onBack={onBack} />
 }

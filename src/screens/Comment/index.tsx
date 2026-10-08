@@ -17,6 +17,7 @@ import { BorderWidths } from '@/theme'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 import { pop } from '@/navigation'
 import commonActions from '@/store/common/action'
+import SwipeBackView from '@/components/common/SwipeBackView'
 
 type ActiveId = 'hot' | 'new'
 
@@ -106,10 +107,12 @@ export default memo(({ componentId }: {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentId])
 
-  useBackHandler(useCallback(() => {
+  const handleBack = useCallback(() => {
     void pop(componentId)
     return true
-  }, [componentId]))
+  }, [componentId])
+
+  useBackHandler(handleBack)
 
   const tabs = useMemo(() => {
     return [
@@ -160,25 +163,26 @@ export default memo(({ componentId }: {
   }, [activeId, musicInfo, onPageSelected, setHotTotal, setNewTotal, tabs, theme, toggleTab])
 
   return (
-    <PageContent>
-      {
-        musicInfo == null
-          ? null
-          : <>
-            <Header musicInfo={musicInfo} />
-            {
-              musicInfo.source == 'local'
-                ? (
-                <View style={{ ...styles.container, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text>{t('comment_not support')}</Text>
-                </View>
-                  )
-                : commentComponent
-            }
-        </>
-      }
-
-    </PageContent>
+    <SwipeBackView onBack={handleBack}>
+      <PageContent>
+        {
+          musicInfo == null
+            ? null
+            : <>
+              <Header musicInfo={musicInfo} />
+              {
+                musicInfo.source == 'local'
+                  ? (
+                  <View style={{ ...styles.container, alignItems: 'center', justifyContent: 'center' }}>
+                    <Text>{t('comment_not support')}</Text>
+                  </View>
+                    )
+                  : commentComponent
+              }
+          </>
+        }
+      </PageContent>
+    </SwipeBackView>
   )
 })
 

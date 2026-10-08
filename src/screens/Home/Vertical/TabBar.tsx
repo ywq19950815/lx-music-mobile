@@ -17,12 +17,13 @@ import { toast } from '@/utils/tools'
 import { navigations } from '@/navigation'
 
 /**
- * 底部导航项配置（2026-09-29 设计稿：发现 / 音乐馆 / 我的）
- * 图标语义：发现=放大镜，音乐馆=唱片，我的=人像
+ * 底部导航项配置（发现 / 歌单 / 排行榜 / 我的）
+ * 图标语义：发现=放大镜，歌单=唱片/专辑，排行榜=榜单，我的=人像
  */
 const TAB_META: Record<string, { icon: string; label: string }> = {
   nav_search: { icon: 'search-2', label: '发现' },
-  nav_top: { icon: 'album', label: '音乐馆' },
+  nav_songlist: { icon: 'album', label: '歌单' },
+  nav_top: { icon: 'leaderboard', label: '排行榜' },
   nav_love: { icon: 'user', label: '我的' },
 }
 

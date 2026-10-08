@@ -15,6 +15,7 @@ import boardState, { type BoardItem } from '@/store/leaderboard/state'
 import { setNavActiveId } from '@/core/common'
 import { openSearchOverlay } from '@/core/searchOverlay'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
+import SwipeBackView from '@/components/common/SwipeBackView'
 
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
@@ -87,19 +88,9 @@ export default () => {
     setIsDetailView(true)
   }, [])
 
-  // 从单榜单歌曲详情返回大三联卡片大盘
+  // 从单榜单歌曲详情返回排行榜大厅
   const handleBackToGallery = useCallback(() => {
     setIsDetailView(false)
-  }, [])
-
-  // 音乐馆页头子 Tab：0 官方榜单 / 1 流派分类 / 2 新碟首发 / 其余敬请期待
-  const handleSubTabPress = useCallback((index: number) => {
-    switch (index) {
-      case 0: boardGalleryRef.current?.scrollToSection('charts'); break
-      case 1: boardGalleryRef.current?.scrollToSection('genre'); break
-      case 2: boardGalleryRef.current?.scrollToSection('newRelease'); break
-      default: toast('该专区敬请期待')
-    }
   }, [])
 
   // 页头搜索圆钮：打开独立搜索页（矩形为圆钮屏幕坐标，用于圆钮→搜索框的 Q 弹形变）
@@ -221,11 +212,12 @@ export default () => {
           isDetailView={isDetailView}
           onBackToGallery={handleBackToGallery}
           onGoSearch={handleGoSearch}
-          onSubTabPress={handleSubTabPress}
         />
 
         {isDetailView ? (
-          <MusicList ref={musicListRef} />
+          <SwipeBackView onBack={handleBackToGallery}>
+            <MusicList ref={musicListRef} />
+          </SwipeBackView>
         ) : (
           <BoardGallery
             ref={boardGalleryRef}

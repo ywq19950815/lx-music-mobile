@@ -12,10 +12,10 @@ export interface DiscoverHomeProps {
   onSearch: (keyword: string) => void
 }
 
-// 顶部内容导航 Tab（「音乐馆」跳转二级 Tab，其余触发关键词搜索）
+// 顶部内容导航 Tab（「排行榜」跳转二级 Tab，其余触发关键词搜索）
 const NAV_TABS = [
   { key: 'recommend', label: '推荐', keyword: '' },
-  { key: 'musichall', label: '音乐馆', keyword: '' },
+  { key: 'musichall', label: '排行榜', keyword: '' },
   { key: 'cyber', label: '赛博电音', keyword: '电音' },
   { key: 'pop', label: '流行榜', keyword: '流行' },
   { key: 'lossless', label: '无损专区', keyword: '无损' },
@@ -104,9 +104,7 @@ export default memo(({ onSearch }: DiscoverHomeProps) => {
   }
 
   const handleSonglistSquare = () => {
-    void saveSearchSetting({ type: 'songlist' }).then(() => {
-      global.app_event.searchTypeChanged('songlist')
-    })
+    commonActions.setNavActiveId('nav_songlist')
   }
 
   const hero = RECOMMENDED_PLAYLISTS[0]

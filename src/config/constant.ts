@@ -99,10 +99,11 @@ export const storageDataPrefixOld = {
 export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 
 
-// 一级菜单（侧边抽屉 / 平板侧栏）：设置已移入「我的」二级菜单，故此处不再列出
+// 一级菜单（侧边抽屉 / 平板侧栏 / 底部TabBar）
 export const NAV_MENUS = [
   { id: 'nav_search', icon: 'search-2' },
-  { id: 'nav_top', icon: 'album' },
+  { id: 'nav_songlist', icon: 'album' },
+  { id: 'nav_top', icon: 'leaderboard' },
   { id: 'nav_love', icon: 'user' },
   // { id: 'download', icon: 'download-2' },
 ] as const

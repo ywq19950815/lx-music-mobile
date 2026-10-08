@@ -6,20 +6,17 @@ import { type LayoutChangeEvent, View } from 'react-native'
 // import TipList from './components/TipList'
 // import MusicList from './components/MusicList'
 import HeaderBar, { type HeaderBarProps, type HeaderBarType } from './HeaderBar'
-import searchState, { type SearchType } from '@/store/search/state'
+import searchState from '@/store/search/state'
 import searchMusicState from '@/store/search/music/state'
-import searchSonglistState from '@/store/search/songlist/state'
 import { getSearchSetting, saveSearchSetting } from '@/utils/data'
 import { createStyle } from '@/utils/tools'
 import TipList, { type TipListType } from './TipList'
 import List, { type ListType } from './List'
 import { addHistoryWord } from '@/core/search/search'
 
-
 interface SearchInfo {
   temp_source: LX.OnlineSource
   source: LX.OnlineSource | 'all'
-  searchType: 'music' | 'songlist'
 }
 
 export default () => {
@@ -27,47 +24,20 @@ export default () => {
   const searchTipListRef = useRef<TipListType>(null)
   const listRef = useRef<ListType>(null)
   const layoutHeightRef = useRef<number>(0)
-  const searchInfo = useRef<SearchInfo>({ temp_source: 'kw', source: 'kw', searchType: 'music' })
+  const searchInfo = useRef<SearchInfo>({ temp_source: 'kw', source: 'kw' })
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     void getSearchSetting().then(info => {
-      // info.type = 'music'
       searchInfo.current.temp_source = info.temp_source
       searchInfo.current.source = info.source
-      searchInfo.current.searchType = info.type
-      switch (info.type) {
-        case 'music':
-          headerBarRef.current?.setSourceList(searchMusicState.sources, info.source)
-          headerBarRef.current?.setPlaceholder('搜索单曲、歌手、专辑...')
-          break
-        case 'songlist':
-          headerBarRef.current?.setSourceList(searchSonglistState.sources, info.source)
-          headerBarRef.current?.setPlaceholder('搜索歌单、精选集...')
-          break
-      }
+      headerBarRef.current?.setSourceList(searchMusicState.sources, info.source)
+      headerBarRef.current?.setPlaceholder('搜索单曲、歌手、专辑...')
       headerBarRef.current?.setText(searchState.searchText)
-      listRef.current?.loadList(searchState.searchText, searchInfo.current.source, searchInfo.current.searchType)
+      listRef.current?.loadList(searchState.searchText, searchInfo.current.source)
     })
 
-    const handleTypeChange = (type: SearchType) => {
-      searchInfo.current.searchType = type
-      void saveSearchSetting({ type })
-      switch (type) {
-        case 'music':
-          headerBarRef.current?.setSourceList(searchMusicState.sources, searchInfo.current.source)
-          headerBarRef.current?.setPlaceholder('搜索单曲、歌手、专辑...')
-          break
-        case 'songlist':
-          headerBarRef.current?.setSourceList(searchSonglistState.sources, searchInfo.current.source)
-          headerBarRef.current?.setPlaceholder('搜索歌单、精选集...')
-          break
-      }
-      listRef.current?.loadList(searchState.searchText, searchInfo.current.source, type)
-    }
-    global.app_event.on('searchTypeChanged', handleTypeChange)
-
-    // 跨页面快捷搜索（音乐馆流派 / 新碟入口 → 发现页执行搜索）
+    // 跨页面快捷搜索（音乐馆流派 / 新碟入口 → 发现页执行搜索单曲）
     const handleQuickSearch = (keyword: string) => {
       if (!keyword) return
       setTimeout(() => {
@@ -75,13 +45,12 @@ export default () => {
         headerBarRef.current?.setText(keyword)
         headerBarRef.current?.blur()
         void addHistoryWord(keyword)
-        listRef.current?.loadList(keyword, searchInfo.current.source, searchInfo.current.searchType)
+        listRef.current?.loadList(keyword, searchInfo.current.source)
       }, 60)
     }
     global.app_event.on('quickSearch', handleQuickSearch)
 
     return () => {
-      global.app_event.off('searchTypeChanged', handleTypeChange)
       global.app_event.off('quickSearch', handleQuickSearch)
     }
   }, [])
@@ -94,7 +63,7 @@ export default () => {
   const handleSourceChange: HeaderBarProps['onSourceChange'] = (source) => {
     searchInfo.current.source = source
     void saveSearchSetting({ source })
-    listRef.current?.loadList(searchState.searchText, source, searchInfo.current.searchType)
+    listRef.current?.loadList(searchState.searchText, source)
   }
   const handleTipSearch: HeaderBarProps['onTipSearch'] = (text) => {
     setTimeout(() => {
@@ -114,7 +83,7 @@ export default () => {
     headerBarRef.current?.setText(text)
     headerBarRef.current?.blur()
     void addHistoryWord(text)
-    listRef.current?.loadList(text, searchInfo.current.source, searchInfo.current.searchType)
+    listRef.current?.loadList(text, searchInfo.current.source)
   }
   const handleShowTipList: HeaderBarProps['onShowTipList'] = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)

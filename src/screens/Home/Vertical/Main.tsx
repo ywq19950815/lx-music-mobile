@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react'
 import { View } from 'react-native'
 import Search from '../Views/Search'
+import SongList from '../Views/SongList'
 import Mylist from '../Views/Mylist'
 import Leaderboard from '../Views/Leaderboard'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
@@ -22,6 +23,41 @@ const SearchPage = () => {
     const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
       currentId = id
       if (id == 'nav_search') {
+        requestAnimationFrame(() => {
+          setVisible(true)
+        })
+      }
+    }
+    const handleHide = () => {
+      if (currentId != 'nav_setting') return
+      setVisible(false)
+    }
+    const handleConfigUpdated = (keys: Array<keyof LX.AppSetting>) => {
+      if (keys.some(k => hideKeys.includes(k))) handleHide()
+    }
+    global.state_event.on('navActiveIdUpdated', handleNavIdUpdate)
+    global.state_event.on('themeUpdated', handleHide)
+    global.state_event.on('languageChanged', handleHide)
+    global.state_event.on('configUpdated', handleConfigUpdated)
+
+    return () => {
+      global.state_event.off('navActiveIdUpdated', handleNavIdUpdate)
+      global.state_event.off('themeUpdated', handleHide)
+      global.state_event.off('languageChanged', handleHide)
+      global.state_event.off('configUpdated', handleConfigUpdated)
+    }
+  }, [])
+
+  return visible ? component : null
+}
+const SongListPage = () => {
+  const [visible, setVisible] = useState(commonState.navActiveId == 'nav_songlist')
+  const component = useMemo(() => <SongList />, [])
+  useEffect(() => {
+    let currentId: CommonState['navActiveId'] = commonState.navActiveId
+    const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
+      currentId = id
+      if (id == 'nav_songlist') {
         requestAnimationFrame(() => {
           setVisible(true)
         })
@@ -129,14 +165,16 @@ const MylistPage = () => {
  */
 export const indexMap = [
   'nav_search',
+  'nav_songlist',
   'nav_top',
   'nav_love',
 ] as const
 
 const viewMap: Record<string, number> = {
   nav_search: 0,
-  nav_top: 1,
-  nav_love: 2,
+  nav_songlist: 1,
+  nav_top: 2,
+  nav_love: 3,
 }
 
 const Main = () => {
@@ -225,6 +263,9 @@ const Main = () => {
     >
       <View collapsable={false} key="nav_search" style={styles.pageStyle}>
         <SearchPage />
+      </View>
+      <View collapsable={false} key="nav_songlist" style={styles.pageStyle}>
+        <SongListPage />
       </View>
       <View collapsable={false} key="nav_top" style={styles.pageStyle}>
         <LeaderboardPage />

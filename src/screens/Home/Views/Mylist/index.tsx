@@ -7,6 +7,7 @@ import MusicList from './MusicList'
 import MyList from './MyList'
 import Dashboard from './Dashboard'
 import Setting from '../Setting'
+import LocalDownload from './LocalDownload'
 import ListNameEdit, { type ListNameEditType } from './MyList/ListNameEdit'
 import ListImportExport, { type ListImportExportType } from './MyList/ListImportExport'
 import ListMenu, { type ListMenuType } from './MyList/ListMenu'
@@ -14,9 +15,10 @@ import { handleRemove, handleSync } from './MyList/listAction'
 import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/common/DrawerLayoutFixed'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
+import SwipeBackView from '@/components/common/SwipeBackView'
 
-// 二级视图：'dashboard' 资产大盘 / 'detail' 歌单歌曲流 / 'setting' 设置（原一级 Tab 已精简移入此处）
-type SubView = 'dashboard' | 'detail' | 'setting'
+// 二级视图：'dashboard' 资产大盘 / 'detail' 歌单歌曲流 / 'setting' 设置 / 'local_download' 本地与下载
+type SubView = 'dashboard' | 'detail' | 'setting' | 'local_download'
 
 export default () => {
   const drawer = useRef<DrawerLayoutFixedType>(null)
@@ -101,6 +103,11 @@ export default () => {
     setSubView('dashboard')
   }, [])
 
+  // 打开本地与下载二级页面
+  const handleOpenLocalDownload = useCallback(() => {
+    setSubView('local_download')
+  }, [])
+
   // 新建歌单
   const handleCreateList = useCallback(() => {
     listNameEditRef.current?.showCreate(0)
@@ -126,20 +133,16 @@ export default () => {
     >
       <View style={styles.container}>
         {subView === 'detail' ? (
-          <MusicList onBackToDashboard={handleBackToDashboard} />
+          <SwipeBackView onBack={handleBackToDashboard}>
+            <MusicList onBackToDashboard={handleBackToDashboard} />
+          </SwipeBackView>
         ) : subView === 'setting' ? (
           <View style={styles.settingWrapper}>
-            <View style={styles.settingNavBar}>
-              <TouchableOpacity style={styles.settingBackBtn} activeOpacity={0.7} onPress={handleBackFromSetting}>
-                <Icon name="chevron-left" size={18} color="#0F172A" />
-              </TouchableOpacity>
-              <View style={styles.settingNavCenter}>
-                <Text style={styles.settingNavTitle}>应用设置</Text>
-                <Text style={styles.settingNavSub}>个性化偏好 · 音频与服务配置</Text>
-              </View>
-              <View style={styles.settingNavRightPlaceholder} />
-            </View>
-            <Setting />
+            <Setting onBack={handleBackFromSetting} />
+          </View>
+        ) : subView === 'local_download' ? (
+          <View style={styles.settingWrapper}>
+            <LocalDownload onBack={handleBackToDashboard} />
           </View>
         ) : (
           <Dashboard
@@ -147,6 +150,7 @@ export default () => {
             onCreateList={handleCreateList}
             onImportList={handleImportList}
             onOpenSetting={handleOpenSetting}
+            onOpenLocalDownload={handleOpenLocalDownload}
             onShowListMenu={handleShowListMenu}
           />
         )}
@@ -179,43 +183,5 @@ const styles = StyleSheet.create({
   settingWrapper: {
     flex: 1,
     minHeight: 0,
-  },
-  settingNavBar: {
-    height: 52,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-  },
-  settingBackBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  settingNavCenter: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  settingNavTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0F172A',
-  },
-  settingNavSub: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#94A3B8',
-    marginTop: 1,
-  },
-  settingNavRightPlaceholder: {
-    width: 36,
-    height: 36,
   },
 })

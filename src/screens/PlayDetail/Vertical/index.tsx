@@ -29,7 +29,7 @@ export default memo(({ componentId }: { componentId: string }) => {
   const [currentPage, setCurrentPage] = useState(0)
   const navigationBarHeight = useNavigationBarHeight()
   const c = useAppColors()
-  const { height: winHeight } = useWindowSize()
+  const { width: winWidth, height: winHeight } = useWindowSize()
 
   const picAreaHeight = Math.round(Math.min(winHeight * PIC_AREA_RATIO, 420))
 
@@ -68,8 +68,11 @@ export default memo(({ componentId }: { componentId: string }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── QQ 音乐式下拉关闭手势 ──────────────────────────────
+  // ── QQ 音乐式下拉关闭 + 左边缘向右侧滑关闭手势 ──────────────────────────────
   const panY = useRef(new Animated.Value(0)).current
+  const panX = useRef(new Animated.Value(0)).current
+  const gestureMode = useRef<'vertical' | 'horizontal' | null>(null)
+  const isClosingRef = useRef(false)
 
   const handleClose = useCallback(() => {
     const compId = componentId ?? commonState.componentIds.playDetail
@@ -82,27 +85,101 @@ export default memo(({ componentId }: { componentId: string }) => {
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_e, g) =>
-        g.numberActiveTouches === 1 && g.dy > 8 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5,
-      onPanResponderMove: Animated.event([null, { dy: panY }], { useNativeDriver: false }),
+      onMoveShouldSetPanResponderCapture: (_e, g) => {
+        if (g.numberActiveTouches !== 1 || isClosingRef.current) return false
+        // 1. 下拉关闭手势
+        if (g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5) {
+          gestureMode.current = 'vertical'
+          return true
+        }
+        // 2. 左边缘向右侧滑关闭手势（左侧 70dp 内触摸起步）
+        if (g.x0 <= 70 && g.dx > 10 && g.dx > Math.abs(g.dy) * 1.5) {
+          gestureMode.current = 'horizontal'
+          return true
+        }
+        return false
+      },
+      onMoveShouldSetPanResponder: (_e, g) => {
+        if (g.numberActiveTouches !== 1 || isClosingRef.current) return false
+        if (g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5) {
+          gestureMode.current = 'vertical'
+          return true
+        }
+        if (g.x0 <= 70 && g.dx > 10 && g.dx > Math.abs(g.dy) * 1.5) {
+          gestureMode.current = 'horizontal'
+          return true
+        }
+        return false
+      },
+      onPanResponderMove: (_e, g) => {
+        if (gestureMode.current === 'vertical') {
+          panY.setValue(Math.max(0, g.dy))
+        } else if (gestureMode.current === 'horizontal') {
+          panX.setValue(Math.max(0, g.dx))
+        }
+      },
       onPanResponderRelease: (_e, g) => {
-        if (g.dy > 110 || g.vy > 0.6) {
-          Animated.timing(panY, {
-            toValue: winHeight,
-            duration: 220,
-            useNativeDriver: false,
-          }).start(() => {
-            handleClose()
-            panY.setValue(0)
-          })
-        } else {
+        if (gestureMode.current === 'vertical') {
+          if (g.dy > 110 || g.vy > 0.6) {
+            isClosingRef.current = true
+            Animated.timing(panY, {
+              toValue: winHeight,
+              duration: 200,
+              useNativeDriver: true,
+            }).start(() => {
+              handleClose()
+              panY.setValue(0)
+              isClosingRef.current = false
+            })
+          } else {
+            Animated.spring(panY, {
+              toValue: 0,
+              friction: motion.spring.friction,
+              tension: motion.spring.tension,
+              useNativeDriver: true,
+            }).start()
+          }
+        } else if (gestureMode.current === 'horizontal') {
+          const threshold = winWidth * 0.22
+          if (g.dx > threshold || g.vx > 0.4) {
+            isClosingRef.current = true
+            Animated.timing(panX, {
+              toValue: winWidth,
+              duration: 180,
+              useNativeDriver: true,
+            }).start(() => {
+              handleClose()
+              panX.setValue(0)
+              isClosingRef.current = false
+            })
+          } else {
+            Animated.spring(panX, {
+              toValue: 0,
+              friction: 8,
+              tension: 40,
+              useNativeDriver: true,
+            }).start()
+          }
+        }
+        gestureMode.current = null
+      },
+      onPanResponderTerminate: () => {
+        if (gestureMode.current === 'vertical') {
           Animated.spring(panY, {
             toValue: 0,
             friction: motion.spring.friction,
             tension: motion.spring.tension,
-            useNativeDriver: false,
+            useNativeDriver: true,
+          }).start()
+        } else if (gestureMode.current === 'horizontal') {
+          Animated.spring(panX, {
+            toValue: 0,
+            friction: 8,
+            tension: 40,
+            useNativeDriver: true,
           }).start()
         }
+        gestureMode.current = null
       },
     }),
   ).current
@@ -117,7 +194,7 @@ export default memo(({ componentId }: { componentId: string }) => {
   }
 
   return (
-    <Animated.View style={[styles.root, { backgroundColor: c.canvas, transform: [{ translateY: panY }] }]}>
+    <Animated.View style={[styles.root, { backgroundColor: c.canvas, transform: [{ translateX: panX }, { translateY: panY }] }]} {...panResponder.panHandlers}>
       <Header componentId={componentId} />
 
       <View style={[styles.container, { backgroundColor: c.canvas }]}>

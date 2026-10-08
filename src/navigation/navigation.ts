@@ -143,6 +143,7 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
           layout: {
             componentBackgroundColor: theme['c-content-background'],
           },
+          popGesture: true,
           animations: {
             push: skipAnimation ? {} : {
               sharedElementTransitions: [
@@ -232,6 +233,7 @@ export function pushSonglistDetailScreen(componentId: string, info: ListInfoItem
           layout: {
             componentBackgroundColor: theme['c-content-background'],
           },
+          popGesture: true,
           animations: {
             push: {
               sharedElementTransitions: [
@@ -365,6 +367,7 @@ export function pushCommentScreen(componentId: string) {
           layout: {
             componentBackgroundColor: theme['c-content-background'],
           },
+          popGesture: true,
           animations: {
             push: {
               content: {

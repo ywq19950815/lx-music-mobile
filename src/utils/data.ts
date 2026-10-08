@@ -339,6 +339,24 @@ export const removeListMusics = async(ids: string[]): Promise<void> => {
   // delaySaveListScrollPosition(global.lx.listScrollPosition)
 }
 
+export interface FollowSinger {
+  id: string
+  name: string
+  avatar?: string
+  followTime: number
+}
+
+const followSingersKey = '@follow_singers'
+
+export const getFollowSingers = async(): Promise<FollowSinger[]> => {
+  return (await getData<FollowSinger[]>(followSingersKey)) ?? []
+}
+
+export const saveFollowSingers = async(singers: FollowSinger[]): Promise<void> => {
+  await saveData(followSingersKey, singers)
+}
+
+
 export const qualitys = ['128k', '320k', 'flac', 'flac24bit']
 export const hasMusicUrlByMusic = async(musicInfo: LX.Music.MusicInfo) => {
   return getDataMultiple(qualitys.map(q => `${storageDataPrefix.musicUrl}${musicInfo.id}_${q}`)).then((urls) => {

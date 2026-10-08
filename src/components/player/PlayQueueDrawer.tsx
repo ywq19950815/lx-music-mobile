@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   FlatList,
   StyleSheet,
+  Alert,
 } from 'react-native'
 import Dialog, { type DialogType } from '@/components/common/Dialog'
 import { Icon } from '@/components/common/Icon'
@@ -16,10 +17,11 @@ import listState from '@/store/list/state'
 import { LIST_IDS, MUSIC_TOGGLE_MODE, MUSIC_TOGGLE_MODE_LIST } from '@/config/constant'
 import { useSettingValue } from '@/store/setting/hook'
 import { updateSetting } from '@/core/common'
-import { darkColors as c } from '@/theme/tokens'
+import { colors, radius } from '@/theme/tokens'
 import { toast } from '@/utils/tools'
 import { useI18n } from '@/lang'
 import { getListMusics, getListMusicSync } from '@/utils/listManage'
+import { clearListMusics, removeListMusics } from '@/core/list'
 
 export interface PlayQueueDrawerType {
   show: () => void
@@ -27,32 +29,45 @@ export interface PlayQueueDrawerType {
 }
 
 /**
- * QQ 音乐级暗色沉浸播放队列抽屉
- * - 顶部：标题 + 曲目总数 + 播放模式切换 + 清空稍后播按钮
- * - 分区 1：「稍后播放」队列（专属绿色徽标、精准逐曲插播、独立移除、一键清空）
- * - 分区 2：「当前播放列表」全部歌曲（当前唱中高亮、快速点击切歌）
+ * QQ 音乐式现代沉浸播放队列抽屉
+ * - 纯净通透的白底卡片与优雅阴影，告别深黑死板视觉
+ * - 顶部控制栏：循环模式快速切换 + 当前来源提示 + 一键清空队列
+ * - 稍后播放专区（绿意胶囊、精准逐曲插播、独立移除、一键清空）
+ * - 当前播放列表（唱中高亮变绿 + 动态波浪指示、秒速切歌、单曲移除）
  */
 const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
   const t = useI18n()
   const dialogRef = useRef<DialogType>(null)
+  const flatListRef = useRef<FlatList>(null)
 
   const currentMusicInfo = usePlayerMusicInfo()
   const togglePlayMethod = useSettingValue('player.togglePlayMethod')
 
   const [tempList, setTempList] = useState<LX.Player.PlayMusicInfo[]>(() => [...playerState.tempPlayList])
-  const [activeListId, setActiveListId] = useState<string>(() => listState.activeListId || playerState.playMusicInfo.listId || LIST_IDS.DEFAULT)
-  const [musicList, setMusicList] = useState<LX.Music.MusicInfo[]>(() => listState.allMusicList.get(activeListId) || [])
+  const [activeListId, setActiveListId] = useState<string>(() => (
+    playerState.playInfo.playerListId
+    || playerState.playMusicInfo.listId
+    || listState.activeListId
+    || LIST_IDS.DEFAULT
+  ))
+  const [musicList, setMusicList] = useState<LX.Music.MusicInfo[]>(() => (
+    listState.allMusicList.get(activeListId) || []
+  ))
 
-  // 刷新当前稍后播放与主列表数据（支持优先读取当前播放列表、异步数据加载与单曲兜底）
+  // 刷新当前播放队列与稍后播数据
   const syncData = useCallback(() => {
     setTempList([...playerState.tempPlayList])
-    const currentListId = playerState.playMusicInfo.listId || listState.activeListId || LIST_IDS.DEFAULT
-    setActiveListId(currentListId)
-    const syncList = getListMusicSync(currentListId)
+    const targetListId = playerState.playInfo.playerListId
+      || playerState.playMusicInfo.listId
+      || listState.activeListId
+      || LIST_IDS.DEFAULT
+
+    setActiveListId(targetListId)
+    const syncList = getListMusicSync(targetListId)
     if (syncList && syncList.length) {
       setMusicList([...syncList])
     } else {
-      void getListMusics(currentListId).then(list => {
+      void getListMusics(targetListId).then(list => {
         if (list && list.length) {
           setMusicList([...list])
         } else if (playerState.playMusicInfo.musicInfo) {
@@ -69,6 +84,8 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
             ? playerState.playMusicInfo.musicInfo.metadata.musicInfo
             : playerState.playMusicInfo.musicInfo
           setMusicList([raw as LX.Music.MusicInfo])
+        } else {
+          setMusicList([])
         }
       })
     }
@@ -92,15 +109,15 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
     syncData()
     const handleTempChange = () => setTempList([...playerState.tempPlayList])
     const handleListChange = () => syncData()
+    const handleGlobalOpen = () => {
+      show()
+    }
 
     global.state_event.on('playTempPlayListChanged', handleTempChange)
     global.app_event.on('myListMusicUpdate', handleListChange)
     global.state_event.on('playMusicInfoChanged', handleListChange)
     global.app_event.on('musicToggled', handleListChange)
-
-    const handleGlobalOpen = () => {
-      show()
-    }
+    global.app_event.on('downloadListUpdate', handleListChange)
     global.app_event.on('openPlayQueue', handleGlobalOpen)
 
     return () => {
@@ -108,9 +125,26 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
       global.app_event.off('myListMusicUpdate', handleListChange)
       global.state_event.off('playMusicInfoChanged', handleListChange)
       global.app_event.off('musicToggled', handleListChange)
+      global.app_event.off('downloadListUpdate', handleListChange)
       global.app_event.off('openPlayQueue', handleGlobalOpen)
     }
   }, [syncData, show])
+
+  // 当前列表来源名称
+  const activeListName = useMemo(() => {
+    switch (activeListId) {
+      case LIST_IDS.DEFAULT:
+        return '试听列表'
+      case LIST_IDS.LOVE:
+        return '我喜欢'
+      case LIST_IDS.TEMP:
+        return '临时搜索播放'
+      case LIST_IDS.DOWNLOAD:
+        return '本地与下载'
+      default:
+        return listState.allList.find(l => l.id === activeListId)?.name || '当前播放列表'
+    }
+  }, [activeListId])
 
   // 切换播放模式
   const handleTogglePlayMode = () => {
@@ -161,10 +195,45 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
     void playList(activeListId, index)
   }
 
+  // 移除单首歌曲
+  const handleRemoveItem = (id: string, isTemp: boolean, index: number) => {
+    if (isTemp) {
+      removeTempPlayList(index)
+      toast('已移除稍后播放')
+    } else {
+      void removeListMusics(activeListId, [id])
+      toast('已从播放队列移除')
+      syncData()
+    }
+  }
+
   // 清空稍后播放列表
   const handleClearTemp = () => {
     clearTempPlayeList()
     toast('已清空稍后播放队列')
+  }
+
+  // 清空全部队列
+  const handleClearAll = () => {
+    Alert.alert(
+      '清空播放队列',
+      '确定清空当前队列全部歌曲吗？',
+      [
+        { text: '取消', style: 'cancel' },
+        {
+          text: '清空',
+          style: 'destructive',
+          onPress: async() => {
+            clearTempPlayeList()
+            if (activeListId) {
+              await clearListMusics([activeListId])
+            }
+            toast('已清空播放队列')
+            syncData()
+          },
+        },
+      ],
+    )
   }
 
   // 构建展示队列
@@ -208,7 +277,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
           isActive: minfo.id === currentId,
           tag: index === 0 ? '下首播' : `稍后 ${index + 1}`,
           onPress: () => handlePlayTempItem(index),
-          onRemove: () => removeTempPlayList(index),
+          onRemove: () => handleRemoveItem(minfo.id, true, index),
         })
       })
     }
@@ -216,7 +285,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
     list.push({
       type: 'header',
       key: 'header-main',
-      title: '当前播放列表',
+      title: activeListName,
       count: musicList.length,
     })
 
@@ -230,35 +299,49 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
         isTemp: false,
         isActive: item.id === currentId,
         onPress: () => handlePlayListItem(index),
+        onRemove: () => handleRemoveItem(item.id, false, index),
       })
     })
 
     return list
-  }, [tempList, musicList, currentMusicInfo.id, activeListId])
+  }, [tempList, musicList, currentMusicInfo.id, activeListId, activeListName])
 
   const totalCount = tempList.length + musicList.length
 
   return (
-    <Dialog ref={dialogRef} theme="dark" title="播放队列" height="68%">
+    <Dialog ref={dialogRef} title="当前播放队列" height="72%">
       <View style={styles.container}>
-        {/* 控制辅助栏：播放模式切换 + 总曲目计数 */}
+        {/* 控制辅助栏：播放模式切换 + 队列统计 + 一键清空 */}
         <View style={styles.subBar}>
           <TouchableOpacity
             style={styles.modeBtn}
             activeOpacity={0.7}
             onPress={handleTogglePlayMode}
           >
-            <Icon name={playModeMeta.icon} size={15} color={c.brandLight} />
+            <Icon name={playModeMeta.icon} size={14} color={colors.brand} />
             <Text style={styles.modeText}>{playModeMeta.label}</Text>
           </TouchableOpacity>
 
-          <View style={styles.countBadge}>
-            <Text style={styles.countBadgeText}>共 {totalCount} 首</Text>
+          <View style={styles.middleInfo}>
+            <Text style={styles.totalCountText}>共 {totalCount} 首</Text>
           </View>
+
+          {totalCount > 0 ? (
+            <TouchableOpacity
+              style={styles.clearAllBtn}
+              activeOpacity={0.7}
+              onPress={handleClearAll}
+              hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+            >
+              <Icon name="eraser" size={13} color={colors.inkTertiary} />
+              <Text style={styles.clearAllText}>清空</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {/* 队列列表 */}
         <FlatList
+          ref={flatListRef}
           data={rows}
           keyExtractor={item => item.key}
           showsVerticalScrollIndicator={false}
@@ -266,8 +349,11 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.emptyBox}>
-              <Icon name="logo" size={32} color={c.inkTertiary} />
-              <Text style={styles.emptyText}>播放队列为空</Text>
+              <View style={styles.emptyIconCircle}>
+                <Icon name="logo" size={28} color={colors.brand} />
+              </View>
+              <Text style={styles.emptyTitle}>当前播放队列为空</Text>
+              <Text style={styles.emptySub}>在歌曲列表中点击即可加入队列播放</Text>
             </View>
           }
           renderItem={({ item }) => {
@@ -275,8 +361,9 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
               return (
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionHeaderLeft}>
+                    <View style={styles.sectionIndicator} />
                     <Text style={styles.sectionTitle}>{item.title}</Text>
-                    <Text style={styles.sectionCount}>({item.count})</Text>
+                    <Text style={styles.sectionCount}>({item.count}首)</Text>
                   </View>
                   {item.onClear ? (
                     <TouchableOpacity
@@ -284,8 +371,8 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                       activeOpacity={0.7}
                       onPress={item.onClear}
                     >
-                      <Icon name="eraser" size={12} color={c.inkTertiary} />
-                      <Text style={styles.clearBtnText}>清空</Text>
+                      <Icon name="close" size={11} color={colors.inkTertiary} />
+                      <Text style={styles.clearBtnText}>清空稍后播</Text>
                     </TouchableOpacity>
                   ) : null}
                 </View>
@@ -303,7 +390,9 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                     <View style={styles.activeIconBox}>
                       <Icon name="play" size={10} color="#FFFFFF" />
                     </View>
-                  ) : null}
+                  ) : (
+                    <View style={styles.normalDot} />
+                  )}
 
                   {item.tag ? (
                     <View style={styles.tempBadge}>
@@ -324,6 +413,12 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                   </View>
                 </TouchableOpacity>
 
+                {item.isActive ? (
+                  <View style={styles.playingTag}>
+                    <Text style={styles.playingTagText}>播放中</Text>
+                  </View>
+                ) : null}
+
                 {item.onRemove ? (
                   <TouchableOpacity
                     style={styles.removeBtn}
@@ -331,7 +426,7 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
                     onPress={item.onRemove}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Icon name="close" size={13} color={c.inkTertiary} />
+                    <Icon name="close" size={13} color="#94A3B8" />
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -349,49 +444,63 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
   },
+  // 控制栏
   subBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: c.hairline,
+    borderBottomColor: '#E2E8F0',
     marginBottom: 4,
   },
   modeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: c.ghost,
+    backgroundColor: 'rgba(49, 194, 124, 0.1)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.35)',
+    borderRadius: radius.pill,
   },
   modeText: {
     fontSize: 12,
-    color: c.ink,
-    fontWeight: '500',
+    color: colors.brand,
+    fontWeight: '700',
   },
-  countBadge: {
-    backgroundColor: c.muted,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  middleInfo: {
+    flex: 1,
+    alignItems: 'center',
   },
-  countBadgeText: {
-    fontSize: 11,
+  totalCountText: {
+    fontSize: 12,
     fontWeight: '600',
-    color: c.inkSecondary,
+    color: colors.inkSecondary,
   },
+  clearAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    backgroundColor: '#F1F5F9',
+  },
+  clearAllText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: colors.inkSecondary,
+  },
+
+  // 列表
   list: {
     flex: 1,
   },
   listContent: {
     paddingTop: 4,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -399,48 +508,57 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 14,
     paddingBottom: 6,
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
   },
   sectionHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
+  sectionIndicator: {
+    width: 3,
+    height: 12,
+    borderRadius: 1.5,
+    backgroundColor: colors.brand,
+  },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
-    color: c.inkTertiary,
-    letterSpacing: 1,
+    color: colors.ink,
   },
   sectionCount: {
     fontSize: 11,
     fontWeight: '500',
-    color: c.inkTertiary,
+    color: colors.inkTertiary,
   },
   clearBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 999,
-    backgroundColor: c.ghost,
+    borderRadius: radius.pill,
+    backgroundColor: '#F1F5F9',
   },
   clearBtnText: {
-    fontSize: 11,
-    color: c.inkSecondary,
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: colors.inkSecondary,
   },
+
+  // 歌曲行
   songRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 10,
+    paddingVertical: 9,
     paddingHorizontal: 10,
     borderRadius: 12,
     marginVertical: 2,
+    backgroundColor: '#FFFFFF',
   },
   songRowActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.14)',
+    backgroundColor: 'rgba(49, 194, 124, 0.08)',
   },
   songMain: {
     flex: 1,
@@ -454,51 +572,85 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: c.brand,
+    backgroundColor: colors.brand,
+  },
+  normalDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#CBD5E1',
+    marginLeft: 6,
+    marginRight: 6,
   },
   tempBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.16)',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(16, 185, 129, 0.45)',
-    borderRadius: 5,
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
+    borderColor: 'rgba(49, 194, 124, 0.3)',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
   },
   tempBadgeText: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '700',
-    color: c.brandLight,
+    color: colors.brand,
   },
   songMeta: {
     flex: 1,
     gap: 2,
   },
   songTitle: {
-    fontSize: 14,
+    fontSize: 13.5,
     fontWeight: '500',
-    color: c.ink,
+    color: colors.ink,
   },
   songTitleActive: {
-    color: c.brandLight,
+    color: colors.brand,
     fontWeight: '700',
   },
   songSinger: {
-    fontSize: 11.5,
-    color: c.inkTertiary,
+    fontSize: 11,
+    color: colors.inkTertiary,
+  },
+  playingTag: {
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  playingTagText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: colors.brand,
   },
   removeBtn: {
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 6,
   },
+
+  // 空态
   emptyBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
-    gap: 10,
+    paddingVertical: 60,
+    gap: 8,
   },
-  emptyText: {
-    fontSize: 13,
-    color: c.inkTertiary,
+  emptyIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(49, 194, 124, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.ink,
+  },
+  emptySub: {
+    fontSize: 12,
+    color: colors.inkTertiary,
   },
 })

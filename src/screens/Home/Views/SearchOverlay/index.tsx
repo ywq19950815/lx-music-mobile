@@ -21,6 +21,7 @@ import { colors } from '@/theme/tokens'
 import TipList, { type TipListType } from '../Search/TipList'
 import List, { type ListType } from '../Search/List'
 import { registerSearchOverlay, type SearchOverlayRect } from '@/core/searchOverlay'
+import SwipeBackView from '@/components/common/SwipeBackView'
 
 type SearchType = SearchState['searchType']
 
@@ -163,7 +164,7 @@ export default () => {
     return () => clearTimeout(timer)
   }, [visible, morph, progress, backdropAnim, contentAnim])
 
-  // ── 搜索逻辑（与发现页 Search 同源）────────────
+  // ── 搜索逻辑（专注单曲查询）────────────
   const handleSearch = useCallback((keyword: string) => {
     inputRef.current?.blur()
     Keyboard.dismiss()
@@ -171,25 +172,25 @@ export default () => {
     setSearchText(keyword)
     setShowClear(!!keyword)
     void addHistoryWord(keyword)
-    listRef.current?.loadList(keyword, searchInfoRef.current.source, searchInfoRef.current.searchType)
+    listRef.current?.loadList(keyword, searchInfoRef.current.source)
   }, [])
 
   const handleSearchRef = useRef(handleSearch)
   handleSearchRef.current = handleSearch
 
-  // 首次打开时初始化搜索设置（与发现页一致：恢复历史搜索文本、音源、类型）
+  // 首次打开时初始化搜索设置（与发现页一致：专注查询歌曲）
   useEffect(() => {
     if (!visible || initedRef.current) return
     initedRef.current = true
     void getSearchSetting().then((info) => {
       searchInfoRef.current.temp_source = info.temp_source
       searchInfoRef.current.source = info.source
-      searchInfoRef.current.searchType = info.type
-      setSearchType(info.type)
+      searchInfoRef.current.searchType = 'music'
+      setSearchType('music')
       if (searchState.searchText) {
         setSearchText(searchState.searchText)
         setShowClear(true)
-        listRef.current?.loadList(searchState.searchText, searchInfoRef.current.source, info.type)
+        listRef.current?.loadList(searchState.searchText, searchInfoRef.current.source)
       }
     })
   }, [visible])
@@ -207,19 +208,11 @@ export default () => {
     setSearchText('')
     setShowClear(false)
     tipListRef.current?.hide()
-    listRef.current?.loadList('', searchInfoRef.current.source, searchInfoRef.current.searchType)
+    listRef.current?.loadList('', searchInfoRef.current.source)
   }, [])
 
   const handleInputBlur = useCallback(() => {
     tipListRef.current?.hide()
-  }, [])
-
-  const handleTypePress = useCallback((type: SearchType) => {
-    if (type == searchInfoRef.current.searchType) return
-    searchInfoRef.current.searchType = type
-    setSearchType(type)
-    void saveSearchSetting({ type })
-    listRef.current?.loadList(searchState.searchText, searchInfoRef.current.source, type)
   }, [])
 
   const handleLayout = useCallback(({ nativeEvent }: { nativeEvent: { layout: { height: number } } }) => {
@@ -264,69 +257,51 @@ export default () => {
   if (!visible) return null
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.backdrop, { opacity: backdropAnim }]} />
+    <SwipeBackView onBack={close}>
+      <View style={styles.container}>
+        <Animated.View style={[styles.backdrop, { opacity: backdropAnim }]} />
 
-      {/* 返回按钮 */}
-      <Animated.View style={[styles.backBtn, { top: statusBarHeight + 13 }, backBtnStyle]}>
-        <TouchableOpacity style={styles.backBtnHit} activeOpacity={0.7} onPress={close}>
-          <Icon name="chevron-left" size={22} color={colors.ink} />
-        </TouchableOpacity>
-      </Animated.View>
+        {/* 返回按钮 */}
+        <Animated.View style={[styles.backBtn, { top: statusBarHeight + 13 }, backBtnStyle]}>
+          <TouchableOpacity style={styles.backBtnHit} activeOpacity={0.7} onPress={close}>
+            <Icon name="chevron-left" size={22} color={colors.ink} />
+          </TouchableOpacity>
+        </Animated.View>
 
-      {/* 形变搜索框（圆钮 → 搜索框） */}
-      <Animated.View ref={pillRef} style={[styles.pill, pillStyle]}>
-        <View style={styles.pillInner}>
-          <Icon name="search-2" size={15} color={colors.inkTertiary} />
-          <TextInput
-            ref={inputRef}
-            style={styles.input}
-            value={searchText}
-            placeholder="搜索单曲、歌手、专辑..."
-            placeholderTextColor={colors.inkTertiary}
-            returnKeyType="search"
-            onChangeText={handleChangeText}
-            onSubmitEditing={({ nativeEvent }) => { handleSearch(nativeEvent.text.trim()) }}
-            onBlur={handleInputBlur}
-          />
-          {
-            showClear ? (
-              <TouchableOpacity style={styles.clearBtn} activeOpacity={0.7} onPress={handleClearText}>
-                <Text style={styles.clearText}>×</Text>
-              </TouchableOpacity>
-            ) : null
-          }
-        </View>
-      </Animated.View>
-
-      {/* 内容区：类型切换 + 联想 + 结果 */}
-      <Animated.View style={[styles.content, { paddingTop: statusBarHeight + PILL_HEIGHT + 18 }, contentStyle]}>
-        <View style={styles.typeRow}>
-          {
-            ([
-              { id: 'music', label: '歌曲' },
-              { id: 'songlist', label: '歌单' },
-            ] as const).map(({ id, label }) => {
-              const isActive = searchType == id
-              return (
-                <TouchableOpacity
-                  key={id}
-                  style={[styles.typeTab, isActive && styles.typeTabActive]}
-                  activeOpacity={0.7}
-                  onPress={() => { handleTypePress(id) }}
-                >
-                  <Text style={[styles.typeText, isActive && styles.typeTextActive]}>{label}</Text>
+        {/* 形变搜索框（圆钮 → 搜索框） */}
+        <Animated.View ref={pillRef} style={[styles.pill, pillStyle]}>
+          <View style={styles.pillInner}>
+            <Icon name="search-2" size={15} color={colors.inkTertiary} />
+            <TextInput
+              ref={inputRef}
+              style={styles.input}
+              value={searchText}
+              placeholder="搜索单曲、歌手、专辑..."
+              placeholderTextColor={colors.inkTertiary}
+              returnKeyType="search"
+              onChangeText={handleChangeText}
+              onSubmitEditing={({ nativeEvent }) => { handleSearch(nativeEvent.text.trim()) }}
+              onBlur={handleInputBlur}
+            />
+            {
+              showClear ? (
+                <TouchableOpacity style={styles.clearBtn} activeOpacity={0.7} onPress={handleClearText}>
+                  <Text style={styles.clearText}>×</Text>
                 </TouchableOpacity>
-              )
-            })
-          }
-        </View>
-        <View style={styles.listWrap} onLayout={handleLayout}>
-          <TipList ref={tipListRef} onSearch={handleSearch} />
-          <List ref={listRef} onSearch={handleSearch} />
-        </View>
-      </Animated.View>
-    </View>
+              ) : null
+            }
+          </View>
+        </Animated.View>
+
+        {/* 内容区：联想 + 结果（专心查歌，不再区分歌曲歌单） */}
+        <Animated.View style={[styles.content, { paddingTop: statusBarHeight + PILL_HEIGHT + 14 }, contentStyle]}>
+          <View style={styles.listWrap} onLayout={handleLayout}>
+            <TipList ref={tipListRef} onSearch={handleSearch} />
+            <List ref={listRef} onSearch={handleSearch} />
+          </View>
+        </Animated.View>
+      </View>
+    </SwipeBackView>
   )
 }
 

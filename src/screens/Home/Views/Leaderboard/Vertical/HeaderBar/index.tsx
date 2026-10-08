@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react'
-import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native'
+import { StyleSheet, View, TouchableOpacity } from 'react-native'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 
@@ -15,22 +15,18 @@ export interface HeaderBarProps {
   isDetailView?: boolean
   onBackToGallery?: () => void
   onGoSearch?: (rect: { x: number, y: number, width: number, height: number }) => void
-  onSubTabPress?: (index: number) => void
 }
 
 export interface HeaderBarType {
   setBound: (source: LX.OnlineSource, id: string, name: string) => void
 }
 
-// 音乐馆子导航 Tab（「官方榜单」为当前内容，其余入口敬请期待）
-const SUB_TABS = ['官方榜单', '分类流派', '新碟首发', '数字专区', '顶级厂牌'] as const
-
 /**
- * 音乐馆页头（2026-09-29 设计稿）：
- * - 画廊态：大标题「音乐馆」+ 副标题 + 搜索/榜单筛选圆钮 + 子导航 Tab 行
- * - 详情态：返回「大盘」+ 当前榜单名 + 音源选择器
+ * 排行榜页头：
+ * - 画廊态：大标题「排行榜」+ 副标题 + 音源切换胶囊 + 搜索/抽屉筛选圆钮（纯粹排行榜，无虚设分类）
+ * - 详情态：返回「排行榜」+ 当前榜单名 + 音源选择器
  */
-export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourceChange, isDetailView, onBackToGallery, onGoSearch, onSubTabPress }, ref) => {
+export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourceChange, isDetailView, onBackToGallery, onGoSearch }, ref) => {
   const activeListNameRef = useRef<ActiveListNameType>(null)
   const sourceSelectorRef = useRef<SourceSelectorType>(null)
   const searchBtnRef = useRef<TouchableOpacity>(null)
@@ -50,7 +46,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
           {onBackToGallery ? (
             <TouchableOpacity style={styles.backBtn} onPress={onBackToGallery} activeOpacity={0.7}>
               <Icon name="chevron-left" size={15} color={colors.ink} />
-              <Text style={styles.backBtnText}>大盘</Text>
+              <Text style={styles.backBtnText}>排行榜</Text>
             </TouchableOpacity>
           ) : null}
           <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} />
@@ -60,15 +56,16 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
     )
   }
 
-  // ── 音乐馆画廊态 ──────────────────────────
+  // ── 排行榜画廊态 ──────────────────────────
   return (
     <View style={styles.galleryHeader}>
       <View style={styles.titleRow}>
         <View style={styles.titleGroup}>
-          <Text style={styles.title}>音乐馆</Text>
-          <Text style={styles.subtitle}>发现全球先锋音乐与权威榜单</Text>
+          <Text style={styles.title}>排行榜</Text>
+          <Text style={styles.subtitle}>官方权威榜单 · 实时潮流风向标</Text>
         </View>
         <View style={styles.titleActions}>
+          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} />
           <TouchableOpacity
             ref={searchBtnRef}
             style={styles.circleBtn}
@@ -91,26 +88,6 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* 子导航 Tab 行 + 音源切换 */}
-      <View style={styles.subTabRow}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.subTabScroll} contentContainerStyle={styles.subTabContent}>
-          {SUB_TABS.map((tab, idx) => (
-            <TouchableOpacity
-              key={tab}
-              style={styles.subTabItem}
-              activeOpacity={0.7}
-              onPress={() => { onSubTabPress?.(idx) }}
-            >
-              <Text style={[styles.subTabText, idx === 0 && styles.subTabTextActive]}>{tab}</Text>
-              {idx === 0 ? <View style={styles.subTabIndicator} /> : null}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-        <View style={styles.sourceWrap}>
-          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} />
-        </View>
-      </View>
     </View>
   )
 })
@@ -121,7 +98,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.canvas,
     paddingHorizontal: 20,
     paddingTop: 10,
+    paddingBottom: 6,
     zIndex: 2,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.hairline,
   },
   titleRow: {
     flexDirection: 'row',
@@ -158,48 +138,6 @@ const styles = StyleSheet.create({
     borderColor: colors.hairline,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  subTabRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.hairline,
-    marginTop: 6,
-  },
-  subTabScroll: {
-    flex: 1,
-    minWidth: 0,
-  },
-  subTabContent: {
-    gap: 22,
-    paddingRight: 8,
-  },
-  subTabItem: {
-    alignItems: 'center',
-    paddingVertical: 10,
-    position: 'relative',
-  },
-  subTabText: {
-    fontSize: 13.5,
-    fontWeight: '500',
-    color: colors.inkTertiary,
-  },
-  subTabTextActive: {
-    fontSize: 13.5,
-    fontWeight: '700',
-    color: colors.brand,
-  },
-  subTabIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    width: 16,
-    height: 2,
-    borderRadius: 1,
-    backgroundColor: colors.brand,
-  },
-  sourceWrap: {
-    flexShrink: 0,
-    paddingLeft: 4,
   },
 
   // ── 详情态 ───────────────────────────────

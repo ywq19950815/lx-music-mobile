@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
 echo ====================================================
-echo        安迪音乐 Andy Music v0.5.4 一键安装脚本
+echo        安迪音乐 Andy Music v0.5.5 一键安装脚本
 echo ====================================================
 echo.
 set ADB="C:\Users\Administrator\Android\Sdk\platform-tools\adb.exe"
-set APK="release\andy-music-mobile-v0.5.4-arm64-v8a.apk"
+set APK="release\andy-music-mobile-v0.5.5-arm64-v8a.apk"
 
 if not exist %APK% (
     echo [错误] 未找到安装包: %APK%
@@ -21,13 +21,13 @@ echo [2/3] 自动解除 ColorOS/安卓 未知来源应用安装限制...
 %ADB% shell settings put global install_non_market_apps 1 >nul 2>nul
 %ADB% shell settings put secure install_non_market_apps 1 >nul 2>nul
 
-echo [3/3] 正在推送并安装 v0.5.4 主力包到手机...
+echo [3/3] 正在推送并安装 v0.5.5 主力包到手机...
 %ADB% install -r %APK%
 
 if %ERRORLEVEL% equ 0 (
     echo.
     echo ====================================================
-    echo [成功] 安迪音乐 v0.5.4 已成功安装到手机！
+    echo [成功] 安迪音乐 v0.5.5 已成功安装到手机！
     echo ====================================================
 ) else (
     echo.

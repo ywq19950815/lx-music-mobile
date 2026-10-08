@@ -12,6 +12,7 @@ import { colors } from '@/theme/tokens'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 import { pop } from '@/navigation'
 import commonActions from '@/store/common/action'
+import SwipeBackView from '@/components/common/SwipeBackView'
 
 export default ({ componentId, info }: { componentId: string, info: ListInfoItem }) => {
   const musicListRef = useRef<MusicListType>(null)
@@ -31,19 +32,23 @@ export default ({ componentId, info }: { componentId: string, info: ListInfoItem
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [componentId])
 
-  useBackHandler(useCallback(() => {
+  const handleBack = useCallback(() => {
     void pop(componentId)
     return true
-  }, [componentId]))
+  }, [componentId])
+
+  useBackHandler(handleBack)
 
   return (
-    <View style={styles.container}>
-      <StatusBar />
-      <ListInfoContext.Provider value={info}>
-        <MusicList ref={musicListRef} componentId={componentId} />
-      </ListInfoContext.Provider>
-      <PlayerBar />
-    </View>
+    <SwipeBackView onBack={handleBack}>
+      <View style={styles.container}>
+        <StatusBar />
+        <ListInfoContext.Provider value={info}>
+          <MusicList ref={musicListRef} componentId={componentId} />
+        </ListInfoContext.Provider>
+        <PlayerBar />
+      </View>
+    </SwipeBackView>
   )
 }
 
