@@ -1,4 +1,4 @@
-import React, { forwardRef, type Ref, useImperativeHandle, useMemo, useState, useRef, useCallback } from 'react'
+import React, { forwardRef, type Ref, useImperativeHandle, useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import {
   View,
   TouchableOpacity,
@@ -32,10 +32,14 @@ const SOURCE_META: Record<string, { char: string; color: string }> = {
   mg: { char: '蜜', color: '#018BE6' },
 }
 
+const DEFAULT_ONLINE_SOURCES: Readonly<Array<LX.OnlineSource>> = ['kw', 'kg', 'tx', 'wy', 'mg']
+
 export interface SourceSelectorProps<S extends Sources> {
   fontSize?: number
   center?: boolean
   integrated?: boolean
+  sourceList?: S
+  activeSource?: S[number]
   onSourceChange: (source: S[number]) => void
 }
 
@@ -217,12 +221,12 @@ const styles = StyleSheet.create({
 })
 
 const Component = <S extends Sources>(
-  { fontSize = 13, center, integrated, onSourceChange }: SourceSelectorProps<S>,
+  { fontSize = 13, center, integrated, sourceList, activeSource, onSourceChange }: SourceSelectorProps<S>,
   ref: Ref<SourceSelectorType<S>>
 ) => {
   const sourceNameType = useSettingValue('common.sourceNameType')
-  const [list, setList] = useState([] as unknown as S)
-  const [source, setSource] = useState<S[number]>('kw')
+  const [list, setList] = useState<S>(() => (sourceList && sourceList.length ? sourceList : (DEFAULT_ONLINE_SOURCES as unknown as S)))
+  const [source, setSource] = useState<S[number]>(activeSource ?? 'kw')
   const t = useI18n()
 
   const modalRef = useRef<ModalType>(null)
@@ -230,11 +234,23 @@ const Component = <S extends Sources>(
   const slideAnim = useRef(new Animated.Value(300)).current
 
   useImperativeHandle(ref, () => ({
-    setSourceList(newList, activeSource) {
-      setList(newList)
-      setSource(activeSource)
+    setSourceList(newList, newActiveSource) {
+      if (newList && newList.length) setList(newList)
+      if (newActiveSource) setSource(newActiveSource)
     },
   }), [])
+
+  useEffect(() => {
+    if (sourceList && sourceList.length) {
+      setList(sourceList)
+    }
+  }, [sourceList])
+
+  useEffect(() => {
+    if (activeSource) {
+      setSource(activeSource)
+    }
+  }, [activeSource])
 
   const sourceList_t = useSourceListI18n(list)
 

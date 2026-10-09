@@ -1,5 +1,5 @@
 import { forwardRef, memo, useEffect, useImperativeHandle, useMemo, useState } from 'react'
-import { View, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, TouchableOpacity, StyleSheet, Platform, StatusBar as RNStatusBar } from 'react-native'
 import ButtonBar from './ActionBar'
 import { useNavigationComponentDidAppear, pop } from '@/navigation'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
@@ -90,7 +90,10 @@ export interface DetailInfo {
 }
 
 export default forwardRef<HeaderType, HeaderProps>(({ componentId }: { componentId: string }, ref) => {
-  const statusBarHeight = useStatusbarHeight()
+  const sbHeight = useStatusbarHeight()
+  const statusBarHeight = sbHeight > 0
+    ? sbHeight
+    : (Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 24) : 0)
   const info = useListInfo()
   const [detailInfo, setDetailInfo] = useState<DetailInfo>({
     name: info.name || '',

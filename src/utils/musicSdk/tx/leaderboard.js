@@ -225,10 +225,10 @@ export default {
     if (++retryNum > 3) return Promise.reject(new Error('try max num'))
     bangid = parseInt(bangid)
     let info = this.periods[bangid]
-    let p = info ? Promise.resolve(info.period) : this.getPeriods(bangid)
+    let p = info ? Promise.resolve(info.period) : this.getPeriods(bangid).catch(() => '')
     return p.then(period => {
-      return this.listDetailRequest(bangid, period, this.limit).then(resp => {
-        if (resp.body.code !== 0) return this.getList(bangid, page, retryNum)
+      return this.listDetailRequest(bangid, period || '', this.limit).then(resp => {
+        if (resp.body.code !== 0 || !resp.body.toplist?.data?.songInfoList) return this.getList(bangid, page, retryNum)
         return {
           total: resp.body.toplist.data.songInfoList.length,
           list: this.filterData(resp.body.toplist.data.songInfoList),

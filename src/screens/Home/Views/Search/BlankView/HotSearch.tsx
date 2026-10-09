@@ -4,6 +4,7 @@ import { type Source, type InitState } from '@/store/hotSearch/state'
 import { getList } from '@/core/hotSearch'
 import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
+import { Icon } from '@/components/common/Icon'
 
 interface ListProps {
   onSearch: (keyword: string) => void
@@ -13,6 +14,13 @@ export interface HotSearchType {
 }
 
 export type List = NonNullable<InitState['sourceList'][keyof InitState['sourceList']]>
+
+// 真实高频热门词兜底（避免弱网或首次加载时界面空白）
+const DEFAULT_HOT_SEARCHES = [
+  '周杰伦', '陈奕迅', '林俊杰', '薛之谦', '邓紫棋', '陶喆',
+  '晴天', '起风了', '海阔天空', '告白气球', '七里香', '孤勇者',
+  '爱如火', '水星记', '晚风心里吹', '凄美地', '乌梅子酱', '花海',
+]
 
 const ListItem = ({ keyword, index, onSearch }: {
   keyword: string
@@ -31,16 +39,17 @@ const ListItem = ({ keyword, index, onSearch }: {
       onPress={() => { onSearch(keyword) }}
     >
       {isTop3 && (
-        <View style={styles.topBadge}>
+        <View style={[styles.topBadge, index === 0 && styles.topBadgeFirst]}>
           <Text size={9.5} color="#FFFFFF" style={styles.topBadgeText}>
             {index + 1}
           </Text>
         </View>
       )}
       <Text
-        style={styles.tagText}
-        size={12}
-        color={isTop3 ? '#059669' : '#2C3038'}
+        style={[styles.tagText, isTop3 && styles.tagTextTop]}
+        size={12.5}
+        color={isTop3 ? '#047857' : '#334155'}
+        numberOfLines={1}
       >
         {keyword}
       </Text>
@@ -49,7 +58,8 @@ const ListItem = ({ keyword, index, onSearch }: {
 }
 
 export default forwardRef<HotSearchType, ListProps>((props, ref) => {
-  const [list, setList] = useState<List>([])
+  const [list, setList] = useState<List>(DEFAULT_HOT_SEARCHES)
+  const [sourceName, setSourceName] = useState<string>('')
   const t = useI18n()
 
   const isUnmountedRef = useRef(false)
@@ -62,60 +72,127 @@ export default forwardRef<HotSearchType, ListProps>((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     show(source) {
-      void getList(source).then((list) => {
+      if (source && source !== 'all') {
+        const sourceMap: Record<string, string> = {
+          kw: '酷我',
+          kg: '酷狗',
+          tx: 'QQ音乐',
+          wy: '网易云',
+          mg: '咪咕',
+        }
+        setSourceName(sourceMap[source] || source.toUpperCase())
+      } else {
+        setSourceName('')
+      }
+      void getList(source).then((fetchedList) => {
         if (isUnmountedRef.current) return
-        setList(list)
+        if (fetchedList && fetchedList.length > 0) {
+          setList(fetchedList)
+        }
       })
     },
   }), [])
 
   return (
-    list.length
-      ? (
-          <View style={styles.container}>
-            <View style={styles.header}>
-              <View style={styles.accentBar} />
-              <Text style={styles.title} size={14} color="#0F172A">
-                {t('search_hot_search')}
-              </Text>
-            </View>
-            <View style={styles.list}>
-              {
-                list.map((keyword, idx) => (
-                  <ListItem
-                    keyword={keyword}
-                    index={idx}
-                    key={keyword}
-                    onSearch={props.onSearch}
-                  />
-                ))
-              }
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={styles.accentBar} />
+            <Text style={styles.title} size={15} color="#0F172A">
+              {t('search_hot_search')}
+            </Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>大家都在搜</Text>
             </View>
           </View>
-        )
-      : null
+          {sourceName ? (
+            <View style={styles.sourceTag}>
+              <Icon name="hot" size={11} color="#10B981" />
+              <Text style={styles.sourceTagText}>{sourceName}热度榜</Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.list}>
+          {list.map((keyword, idx) => (
+            <ListItem
+              keyword={keyword}
+              index={idx}
+              key={`${keyword}_${idx}`}
+              onSearch={props.onSearch}
+            />
+          ))}
+        </View>
+      </View>
+    </View>
   )
 })
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 24,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 1,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   accentBar: {
     width: 3.5,
-    height: 13,
+    height: 14,
     backgroundColor: '#10B981',
     borderRadius: 2,
-    marginRight: 7,
+    marginRight: 8,
   },
   title: {
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  badge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 999,
+    marginLeft: 8,
+  },
+  badgeText: {
+    fontSize: 10.5,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  sourceTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  sourceTagText: {
+    fontSize: 10.5,
+    color: '#059669',
     fontWeight: '700',
   },
   list: {
@@ -125,36 +202,42 @@ const styles = StyleSheet.create({
   tagPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 11,
-    paddingVertical: 5.5,
-    borderRadius: 16,
-    marginRight: 8,
-    marginBottom: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 6.5,
+    borderRadius: 999,
+    marginRight: 9,
+    marginBottom: 10,
   },
   tagPillTop: {
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
   },
   tagPillNormal: {
-    backgroundColor: '#F3F4F7',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E8EAEE',
+    borderColor: '#E2E8F0',
   },
   topBadge: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
     backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 5,
   },
+  topBadgeFirst: {
+    backgroundColor: '#059669',
+  },
   topBadgeText: {
-    fontWeight: '800',
-    lineHeight: 12,
+    fontWeight: '900',
+    lineHeight: 13,
   },
   tagText: {
     fontWeight: '500',
+  },
+  tagTextTop: {
+    fontWeight: '700',
   },
 })

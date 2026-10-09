@@ -10,6 +10,7 @@ import SearchBar, { type SearchBarType } from './SearchBar'
 import SearchResult, { type SearchResultType } from './SearchResult'
 import SwipeBackView from '@/components/common/SwipeBackView'
 import commonState from '@/store/common/state'
+import { colors } from '@/theme/tokens'
 
 interface SonglistInfo {
   source: InitState['sources'][number]
@@ -36,7 +37,7 @@ export default () => {
       songlistInfo.current.sortId = info.sortId
       songlistInfo.current.tagId = info.tagId
       setSearchSource(info.source)
-      headerBarRef.current?.setSource(info.source, info.sortId, info.tagName, info.tagId)
+      headerBarRef.current?.setSource(info.source, info.sortId)
       listRef.current?.loadList(info.source, info.sortId, info.tagId)
     })
 
@@ -62,20 +63,14 @@ export default () => {
     listRef.current?.loadList(songlistInfo.current.source, id, songlistInfo.current.tagId)
   }
 
-  const handleTagChange: HeaderBarProps['onTagChange'] = (name, id) => {
-    songlistInfo.current.tagId = id
-    void saveSongListSetting({ tagName: name, tagId: id })
-    listRef.current?.loadList(songlistInfo.current.source, songlistInfo.current.sortId, id)
-  }
-
   const handleSourceChange: HeaderBarProps['onSourceChange'] = (source) => {
     songlistInfo.current.source = source
     songlistInfo.current.tagId = ''
     songlistInfo.current.sortId = songlistState.sortList[source]![0].id
     setSearchSource(source)
     void saveSongListSetting({ sortId: songlistInfo.current.sortId, source, tagId: '', tagName: '' })
-    headerBarRef.current?.setSource(source, songlistInfo.current.sortId, '', songlistInfo.current.tagId)
-    listRef.current?.loadList(source, songlistInfo.current.sortId, songlistInfo.current.tagId)
+    headerBarRef.current?.setSource(source, songlistInfo.current.sortId)
+    listRef.current?.loadList(source, songlistInfo.current.sortId, '')
   }
 
   // 歌单搜索相关处理
@@ -129,7 +124,6 @@ export default () => {
           <HeaderBar
             ref={headerBarRef}
             onSortChange={handleSortChange}
-            onTagChange={handleTagChange}
             onSourceChange={handleSourceChange}
           />
           <List ref={listRef} />
@@ -143,7 +137,7 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.canvas,
   },
   contentWrap: {
     flex: 1,

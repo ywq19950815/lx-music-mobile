@@ -3,16 +3,24 @@ import leaderboardActions from '@/store/leaderboard/action'
 import { deduplicationList, toNewMusicInfo } from '@/utils'
 import musicSdk from '@/utils/musicSdk'
 
+export const formatLeaderboardId = (id: string, defaultSource: LX.OnlineSource = 'kw'): { source: LX.OnlineSource, bangId: string, fullId: string } => {
+  if (id.includes('__')) {
+    const [source, bangId] = id.split('__') as [LX.OnlineSource, string]
+    return { source, bangId, fullId: id }
+  }
+  return { source: defaultSource, bangId: id, fullId: `${defaultSource}__${id}` }
+}
+
 /**
  * 获取排行榜内单页歌曲
  * @param id 排行榜id  {souce}__{bangId}
  * @param isRefresh 是否跳过缓存
  * @returns
  */
-export const setListDetailInfo = (id: string) => {
+export const setListDetailInfo = (id: string, defaultSource?: LX.OnlineSource) => {
   clearListDetail()
-  const [source] = id.split('__') as [LX.OnlineSource, string]
-  leaderboardActions.setListDetailInfo(source, id)
+  const { source, fullId } = formatLeaderboardId(id, defaultSource)
+  leaderboardActions.setListDetailInfo(source, fullId)
 }
 export const setListDetail = (result: ListDetailInfo, id: string, page: number) => {
   return leaderboardActions.setListDetail(result, id, page)
@@ -114,11 +122,11 @@ const getListLimit = async(source: LX.OnlineSource, bangId: string, page: number
  * @param isRefresh 是否跳过缓存
  * @returns
  */
-export const getListDetail = async(id: string, page: number, isRefresh = false): Promise<ListDetailInfo> => {
+export const getListDetail = async(id: string, page: number, isRefresh = false, defaultSource?: LX.OnlineSource): Promise<ListDetailInfo> => {
   // console.log(tabId)
-  const [source, bangId] = id.split('__') as [LX.OnlineSource, string]
-  const listKey = `${source}__${bangId}`
-  const pageKey = `${source}__${bangId}__${page}`
+  const { source, bangId, fullId } = formatLeaderboardId(id, defaultSource)
+  const listKey = fullId
+  const pageKey = `${fullId}__${page}`
 
   let listCache = cache.get(listKey)
   if (!listCache || isRefresh) {
@@ -137,17 +145,17 @@ export const getListDetail = async(id: string, page: number, isRefresh = false):
  * @param isRefresh 是否跳过缓存
  * @returns
  */
-export const getListDetailAll = async(id: string, isRefresh = false): Promise<LX.Music.MusicInfoOnline[]> => {
-  const [source, bangId] = id.split('__') as [LX.OnlineSource, string]
+export const getListDetailAll = async(id: string, isRefresh = false, defaultSource?: LX.OnlineSource): Promise<LX.Music.MusicInfoOnline[]> => {
+  const { source, bangId, fullId } = formatLeaderboardId(id, defaultSource)
   // console.log(tabId)
-  const listKey = `${source}__${bangId}`
+  const listKey = fullId
   let listCache = cache.get(listKey)!
   if (!listCache || isRefresh) {
     cache.set(listKey, listCache = new Map<string, PageCache | LX.Music.MusicInfoOnline[]>())
   }
 
   const loadData = async(page: number): Promise<ListDetailInfo> => {
-    const pageKey = `${source}__${bangId}__${page}`
+    const pageKey = `${fullId}__${page}`
     let pageCache = listCache.get(pageKey) as PageCache
     if (pageCache) return pageCache.data
     return getListLimit(source, bangId, page)

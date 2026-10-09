@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { StyleSheet, View, TouchableOpacity } from 'react-native'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
@@ -15,6 +15,7 @@ export interface HeaderBarProps {
   isDetailView?: boolean
   onBackToGallery?: () => void
   onGoSearch?: (rect: { x: number, y: number, width: number, height: number }) => void
+  source?: LX.OnlineSource
 }
 
 export interface HeaderBarType {
@@ -26,17 +27,24 @@ export interface HeaderBarType {
  * - 画廊态：大标题「排行榜」+ 副标题 + 音源切换胶囊 + 搜索/抽屉筛选圆钮（纯粹排行榜，无虚设分类）
  * - 详情态：返回「排行榜」+ 当前榜单名 + 音源选择器
  */
-export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourceChange, isDetailView, onBackToGallery, onGoSearch }, ref) => {
+export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourceChange, isDetailView, onBackToGallery, onGoSearch, source: propSource }, ref) => {
   const activeListNameRef = useRef<ActiveListNameType>(null)
   const sourceSelectorRef = useRef<SourceSelectorType>(null)
   const searchBtnRef = useRef<TouchableOpacity>(null)
+  const [currentSource, setCurrentSource] = useState<LX.OnlineSource>(propSource ?? 'kw')
 
   useImperativeHandle(ref, () => ({
     setBound(source, id, name) {
+      setCurrentSource(source)
       sourceSelectorRef.current?.setSource(source)
       activeListNameRef.current?.setBound(id, name)
     },
   }), [])
+
+  const handleSourceChange = (newSource: LX.OnlineSource) => {
+    setCurrentSource(newSource)
+    onSourceChange(newSource)
+  }
 
   if (isDetailView) {
     // ── 单榜单详情态 ──────────────────────────
@@ -49,7 +57,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
               <Text style={styles.backBtnText}>排行榜</Text>
             </TouchableOpacity>
           ) : null}
-          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} />
+          <SourceSelector ref={sourceSelectorRef} source={currentSource} onSourceChange={handleSourceChange} />
         </View>
         <ActiveListName ref={activeListNameRef} onShowBound={onShowBound} />
       </View>
@@ -65,7 +73,7 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
           <Text style={styles.subtitle}>官方权威榜单 · 实时潮流风向标</Text>
         </View>
         <View style={styles.titleActions}>
-          <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} />
+          <SourceSelector ref={sourceSelectorRef} source={currentSource} onSourceChange={handleSourceChange} />
           <TouchableOpacity
             ref={searchBtnRef}
             style={styles.circleBtn}

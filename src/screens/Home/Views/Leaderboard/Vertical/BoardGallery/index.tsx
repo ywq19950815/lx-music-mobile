@@ -85,10 +85,9 @@ const ErrorState = ({ onRetry }: { onRetry: () => void }) => (
 )
 
 // ── 权威主榜大卡（带真数据 TOP3 预览 + 封面 + 播放全部）─────────
-const ChartCard = memo(({ board, index, active, previews, onSelect, onPlay }: {
+const ChartCard = memo(({ board, index, previews, onSelect, onPlay }: {
   board: BoardItem
   index: number
-  active: boolean
   previews: SongPreview[] | 'error' | undefined
   onSelect: (b: BoardItem) => void
   onPlay: (b: BoardItem) => void
@@ -96,7 +95,7 @@ const ChartCard = memo(({ board, index, active, previews, onSelect, onPlay }: {
   const top1 = previews && previews !== 'error' ? previews[0] : undefined
   return (
     <TouchableOpacity
-      style={[s.chartCard, active && s.chartCardActive]}
+      style={s.chartCard}
       activeOpacity={0.85}
       onPress={() => onSelect(board)}
     >
@@ -154,16 +153,15 @@ const ChartCard = memo(({ board, index, active, previews, onSelect, onPlay }: {
 })
 
 // ── 更多特色榜单小卡（双列网格，紧凑精致）────────────────
-const SubBoardCard = memo(({ board, index, active, onSelect, onPlay }: {
+const SubBoardCard = memo(({ board, index, onSelect, onPlay }: {
   board: BoardItem
   index: number
-  active: boolean
   onSelect: (b: BoardItem) => void
   onPlay: (b: BoardItem) => void
 }) => {
   return (
     <TouchableOpacity
-      style={[s.subCard, active && s.subCardActive]}
+      style={s.subCard}
       activeOpacity={0.8}
       onPress={() => onSelect(board)}
     >
@@ -253,7 +251,6 @@ const BoardGallery = memo(forwardRef<BoardGalleryType, BoardGalleryProps>(({
             key={board.id}
             board={board}
             index={i}
-            active={activeId === board.id}
             previews={top3[board.id]}
             onSelect={onSelectBoard}
             onPlay={onPlayBoard}
@@ -280,7 +277,6 @@ const BoardGallery = memo(forwardRef<BoardGalleryType, BoardGalleryProps>(({
                 key={board.id}
                 board={board}
                 index={i + featured.length}
-                active={activeId === board.id}
                 onSelect={onSelectBoard}
                 onPlay={onPlayBoard}
               />
@@ -349,10 +345,6 @@ const s = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
-  },
-  chartCardActive: {
-    borderColor: colors.brand,
-    backgroundColor: 'rgba(16, 185, 129, 0.04)',
   },
   chartHeader: {
     flexDirection: 'row',
@@ -511,10 +503,6 @@ const s = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 4,
     elevation: 1,
-  },
-  subCardActive: {
-    borderColor: colors.brand,
-    backgroundColor: 'rgba(16, 185, 129, 0.04)',
   },
   subCardLeft: {
     flexDirection: 'row',

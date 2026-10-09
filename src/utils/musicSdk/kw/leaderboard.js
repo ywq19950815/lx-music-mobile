@@ -88,7 +88,7 @@ export default {
       bangid: 183,
     },
   ],
-  // getUrl: (p, l, id) => `http://kbangserver.kuwo.cn/ksong.s?from=pc&fmt=json&pn=${p - 1}&rn=${l}&type=bang&data=content&id=${id}&show_copyright_off=0&pcmp4=1&isbang=1`,
+  getUrl: (p, l, id) => `https://kbangserver.kuwo.cn/ksong.s?from=pc&fmt=json&pn=${p - 1}&rn=${l}&type=bang&data=content&id=${id}&show_copyright_off=0&pcmp4=1&isbang=1`,
   regExps: {
     mInfo: /level:(\w+),bitrate:(\d+),format:(\w+),size:([\w.]+)/,
   },
@@ -110,46 +110,67 @@ export default {
       const _types = {}
       const qualitys = new Set()
 
-      item.n_minfo.split(';').forEach(i => {
-        const info = i.match(this.regExps.mInfo)
-        if (!info) return
+      if (item.n_minfo) {
+        item.n_minfo.split(';').forEach(i => {
+          const info = i.match(this.regExps.mInfo)
+          if (!info) return
 
-        const quality = info[2]
-        const size = info[4].toLocaleUpperCase()
+          const quality = info[2]
+          const size = info[4].toLocaleUpperCase()
 
-        if (qualitys.has(quality)) return
-        qualitys.add(quality)
+          if (qualitys.has(quality)) return
+          qualitys.add(quality)
 
-        switch (quality) {
-          case '4000':
-            types.push({ type: 'flac24bit', size })
-            _types.flac24bit = { size }
-            break
-          case '2000':
-            types.push({ type: 'flac', size })
-            _types.flac = { size }
-            break
-          case '320':
-            types.push({ type: '320k', size })
-            _types['320k'] = { size }
-            break
-          case '128':
-            types.push({ type: '128k', size })
-            _types['128k'] = { size }
-            break
+          switch (quality) {
+            case '4000':
+              types.push({ type: 'flac24bit', size })
+              _types.flac24bit = { size }
+              break
+            case '2000':
+              types.push({ type: 'flac', size })
+              _types.flac = { size }
+              break
+            case '320':
+              types.push({ type: '320k', size })
+              _types['320k'] = { size }
+              break
+            case '128':
+              types.push({ type: '128k', size })
+              _types['128k'] = { size }
+              break
+          }
+        })
+      } else if (item.formats) {
+        const formats = String(item.formats).split('|')
+        if (formats.includes('ALFLAC')) {
+          types.push({ type: 'flac', size: '' })
+          _types.flac = { size: '' }
         }
-      })
+        if (formats.includes('MP3H')) {
+          types.push({ type: '320k', size: '' })
+          _types['320k'] = { size: '' }
+        }
+        if (formats.includes('MP3128') || formats.includes('WMA128')) {
+          types.push({ type: '128k', size: '' })
+          _types['128k'] = { size: '' }
+        }
+      }
+      if (!types.length) {
+        types.push({ type: '128k', size: '' })
+        _types['128k'] = { size: '' }
+      }
       types = sortQualityArray(types)
 
+      const duration = parseInt(item.song_duration || item.duration || 0)
       return {
-        singer: formatSinger(decodeName(item.artist)),
-        name: decodeName(item.name),
-        albumName: decodeName(item.album),
-        albumId: item.albumId,
-        songmid: item.id,
+        singer: formatSinger(decodeName(item.artist || '')),
+        name: decodeName(item.name || ''),
+        albumName: decodeName(item.album || ''),
+        albumId: item.albumid || item.albumId || '',
+        songmid: String(item.id),
         source: 'kw',
-        interval: formatPlayTime(parseInt(item.duration)),
-        img: item.pic,
+        interval: duration ? formatPlayTime(duration) : '0:00',
+        img: item.pic || null,
         lrc: null,
         otherSource: null,
         types,
@@ -200,18 +221,14 @@ export default {
   getList(id, page, retryNum = 0) {
     if (++retryNum > 3) return Promise.reject(new Error('try max num'))
 
-    const requestBody = { uid: '', devId: '', sFrom: 'kuwo_sdk', user_type: 'AP', carSource: 'kwplayercar_ar_6.0.1.0_apk_keluze.apk', id, pn: page - 1, rn: this.limit }
-    const requestUrl = `https://wbd.kuwo.cn/api/bd/bang/bang_info?${wbdCrypto.buildParam(requestBody)}`
-    const request = httpFetch(requestUrl, { cache: 'default' }).promise
+    const url = this.getUrl(page, this.limit, id)
+    const request = httpFetch(url, { cache: 'default' }).promise
 
     return request.then(({ statusCode, body }) => {
-      const rawData = wbdCrypto.decodeData(body)
-      // console.log(rawData)
-      const data = rawData.data
-      if (statusCode !== 200 || rawData.code != 200 || !data.musiclist) return this.getList(id, page, retryNum)
+      if (statusCode !== 200 || !body || !body.musiclist) return this.getList(id, page, retryNum)
 
-      const total = parseInt(data.total)
-      const list = this.filterData(data.musiclist)
+      const total = parseInt(body.num || body.total || 0)
+      const list = this.filterData(body.musiclist)
 
       return {
         total,

@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react'
 import { StyleSheet, View, type ViewStyle } from 'react-native'
 
 import SourceSelector, {
@@ -14,24 +14,46 @@ type SourceSelectorCommonType = _SourceSelectorType<Sources>
 export interface SourceSelectorProps {
   onSourceChange: SourceSelectorCommonProps['onSourceChange']
   style?: ViewStyle
+  source?: Source
 }
 
 export interface SourceSelectorType {
   setSource: (source: Source) => void
 }
 
-export default forwardRef<SourceSelectorType, SourceSelectorProps>(({ style, onSourceChange }, ref) => {
+export default forwardRef<SourceSelectorType, SourceSelectorProps>(({ style, onSourceChange, source: propSource }, ref) => {
   const sourceSelectorRef = useRef<SourceSelectorCommonType>(null)
+  const [currentSource, setCurrentSource] = useState<Source>(propSource ?? 'kw')
 
   useImperativeHandle(ref, () => ({
     setSource(source) {
+      setCurrentSource(source)
       sourceSelectorRef.current?.setSourceList(leaderboardState.sources, source)
     },
   }), [])
 
+  useEffect(() => {
+    if (propSource) {
+      setCurrentSource(propSource)
+      sourceSelectorRef.current?.setSourceList(leaderboardState.sources, propSource)
+    }
+  }, [propSource])
+
+  const handleSourceChange = (newSource: Source) => {
+    setCurrentSource(newSource)
+    onSourceChange(newSource)
+  }
+
   return (
     <View style={[styles.badgeWrap, style]}>
-      <SourceSelector ref={sourceSelectorRef} onSourceChange={onSourceChange} fontSize={12} center />
+      <SourceSelector
+        ref={sourceSelectorRef}
+        sourceList={leaderboardState.sources as Sources}
+        activeSource={currentSource}
+        onSourceChange={handleSourceChange}
+        fontSize={12}
+        center
+      />
     </View>
   )
 })

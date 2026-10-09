@@ -25,6 +25,7 @@ export default () => {
   const boardsListRef = useRef<BoardsListType>(null)
   const headerBarRef = useRef<HeaderBarType>(null)
   const boundInfo = useRef<{ source: LX.OnlineSource, id: string | null }>({ source: 'kw', id: null })
+  const [currentSource, setCurrentSource] = useState<LX.OnlineSource>('kw')
 
   // 视图状态：默认 false 展示大三联复合卡片流；true 展示某个榜单的歌曲详情
   const [isDetailView, setIsDetailView] = useState(false)
@@ -72,9 +73,9 @@ export default () => {
         headerBarRef.current?.setBound(boundInfo.current.source, id, bound?.name ?? 'Unknown')
       })
     })
-    handleBoundChange(boundInfo.current.source, id)
     setIsDetailView(true)
     requestAnimationFrame(() => {
+      handleBoundChange(boundInfo.current.source, id)
       drawer.current?.closeDrawer()
     })
   }
@@ -84,8 +85,14 @@ export default () => {
     boundInfo.current.id = board.id
     setActiveBoardId(board.id)
     headerBarRef.current?.setBound(boundInfo.current.source, board.id, board.name ?? 'Unknown')
-    handleBoundChange(boundInfo.current.source, board.id)
+    void saveLeaderboardSetting({
+      source: boundInfo.current.source,
+      boardId: board.id,
+    })
     setIsDetailView(true)
+    requestAnimationFrame(() => {
+      musicListRef.current?.loadList(boundInfo.current.source, board.id)
+    })
   }, [])
 
   // 从单榜单歌曲详情返回排行榜大厅
@@ -148,6 +155,7 @@ export default () => {
 
   const onSourceChange: HeaderBarProps['onSourceChange'] = (source) => {
     boundInfo.current.source = source
+    setCurrentSource(source)
     loadBoards(source, (list) => {
       const id = list[0].id
       const name = list[0].name
@@ -183,6 +191,7 @@ export default () => {
     void getLeaderboardSetting().then(({ source, boardId }) => {
       boundInfo.current.source = source
       boundInfo.current.id = boardId
+      setCurrentSource(source)
       setActiveBoardId(boardId)
       loadBoards(source, (list) => {
         const bound = list.find(l => l.id == boardId)
@@ -207,6 +216,7 @@ export default () => {
       <View style={styles.container}>
         <HeaderBar
           ref={headerBarRef}
+          source={currentSource}
           onShowBound={onShowBound}
           onSourceChange={onSourceChange}
           isDetailView={isDetailView}
@@ -216,7 +226,11 @@ export default () => {
 
         {isDetailView ? (
           <SwipeBackView onBack={handleBackToGallery}>
-            <MusicList ref={musicListRef} />
+            <MusicList
+              ref={musicListRef}
+              source={currentSource}
+              boardId={activeBoardId}
+            />
           </SwipeBackView>
         ) : (
           <BoardGallery

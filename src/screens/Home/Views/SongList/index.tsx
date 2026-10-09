@@ -1,55 +1,9 @@
-import { useEffect, useRef } from 'react'
 import Content from './Content'
-import TagList from './TagList'
-import DrawerLayoutFixed, { type DrawerLayoutFixedType } from '@/components/common/DrawerLayoutFixed'
-import commonState, { type InitState as CommonState } from '@/store/common/state'
 
+/**
+ * 歌单广场主视图：
+ * 已移除空无一物的标签侧拉抽屉与多余打开弹窗，专注于歌单分类浏览与纯粹的歌单查询。
+ */
 export default () => {
-  const drawer = useRef<DrawerLayoutFixedType>(null)
-
-  useEffect(() => {
-    const handleFixDrawer = (id: CommonState['navActiveId']) => {
-      if (id == 'nav_songlist') drawer.current?.fixWidth()
-    }
-    const handleShow = () => {
-      requestAnimationFrame(() => {
-        drawer.current?.openDrawer()
-      })
-    }
-    const handleHide = () => {
-      drawer.current?.closeDrawer()
-    }
-
-    const handleHomeBack = (callback: (consumed: boolean) => void) => {
-      if (commonState.navActiveId !== 'nav_songlist') return
-      if (drawer.current?.isOpen) {
-        drawer.current.closeDrawer()
-        callback(true)
-      }
-    }
-
-    global.state_event.on('navActiveIdUpdated', handleFixDrawer)
-    global.app_event.on('showSonglistTagList', handleShow)
-    global.app_event.on('hideSonglistTagList', handleHide)
-    global.app_event.on('homeBackPress', handleHomeBack)
-
-    return () => {
-      global.state_event.off('navActiveIdUpdated', handleFixDrawer)
-      global.app_event.off('showSonglistTagList', handleShow)
-      global.app_event.off('hideSonglistTagList', handleHide)
-      global.app_event.off('homeBackPress', handleHomeBack)
-    }
-  }, [])
-
-  const navigationView = () => <TagList />
-
-  return (
-    <DrawerLayoutFixed
-      ref={drawer}
-      title="歌单分类标签"
-      renderNavigationView={navigationView}
-    >
-      <Content />
-    </DrawerLayoutFixed>
-  )
+  return <Content />
 }
