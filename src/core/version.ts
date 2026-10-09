@@ -12,11 +12,11 @@ import { toast } from '@/utils/tools'
  * 应用内检查更新（安迪音乐 fork 专用）
  *
  * 更新源：中转服务器静态托管（HTTPS，国内直连可达）
- *   - 版本信息：https://music.xywqfry.cn/app-update/update.json
+ *   - 版本信息：https://lovexyz.xyz/app-update/update.json
  *   - APK 包：同目录下 arm64-v8a 主力包
  * 流程：fetch manifest → compareVer 比对 → 弹窗展示更新说明 → RNFS 下载 → 唤起系统安装器
  */
-const UPDATE_INFO_URL = 'https://music.xywqfry.cn/app-update/update.json'
+const UPDATE_INFO_URL = 'https://lovexyz.xyz/app-update/update.json'
 const APK_SAVE_PATH = `${RNFS.CachesDirectoryPath}/andy-music-update.apk`
 const FILE_PROVIDER_AUTHORITY = 'cn.toside.music.mobile.provider'
 
