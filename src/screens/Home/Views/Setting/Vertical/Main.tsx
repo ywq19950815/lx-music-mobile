@@ -4,34 +4,37 @@ import { ScrollView, View, TouchableOpacity, StyleSheet } from 'react-native'
 import Basic from '../settings/Basic'
 import Player from '../settings/Player'
 import LyricDesktop from '../settings/LyricDesktop'
-import Search from '../settings/Search'
 import List from '../settings/List'
 import Sync from '../settings/Sync'
 import Backup from '../settings/Backup'
 import Other from '../settings/Other'
-import Version from '../settings/Version'
 import About from '../settings/About'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import { colors } from '@/theme/tokens'
 import { useI18n } from '@/lang'
-import { SETTING_SCREENS, type SettingScreenIds } from '../Main'
+import { type SettingScreenIds } from '../Main'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 import SwipeBackView from '@/components/common/SwipeBackView'
 
-// 各分类的菜单图标与主题色（仅用于菜单入口视觉）
+// 各分类的菜单图标与主题色（QQ 音乐柔和配色规范）
 const CATEGORY_META: Record<SettingScreenIds, { icon: string, color: string }> = {
   basic: { icon: 'setting', color: '#10B981' },
-  player: { icon: 'play', color: '#3B82F6' },
+  player: { icon: 'play', color: colors.brand },
   lyric_desktop: { icon: 'lyric-on', color: '#8B5CF6' },
-  search: { icon: 'search-2', color: '#F59E0B' },
   list: { icon: 'list-order', color: '#EC4899' },
-  sync: { icon: 'download-2', color: '#06B6D4' },
-  backup: { icon: 'sd-card', color: '#14B8A6' },
+  sync: { icon: 'sync', color: '#06B6D4' },
+  backup: { icon: 'sd-card', color: '#F59E0B' },
   other: { icon: 'dots-vertical', color: '#64748B' },
-  version: { icon: 'available_updates', color: '#F43F5E' },
-  about: { icon: 'help', color: '#0EA5E9' },
+  about: { icon: 'help', color: '#3B82F6' },
 }
+
+// QQ 音乐式逻辑分组卡片体系
+const SETTING_GROUPS: SettingScreenIds[][] = [
+  ['basic', 'player', 'lyric_desktop', 'list'],
+  ['sync', 'backup', 'other'],
+  ['about'],
+]
 
 /**
  * 设置页通用一体化顶栏（背景色与状态栏无缝衔接，杜绝色块割裂）
@@ -71,7 +74,7 @@ const CategoryRow = memo(({ id, onPress }: {
       activeOpacity={0.65}
       onPress={() => onPress(id)}
     >
-      <View style={[styles.iconChip, { backgroundColor: meta.color + '18' }]}>
+      <View style={[styles.iconChip, { backgroundColor: meta.color + '15' }]}>
         <Icon name={meta.icon} size={17} color={meta.color} />
       </View>
       <Text style={styles.rowTitle}>{t(`setting_${id}`)}</Text>
@@ -88,14 +91,16 @@ const MenuView = ({ onSelect }: { onSelect: (id: SettingScreenIds) => void }) =>
       keyboardShouldPersistTaps={'always'}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.menuCard}>
-        {SETTING_SCREENS.map((id, i) => (
-          <View key={id}>
-            {i > 0 ? <View style={styles.divider} /> : null}
-            <CategoryRow id={id} onPress={onSelect} />
-          </View>
-        ))}
-      </View>
+      {SETTING_GROUPS.map((group, groupIndex) => (
+        <View key={groupIndex} style={styles.menuCard}>
+          {group.map((id, i) => (
+            <View key={id}>
+              {i > 0 ? <View style={styles.divider} /> : null}
+              <CategoryRow id={id} onPress={onSelect} />
+            </View>
+          ))}
+        </View>
+      ))}
     </ScrollView>
   )
 }
@@ -104,12 +109,10 @@ const renderScreen = (id: SettingScreenIds) => {
   switch (id) {
     case 'player': return <Player />
     case 'lyric_desktop': return <LyricDesktop />
-    case 'search': return <Search />
     case 'list': return <List />
     case 'sync': return <Sync />
     case 'backup': return <Backup />
     case 'other': return <Other />
-    case 'version': return <Version />
     case 'about': return <About />
     case 'basic':
     default: return <Basic />
@@ -177,7 +180,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     height: '100%',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F7F8FA',
   },
   // ── 一体化顶栏 ─────────────────────────────
   navBar: {
@@ -186,9 +189,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 14,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F7F8FA',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0, 0, 0, 0.06)',
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
   },
   navBackBtn: {
     width: 34,
@@ -229,29 +232,30 @@ const styles = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 14,
     paddingTop: 12,
-    paddingBottom: 28, // 优化为舒适的 28dp 边距，杜绝大片荒芜空白
+    paddingBottom: 28,
   },
   detailContent: {
     paddingTop: 12,
   },
 
-  // ── 菜单卡片 ───────────────────────────────
+  // ── 菜单卡片（QQ 音乐柔和微卡片体系） ─────────
   menuCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#EBEFF5',
+    borderColor: '#F0F2F5',
+    marginBottom: 12,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
     overflow: 'hidden',
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#F1F5F9',
-    marginLeft: 54,
+    backgroundColor: '#F4F5F7',
+    marginLeft: 56,
   },
   row: {
     flexDirection: 'row',
@@ -260,9 +264,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   iconChip: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

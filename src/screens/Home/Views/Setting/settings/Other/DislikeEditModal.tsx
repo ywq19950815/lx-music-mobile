@@ -1,12 +1,10 @@
 import { useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react'
 import Text from '@/components/common/Text'
-import { type LayoutChangeEvent, View } from 'react-native'
+import { type LayoutChangeEvent, View, TouchableOpacity, StyleSheet } from 'react-native'
 import Input, { type InputType } from '@/components/common/Input'
-import { createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
 import Dialog, { type DialogType } from '@/components/common/Dialog'
-import Button from '@/components/common/Button'
+import { colors, radius } from '@/theme/tokens'
 
 interface RuleInputType {
   setText: (text: string) => void
@@ -14,11 +12,10 @@ interface RuleInputType {
   focus: () => void
 }
 const RuleInput = forwardRef<RuleInputType, {}>((props, ref) => {
-  const theme = useTheme()
   const t = useI18n()
   const [text, setText] = useState('')
   const inputRef = useRef<InputType>(null)
-  const [height, setHeight] = useState(100)
+  const [height, setHeight] = useState(120)
 
   useImperativeHandle(ref, () => ({
     getText() {
@@ -46,16 +43,14 @@ const RuleInput = forwardRef<RuleInputType, {}>((props, ref) => {
         textAlignVertical="top"
         placeholder={t('setting_dislike_list_input_tip')}
         size={13}
-        style={{ ...styles.input, height, backgroundColor: theme['c-primary-input-background'] }}
+        style={[styles.input, { height }]}
       />
     </View>
   )
 })
 
-
 export interface DislikeEditModalProps {
   onSave: (rules: string) => void
-  // onSourceChange: SourceSelectorProps['onSourceChange']
 }
 export interface DislikeEditModalType {
   show: (rules: string) => void
@@ -63,20 +58,14 @@ export interface DislikeEditModalType {
 
 export default forwardRef<DislikeEditModalType, DislikeEditModalProps>(({ onSave }, ref) => {
   const dialogRef = useRef<DialogType>(null)
-  // const sourceSelectorRef = useRef<SourceSelectorType>(null)
   const inputRef = useRef<RuleInputType>(null)
   const [visible, setVisible] = useState(false)
-  const theme = useTheme()
   const t = useI18n()
 
   const handleShow = (rules: string) => {
     dialogRef.current?.setVisible(true)
     requestAnimationFrame(() => {
       inputRef.current?.setText(rules.length ? rules + '\n' : rules)
-      // sourceSelectorRef.current?.setSource(source)
-      // setTimeout(() => {
-      //   inputRef.current?.focus()
-      // }, 300)
     })
   }
   useImperativeHandle(ref, () => ({
@@ -103,74 +92,97 @@ export default forwardRef<DislikeEditModalType, DislikeEditModalProps>(({ onSave
   return (
     visible
       ? (
-          <Dialog height='80%' ref={dialogRef} bgHide={false}>
+          <Dialog height="80%" ref={dialogRef} bgHide={false} title={t('setting__other_dislike_list') || '屏蔽词设置'}>
             <View style={styles.content}>
               <RuleInput ref={inputRef} />
-              <Text style={styles.inputTipText} size={13} color={theme['c-600']}>{t('setting_dislike_list_tips')}</Text>
+              <Text style={styles.inputTipText} size={12}>{t('setting_dislike_list_tips')}</Text>
             </View>
             <View style={styles.btns}>
-              <Button style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} onPress={handleCancel}>
-                <Text size={14} color={theme['c-button-font']}>{t('cancel')}</Text>
-              </Button>
-              <Button style={{ ...styles.btn, backgroundColor: theme['c-button-background'] }} onPress={handleConfirm}>
-                <Text size={14} color={theme['c-button-font']}>{t('confirm')}</Text>
-              </Button>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={handleCancel}
+                activeOpacity={0.7}
+              >
+                <Text size={13.5} style={styles.cancelText}>{t('cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmBtn}
+                onPress={handleConfirm}
+                activeOpacity={0.7}
+              >
+                <Text size={13.5} style={styles.confirmText}>{t('confirm')}</Text>
+              </TouchableOpacity>
             </View>
           </Dialog>
         ) : null
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     flexShrink: 1,
-    paddingHorizontal: 15,
-    paddingTop: 15,
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 10,
     flexDirection: 'column',
   },
-  col: {
-    flexDirection: 'row',
-    height: 38,
-  },
-  // selector: {
-  //   borderTopLeftRadius: 4,
-  //   borderBottomLeftRadius: 4,
-  // },
   inputContent: {
     flexGrow: 1,
     flexShrink: 1,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
   input: {
     minWidth: 290,
-    // borderRadius: 4,
-    // borderTopRightRadius: 4,
-    // borderBottomRightRadius: 4,
-    paddingTop: 5,
-    paddingBottom: 5,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: radius.md,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
+    color: colors.ink,
+    fontSize: 13,
   },
   inputTipText: {
-    marginTop: 8,
-    // lineHeight: 18,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    marginTop: 10,
+    lineHeight: 18,
+    color: colors.inkTertiary,
   },
-
   btns: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    paddingBottom: 15,
-    paddingLeft: 15,
-    // paddingRight: 15,
+    justifyContent: 'flex-end',
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    gap: 10,
   },
-  btn: {
-    flex: 1,
-    padding: 10,
+  cancelBtn: {
+    paddingVertical: 9,
+    paddingHorizontal: 22,
+    borderRadius: radius.pill,
+    backgroundColor: '#F3F4F6',
     alignItems: 'center',
-    borderRadius: 4,
-    marginRight: 15,
+    justifyContent: 'center',
+  },
+  cancelText: {
+    fontWeight: '600',
+    color: colors.inkSecondary,
+  },
+  confirmBtn: {
+    paddingVertical: 9,
+    paddingHorizontal: 22,
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  confirmText: {
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 })
 

@@ -188,14 +188,6 @@ export default memo(({
           <TouchableOpacity
             style={styles.topCircleBtn}
             activeOpacity={0.7}
-            onPress={() => { toast('暂无新通知') }}
-            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-          >
-            <Icon name="comment" size={16} color={colors.brand} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.topCircleBtn}
-            activeOpacity={0.7}
             onPress={onOpenSetting}
             hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
@@ -221,7 +213,7 @@ export default memo(({
         </View>
       </View>
 
-      {/* ── 3. 快捷入口四宫格 ────────────────────── */}
+      {/* ── 3. 快捷入口三金刚区（已移除重复设置入口） ── */}
       <View style={styles.quickGrid}>
         {/* 本地下载（真功能落地） */}
         <TouchableOpacity
@@ -230,7 +222,7 @@ export default memo(({
           onPress={onOpenLocalDownload}
         >
           <View style={styles.quickIconCircle}>
-            <Icon name="download-2" size={18} color={colors.brand} />
+            <Icon name="download-2" size={19} color={colors.brand} />
           </View>
           <Text style={styles.quickTitle} numberOfLines={1}>本地下载</Text>
           <Text style={styles.quickSub}>
@@ -248,7 +240,7 @@ export default memo(({
           }}
         >
           <View style={styles.quickIconCircle}>
-            <Icon name="music_time" size={18} color={colors.brand} />
+            <Icon name="music_time" size={19} color={colors.brand} />
           </View>
           <Text style={styles.quickTitle} numberOfLines={1}>最近播放</Text>
           <Text style={styles.quickSub}>{defaultCount} 首</Text>
@@ -260,24 +252,11 @@ export default memo(({
           activeOpacity={0.8}
           onPress={handlePlayLove}
         >
-          <View style={styles.quickIconCircle}>
-            <Icon name="love" size={18} color={colors.brand} />
+          <View style={[styles.quickIconCircle, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+            <Icon name="love" size={19} color="#EF4444" />
           </View>
           <Text style={styles.quickTitle} numberOfLines={1}>我喜欢</Text>
           <Text style={styles.quickSub}>{loveCount} 首</Text>
-        </TouchableOpacity>
-
-        {/* 音效与设置 */}
-        <TouchableOpacity
-          style={styles.quickCard}
-          activeOpacity={0.8}
-          onPress={onOpenSetting}
-        >
-          <View style={styles.quickIconCircle}>
-            <Icon name="setting" size={18} color={colors.brand} />
-          </View>
-          <Text style={styles.quickTitle} numberOfLines={1}>偏好设置</Text>
-          <Text style={styles.quickSub}>音质与服务</Text>
         </TouchableOpacity>
       </View>
 
@@ -744,41 +723,41 @@ const styles = StyleSheet.create({
   // ── 3. 快捷四宫格 ────────────────────────
   quickGrid: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     marginBottom: 16,
   },
   quickCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E8ECF2',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 2,
-    gap: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    gap: 3,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 3,
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
     elevation: 1,
   },
   quickIconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(49, 194, 124, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   quickTitle: {
-    fontSize: 11.5,
-    fontWeight: '600',
+    fontSize: 12.5,
+    fontWeight: '700',
     color: colors.ink,
   },
   quickSub: {
-    fontSize: 9.5,
+    fontSize: 10.5,
     color: colors.inkTertiary,
   },
 

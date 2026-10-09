@@ -1,9 +1,8 @@
 import { useMemo } from 'react'
-import { View } from 'react-native'
-import { createStyle } from '@/utils/tools'
+import { View, StyleSheet } from 'react-native'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
-import { colors, radius } from '@/theme/tokens'
+import { colors } from '@/theme/tokens'
 
 interface Props {
   title: string
@@ -35,32 +34,34 @@ export default ({ title, icon, children }: Props) => {
   )
 }
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   cardContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    marginBottom: 14,
+    borderRadius: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F0F2F5',
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
     overflow: 'hidden',
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingTop: 15,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
+    paddingTop: 14,
+    paddingBottom: 11,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#F2F4F7',
   },
   headerIconChip: {
     width: 26,
     height: 26,
     borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 9,

@@ -54,7 +54,7 @@ export default ({ btnStyle }: BtnProps) => {
       center
       onPress={handleAction}
     >
-      <Text size={14} color={theme['c-button-font']}>{t('user_api_btn_import')}</Text>
+      <Text size={13.5} style={{ color: '#FFFFFF', fontWeight: '700' }}>{t('user_api_btn_import')}</Text>
       <ScriptImportExport ref={scriptImportExportRef} />
       <ScriptImportOnline ref={scriptImportOnlineRef} />
     </DorpDownMenu>

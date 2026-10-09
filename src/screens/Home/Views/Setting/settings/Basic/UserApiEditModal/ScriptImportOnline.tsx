@@ -1,13 +1,13 @@
 import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
 import ConfirmAlert, { type ConfirmAlertType } from '@/components/common/ConfirmAlert'
 import Text from '@/components/common/Text'
-import { View } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import Input, { type InputType } from '@/components/common/Input'
-import { createStyle, toast } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
+import { toast } from '@/utils/tools'
 import { useI18n } from '@/lang'
 import { httpFetch } from '@/utils/request'
 import { handleImportScript } from './action'
+import { colors } from '@/theme/tokens'
 
 interface UrlInputType {
   setText: (text: string) => void
@@ -15,7 +15,6 @@ interface UrlInputType {
   focus: () => void
 }
 const UrlInput = forwardRef<UrlInputType, {}>((props, ref) => {
-  const theme = useTheme()
   const [text, setText] = useState('')
   const [placeholder, setPlaceholder] = useState('')
   const inputRef = useRef<InputType>(null)
@@ -39,16 +38,14 @@ const UrlInput = forwardRef<UrlInputType, {}>((props, ref) => {
       placeholder={placeholder}
       value={text}
       onChangeText={setText}
-      style={{ ...styles.input, backgroundColor: theme['c-primary-input-background'] }}
+      style={styles.input}
     />
   )
 })
 
-
 export interface ScriptImportOnlineType {
   show: () => void
 }
-
 
 export default forwardRef<ScriptImportOnlineType, {}>((props, ref) => {
   const t = useI18n()
@@ -107,36 +104,47 @@ export default forwardRef<ScriptImportOnlineType, {}>((props, ref) => {
 
   return (
     visible
-      ? <ConfirmAlert
-          ref={alertRef}
-          onConfirm={handleImport}
-          disabledConfirm={btn.disabled}
-          confirmText={btn.text}
-        >
-          <View style={styles.reurlContent}>
-            <Text style={{ marginBottom: 5 }}>{ t('user_api_btn_import_online')}</Text>
-            <UrlInput ref={urlInputRef} />
-          </View>
-        </ConfirmAlert>
+      ? (
+          <ConfirmAlert
+            ref={alertRef}
+            onConfirm={handleImport}
+            disabledConfirm={btn.disabled}
+            confirmText={btn.text}
+          >
+            <View style={styles.reurlContent}>
+              <Text style={styles.inputTitle}>{t('user_api_btn_import_online')}</Text>
+              <UrlInput ref={urlInputRef} />
+            </View>
+          </ConfirmAlert>
+        )
       : null
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   reurlContent: {
     flexGrow: 1,
     flexShrink: 1,
     flexDirection: 'column',
+    paddingTop: 8,
+  },
+  inputTitle: {
+    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.ink,
   },
   input: {
     flexGrow: 1,
     flexShrink: 1,
-    minWidth: 290,
-    borderRadius: 4,
-    // paddingTop: 2,
-    // paddingBottom: 2,
+    minWidth: 280,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13.5,
+    color: colors.ink,
   },
 })
-
-

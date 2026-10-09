@@ -10,7 +10,7 @@ import { colors } from '@/theme/tokens'
 
 export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT) + 4
 
-export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPress, selectedList, rowInfo, isShowAlbumName, isShowInterval }: {
+export interface ListItemProps {
   item: LX.Music.MusicInfo
   index: number
   activeIndex: number
@@ -21,13 +21,27 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
   rowInfo: RowInfo
   isShowAlbumName: boolean
   isShowInterval: boolean
-}) => {
+  isMultiSelectMode?: boolean
+}
+
+export default memo(({
+  item,
+  index,
+  activeIndex,
+  onPress,
+  onShowMenu,
+  onLongPress,
+  selectedList,
+  rowInfo,
+  isShowAlbumName,
+  isShowInterval,
+  isMultiSelectMode = false,
+}: ListItemProps) => {
   const isSelected = selectedList.includes(item)
   const isSupported = useAssertApiSupport(item.source)
   const moreButtonRef = useRef<TouchableOpacity>(null)
 
   const handleShowMenu = (event?: any) => {
-    console.log('--- [ListItem] handleShowMenu called for:', item.name)
     const el = moreButtonRef.current as any
     // Web 环境优先使用 getBoundingClientRect 获取精准相对容器坐标
     if (el?.getBoundingClientRect) {
@@ -37,12 +51,11 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
       const rootRect = rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 }
       const posX = Math.max(0, Math.ceil(rect.left - rootRect.left))
       const posY = Math.max(0, Math.ceil(rect.top - rootRect.top))
-      console.log('--- [ListItem] Calculated pos relative to phone:', posX, posY)
       onShowMenu(item, index, {
         x: posX,
         y: posY,
-        w: Math.ceil(rect.width || 28),
-        h: Math.ceil(rect.height || 28),
+        w: Math.ceil(rect.width || 32),
+        h: Math.ceil(rect.height || 32),
       })
       return
     }
@@ -54,7 +67,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
         } else {
           const pageX = event?.nativeEvent?.pageX ?? 300
           const pageY = event?.nativeEvent?.pageY ?? 200
-          onShowMenu(item, index, { x: Math.ceil(pageX - 120), y: Math.ceil(pageY), w: 28, h: 28 })
+          onShowMenu(item, index, { x: Math.ceil(pageX - 120), y: Math.ceil(pageY), w: 32, h: 32 })
         }
       })
       return
@@ -62,7 +75,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
     // 终极保底
     const pageX = event?.nativeEvent?.pageX ?? 300
     const pageY = event?.nativeEvent?.pageY ?? 200
-    onShowMenu(item, index, { x: Math.ceil(pageX - 120), y: Math.ceil(pageY), w: 28, h: 28 })
+    onShowMenu(item, index, { x: Math.ceil(pageX - 120), y: Math.ceil(pageY), w: 32, h: 32 })
   }
 
   const active = activeIndex === index
@@ -74,41 +87,54 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
         styles.container,
         {
           width: rowInfo.rowWidth,
-          opacity: isSupported ? 1 : 0.5,
+          opacity: isSupported ? 1 : 0.45,
         },
       ]}
     >
       <View
         style={[
-          styles.card,
-          active && styles.cardActive,
-          isSelected && styles.cardSelected,
+          styles.row,
+          active && styles.rowActive,
+          isSelected && styles.rowSelected,
         ]}
       >
         <TouchableOpacity
           style={styles.contentLeft}
           onPress={() => onPress(item, index)}
           onLongPress={() => onLongPress(item, index)}
-          activeOpacity={0.7}
+          activeOpacity={0.65}
         >
-          {/* 精致序号徽章 */}
-          <View style={[styles.indexBadge, active && styles.indexBadgeActive]}>
-            {active ? (
-              <Icon name="play" size={11} color="#FFFFFF" />
+          {/* 左侧序号 / 播放指示 / 多选勾选框 */}
+          <View style={styles.leadingCol}>
+            {isMultiSelectMode ? (
+              <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                {isSelected ? (
+                  <Icon name="check" size={12} color="#FFFFFF" />
+                ) : null}
+              </View>
+            ) : active ? (
+              <View style={styles.playingBadge}>
+                <Icon name="play" size={10} color="#FFFFFF" />
+              </View>
             ) : (
               <Text style={styles.indexText}>{index + 1}</Text>
             )}
           </View>
 
-          {/* 歌名与歌手信息 */}
+          {/* 歌名与歌手元数据 */}
           <View style={styles.infoCol}>
-            <Text style={[styles.title, active && styles.titleActive]} numberOfLines={1}>
+            <Text
+              style={[styles.title, active && styles.titleActive]}
+              numberOfLines={1}
+            >
               {item.name}
             </Text>
             <View style={styles.metaRow}>
-              {/* 来源标签 */}
-              <View style={styles.sourceTag}>
-                <Text style={styles.sourceText}>{item.source.toUpperCase()}</Text>
+              {/* 来源小药丸标签 */}
+              <View style={[styles.sourceTag, active && styles.sourceTagActive]}>
+                <Text style={[styles.sourceText, active && styles.sourceTextActive]}>
+                  {item.source.toUpperCase()}
+                </Text>
               </View>
               <Text style={styles.singerText} numberOfLines={1}>
                 {singer}
@@ -124,14 +150,15 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
           ) : null}
         </TouchableOpacity>
 
-        {/* 右侧更多操作按键 */}
+        {/* 右侧更多操作按钮 */}
         <TouchableOpacity
           ref={moreButtonRef}
           onPress={handleShowMenu}
           style={styles.moreBtn}
           activeOpacity={0.6}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Icon name="dots-vertical" color={colors.inkSecondary} size={15} />
+          <Icon name="dots-vertical" color="#94A3B8" size={16} />
         </TouchableOpacity>
       </View>
     </View>
@@ -142,6 +169,7 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
     prevProps.index === nextProps.index &&
     prevProps.isShowAlbumName === nextProps.isShowAlbumName &&
     prevProps.isShowInterval === nextProps.isShowInterval &&
+    prevProps.isMultiSelectMode === nextProps.isMultiSelectMode &&
     prevProps.activeIndex !== nextProps.index &&
     nextProps.activeIndex !== nextProps.index &&
     nextProps.selectedList.includes(nextProps.item) === prevProps.selectedList.includes(nextProps.item)
@@ -150,102 +178,123 @@ export default memo(({ item, index, activeIndex, onPress, onShowMenu, onLongPres
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
   },
-  card: {
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 8,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    shadowColor: '#171A1F',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+    borderRadius: 8,
   },
-  // 正在播放激活态：浅金微透背景 + 金细边
-  cardActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 166, 35, 0.35)',
+  // 正在播放激活态：QQ音乐标准品牌绿微透背景
+  rowActive: {
+    backgroundColor: 'rgba(49, 194, 124, 0.08)',
   },
-  cardSelected: {
-    backgroundColor: 'rgba(245, 166, 35, 0.15)',
+  rowSelected: {
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
   },
   contentLeft: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    minWidth: 0,
   },
-  // 序号徽章
-  indexBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
+  // 左侧指示区：宽度固定 30dp，居中
+  leadingCol: {
+    width: 30,
     alignItems: 'center',
-    marginRight: 10,
-  },
-  indexBadgeActive: {
-    backgroundColor: '#10B981',
+    justifyContent: 'center',
+    marginRight: 8,
   },
   indexText: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.inkSecondary,
+    color: '#94A3B8',
+  },
+  playingBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.brand,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  checkboxSelected: {
+    backgroundColor: colors.brand,
+    borderColor: colors.brand,
   },
   infoCol: {
     flex: 1,
     justifyContent: 'center',
+    minWidth: 0,
+    paddingRight: 8,
   },
   title: {
-    fontSize: 13.5,
+    fontSize: 14.5,
     fontWeight: '600',
-    color: colors.ink,
+    color: '#1E293B',
+    lineHeight: 19,
   },
   titleActive: {
     fontWeight: '700',
-    color: '#B36B00',
+    color: colors.brand,
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
-    gap: 6,
+    marginTop: 3,
   },
   sourceTag: {
     paddingHorizontal: 4,
     paddingVertical: 1,
     borderRadius: 3,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F1F5F9',
+    marginRight: 6,
+  },
+  sourceTagActive: {
+    backgroundColor: 'rgba(49, 194, 124, 0.15)',
   },
   sourceText: {
-    fontSize: 9.5,
-    fontWeight: '600',
-    color: colors.inkTertiary,
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  sourceTextActive: {
+    color: colors.brand,
   },
   singerText: {
-    fontSize: 11.5,
-    fontWeight: '400',
-    color: colors.inkSecondary,
-    flexShrink: 1,
+    flex: 1,
+    fontSize: 12,
+    color: '#64748B',
   },
   intervalText: {
     fontSize: 11,
-    fontWeight: '500',
-    color: colors.inkTertiary,
+    color: '#94A3B8',
     marginRight: 8,
   },
   moreBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 4,
+    borderRadius: 16,
   },
 })

@@ -22,7 +22,7 @@ export const getSearchHistory = async() => {
   return searchState.historyList
 }
 export const addHistoryWord = async(word: string) => {
-  if (!settingState.setting['search.isShowHistorySearch'] || !word) return
+  if (!word) return
   if (!searchState.historyList.length) searchActions.setHistoryWord(await getSearchHistoryFromStore())
   const list = searchActions.addHistoryWord(word)
   if (!list) return

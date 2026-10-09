@@ -1,21 +1,27 @@
 import { playList } from '@/core/player/player'
 import { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react'
-import { FlatList, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps } from 'react-native'
+import { FlatList, View, TouchableOpacity, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps } from 'react-native'
 
 import listState from '@/store/list/state'
 import playerState from '@/store/player/state'
 import { getListPosition, getListPrevSelectId, saveListPosition } from '@/utils/data'
-// import { useMusicList } from '@/store/list/hook'
 import { getListMusics, setActiveList } from '@/core/list'
 import ListItem, { ITEM_HEIGHT } from './ListItem'
-import { createStyle, getRowInfo } from '@/utils/tools'
+import { getRowInfo } from '@/utils/tools'
 import { usePlayInfo, usePlayMusicInfo } from '@/store/player/hook'
 import type { Position } from './ListMenu'
 import type { SelectMode } from './MultipleModeBar'
 import { useActiveListId } from '@/store/list/hook'
 import { useSettingValue } from '@/store/setting/hook'
+import { Icon } from '@/components/common/Icon'
+import Text from '@/components/common/Text'
+import { colors } from '@/theme/tokens'
+import { LIST_IDS } from '@/config/constant'
+import { scaleSizeH } from '@/utils/pixelRatio'
 
 type FlatListType = FlatListProps<LX.Music.MusicInfo>
+
+const HEADER_HEIGHT = scaleSizeH(46)
 
 export interface ListProps {
   onShowMenu: (musicInfo: LX.Music.MusicInfo, index: number, position: Position) => void
@@ -45,10 +51,10 @@ const usePlayIndex = () => {
 
 
 const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, onSelectAll }, ref) => {
-  // const t = useI18n()
   const flatListRef = useRef<FlatList>(null)
   const [currentList, setList] = useState<LX.List.ListMusics>([])
   const listFirstScrollRef = useRef(false)
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
   const isMultiSelectModeRef = useRef(false)
   const selectModeRef = useRef<SelectMode>('single')
   const prevSelectIndexRef = useRef(-1)
@@ -59,12 +65,12 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
   const rowInfo = useRef(getRowInfo())
   const isShowAlbumName = useSettingValue('list.isShowAlbumName')
   const isShowInterval = useSettingValue('list.isShowInterval')
-  // console.log('render music list')
 
   useImperativeHandle(ref, () => ({
-    setIsMultiSelectMode(isMultiSelectMode) {
-      isMultiSelectModeRef.current = isMultiSelectMode
-      if (!isMultiSelectMode) {
+    setIsMultiSelectMode(mode) {
+      isMultiSelectModeRef.current = mode
+      setIsMultiSelectMode(mode)
+      if (!mode) {
         prevSelectIndexRef.current = -1
         handleUpdateSelectedList([])
       }
@@ -182,6 +188,12 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
     void playList(listState.activeListId, index)
   }
 
+  const handlePlayAll = () => {
+    if (currentList.length > 0) {
+      handlePlay(0)
+    }
+  }
+
   const handleUpdateSelectedList = (newList: LX.List.ListMusics) => {
     if (selectedListRef.current.length && newList.length == currentList.length) onSelectAll(true)
     else if (selectedListRef.current.length == currentList.length) onSelectAll(false)
@@ -243,6 +255,62 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
     void saveListPosition(listState.activeListId, nativeEvent.contentOffset.y)
   }
 
+  // QQ音乐标准通栏「播放全部」头部操作栏
+  const renderHeader = () => {
+    if (currentList.length === 0 || isMultiSelectMode) return null
+    return (
+      <View style={styles.headerBar}>
+        <TouchableOpacity
+          style={styles.playAllBtn}
+          onPress={handlePlayAll}
+          activeOpacity={0.7}
+        >
+          <View style={styles.playAllIconBox}>
+            <Icon name="play" size={11} color="#FFFFFF" />
+          </View>
+          <Text style={styles.playAllTitle}>播放全部</Text>
+          <Text style={styles.playAllCount}>(共 {currentList.length} 首)</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.multiSelectBtn}
+          onPress={onMuiltSelectMode}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Icon name="checkbox" size={15} color="#64748B" />
+          <Text style={styles.multiSelectText}>多选</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
+  // QQ音乐质感空状态引导
+  const renderEmpty = () => {
+    const isLove = listState.activeListId === LIST_IDS.LOVE
+    const isTemp = listState.activeListId === LIST_IDS.TEMP || listState.activeListId === LIST_IDS.DEFAULT
+    return (
+      <View style={styles.emptyContainer}>
+        <View style={[styles.emptyIconCircle, isLove && styles.emptyIconLove]}>
+          <Icon
+            name={isLove ? 'love' : isTemp ? 'history' : 'logo'}
+            size={32}
+            color={isLove ? '#EF4444' : colors.brand}
+          />
+        </View>
+        <Text style={styles.emptyTitle}>
+          {isLove ? '暂无收藏歌曲' : isTemp ? '暂无最近播放歌曲' : '歌单暂无歌曲'}
+        </Text>
+        <Text style={styles.emptySubtitle}>
+          {isLove
+            ? '去发现或排行榜中听歌，点击爱心即可收藏'
+            : isTemp
+            ? '播放任意歌曲后，将自动记录在最近播放列表中'
+            : '可通过搜索或外部文件导入歌曲'}
+        </Text>
+      </View>
+    )
+  }
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => (
     <ListItem
@@ -256,11 +324,14 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       rowInfo={rowInfo.current}
       isShowAlbumName={isShowAlbumName}
       isShowInterval={isShowInterval}
+      isMultiSelectMode={isMultiSelectMode}
     />
   )
+
   const getkey: FlatListType['keyExtractor'] = item => item.id
   const getItemLayout: FlatListType['getItemLayout'] = (data, index) => {
-    return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+    const headerOffset = (!isMultiSelectMode && currentList.length > 0) ? HEADER_HEIGHT : 0
+    return { length: ITEM_HEIGHT, offset: headerOffset + ITEM_HEIGHT * index, index }
   }
 
   return (
@@ -268,35 +339,121 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       ref={flatListRef}
       onScroll={handleScroll}
       style={styles.list}
-      contentContainerStyle={{ paddingBottom: 90 }}
+      contentContainerStyle={styles.listContent}
       data={currentList}
-      maxToRenderPerBatch={4}
+      maxToRenderPerBatch={6}
       numColumns={rowInfo.current.rowNum}
       horizontal={false}
-      // App 靠手指滑动浏览，隐藏 Web 滚动条并保持滚动跟手
       showsVerticalScrollIndicator={false}
       showsHorizontalScrollIndicator={false}
       keyboardShouldPersistTaps="always"
       scrollEventThrottle={16}
-      // updateCellsBatchingPeriod={80}
-      windowSize={8}
+      windowSize={10}
       removeClippedSubviews={true}
-      initialNumToRender={12}
+      initialNumToRender={14}
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={renderEmpty}
       renderItem={renderItem}
       keyExtractor={getkey}
-      extraData={activeIndex}
+      extraData={`${activeIndex}_${isMultiSelectMode}_${selectedList.length}`}
       getItemLayout={getItemLayout}
     />
   )
 })
 
-const styles = createStyle({
-  container: {
-    flex: 1,
-  },
+const styles = StyleSheet.create({
   list: {
-    flexGrow: 1,
-    flexShrink: 1,
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  listContent: {
+    paddingBottom: 90,
+  },
+  // 通栏「播放全部」操作行
+  headerBar: {
+    height: HEADER_HEIGHT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#F1F5F9',
+  },
+  playAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  playAllIconBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.brand,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 9,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  playAllTitle: {
+    fontSize: 15.5,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginRight: 6,
+  },
+  playAllCount: {
+    fontSize: 12.5,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  multiSelectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
+    gap: 4,
+  },
+  multiSelectText: {
+    fontSize: 12.5,
+    color: '#475569',
+    fontWeight: '600',
+  },
+  // 空状态
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 80,
+    paddingHorizontal: 32,
+  },
+  emptyIconCircle: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(49, 194, 124, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  emptyIconLove: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 13,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 19,
   },
 })
 

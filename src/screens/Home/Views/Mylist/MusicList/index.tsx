@@ -240,6 +240,7 @@ const styles = createStyle({
   container: {
     flex: 1,
     flexDirection: 'column',
+    backgroundColor: '#FFFFFF',
   },
   topBar: {
     // 关键：给绝对定位浮层（ListSearchBar / MultipleModeBar）一个非零高度参照，

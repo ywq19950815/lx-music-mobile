@@ -6,7 +6,7 @@ import { type BoardItem } from '@/store/leaderboard/state'
 
 
 export interface BoardsListProps {
-  onBoundChange: (listId: string) => void
+  onBoundChange: (listId: string, name?: string) => void
   onPlay: (listId: string) => void
   onCollect: (listId: string, name: string) => void
 }

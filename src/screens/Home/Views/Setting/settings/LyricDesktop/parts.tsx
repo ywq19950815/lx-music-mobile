@@ -162,7 +162,7 @@ const styles = createStyle({
     letterSpacing: -0.2,
   },
   valueBubble: {
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 3,

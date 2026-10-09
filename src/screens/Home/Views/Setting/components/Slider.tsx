@@ -1,26 +1,22 @@
-
 import { memo } from 'react'
-
 import Slider, { type SliderProps } from '@react-native-community/slider'
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
+import { StyleSheet } from 'react-native'
+import { colors } from '@/theme/tokens'
 
 export type {
   SliderProps,
 }
 
 export default memo(({ value, minimumValue, maximumValue, onSlidingStart, onSlidingComplete, onValueChange, step }: SliderProps) => {
-  const theme = useTheme()
-
   return (
     <Slider
       value={value}
       style={styles.slider}
       minimumValue={minimumValue}
       maximumValue={maximumValue}
-      minimumTrackTintColor={theme['c-button-background-active']}
-      maximumTrackTintColor={theme['c-button-background']}
-      thumbTintColor={theme['c-primary-light-100']}
+      minimumTrackTintColor={colors.brand}
+      maximumTrackTintColor="#E2E8F0"
+      thumbTintColor={colors.brand}
       onSlidingStart={onSlidingStart}
       onSlidingComplete={onSlidingComplete}
       onValueChange={onValueChange}
@@ -29,12 +25,10 @@ export default memo(({ value, minimumValue, maximumValue, onSlidingStart, onSlid
   )
 })
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   slider: {
     flexShrink: 0,
     flexGrow: 1,
-    // width: '100%',
     maxWidth: 300,
     height: 40,
     marginTop: -6,

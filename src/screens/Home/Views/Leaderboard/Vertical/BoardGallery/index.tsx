@@ -119,9 +119,6 @@ const ChartCard = memo(({ board, index, previews, onSelect, onPlay }: {
           {top1?.pic
             ? <Image url={top1.pic} style={s.chartCover} resizeMode="cover" />
             : <View style={[s.chartCover, { backgroundColor: colors.muted }]} />}
-          <View style={s.chartRankBadge}>
-            <Text style={s.chartRankBadgeText}>1</Text>
-          </View>
         </View>
 
         <View style={s.chartSongs}>

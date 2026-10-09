@@ -231,14 +231,14 @@ const styles = createStyle({
     marginTop: 10,
     flexDirection: 'row',
   },
-  // ===== 内置音源库卡片（现代柔和高质感） =====
+  // ===== 内置音源库卡片（现代柔和高质感 QQ 音乐绿） =====
   defaultCard: {
     marginBottom: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(245, 166, 35, 0.25)',
+    borderColor: 'rgba(49, 194, 124, 0.22)',
     borderRadius: radius.md,
-    backgroundColor: 'rgba(245, 166, 35, 0.06)',
+    backgroundColor: 'rgba(49, 194, 124, 0.05)',
   },
   defaultCardHeader: {
     flexDirection: 'row',
@@ -256,8 +256,8 @@ const styles = createStyle({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(245, 166, 35, 0.16)',
-    color: '#B36B00',
+    backgroundColor: 'rgba(49, 194, 124, 0.14)',
+    color: colors.brandDeep,
     fontWeight: '600',
     overflow: 'hidden',
   },
@@ -311,7 +311,7 @@ const styles = createStyle({
     fontWeight: '500',
   },
   builtinTag: {
-    color: '#10B981',
+    color: colors.brand,
     fontWeight: '600',
   },
 })

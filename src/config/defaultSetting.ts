@@ -57,8 +57,8 @@ const defaultSetting: LX.AppSetting = {
   'desktopLyric.style.lyricShadowColor': 'rgba(0, 0, 0, 0.6)',
   'desktopLyric.isKaraoke': true,
 
-  'search.isShowHotSearch': false,
-  'search.isShowHistorySearch': false,
+  'search.isShowHotSearch': true,
+  'search.isShowHistorySearch': true,
 
   'list.isClickPlayList': false,
   'list.isShowSource': true,

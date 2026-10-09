@@ -12,8 +12,6 @@ import commonState, { type InitState as CommonState } from '@/store/common/state
 import { getBoardsList } from '@/core/leaderboard'
 import { handleCollect, handlePlay } from '../listAction'
 import boardState, { type BoardItem } from '@/store/leaderboard/state'
-import { setNavActiveId } from '@/core/common'
-import { openSearchOverlay } from '@/core/searchOverlay'
 import { useBackHandler } from '@/utils/hooks/useBackHandler'
 import SwipeBackView from '@/components/common/SwipeBackView'
 
@@ -33,6 +31,7 @@ export default () => {
   isDetailViewRef.current = isDetailView
   const [boards, setBoards] = useState<BoardItem[]>([])
   const [activeBoardId, setActiveBoardId] = useState<string>('')
+  const [activeBoardName, setActiveBoardName] = useState<string>('热歌榜')
   const [boardsLoading, setBoardsLoading] = useState(true)
   const [boardsError, setBoardsError] = useState(false)
 
@@ -64,13 +63,18 @@ export default () => {
     })
   }
 
-  const onBoundChange: BoardsListProps['onBoundChange'] = (id) => {
+  const onBoundChange: BoardsListProps['onBoundChange'] = (id, name) => {
     boundInfo.current.id = id
     setActiveBoardId(id)
+    if (name) {
+      setActiveBoardName(name)
+    }
     loadBoards(boundInfo.current.source, (list) => {
       requestAnimationFrame(() => {
         const bound = list.find(l => l.id == id)
-        headerBarRef.current?.setBound(boundInfo.current.source, id, bound?.name ?? 'Unknown')
+        const finalName = name || bound?.name || '热歌榜'
+        setActiveBoardName(finalName)
+        headerBarRef.current?.setBound(boundInfo.current.source, id, finalName)
       })
     })
     setIsDetailView(true)
@@ -84,7 +88,9 @@ export default () => {
   const handleSelectBoardFromGallery = useCallback((board: BoardItem) => {
     boundInfo.current.id = board.id
     setActiveBoardId(board.id)
-    headerBarRef.current?.setBound(boundInfo.current.source, board.id, board.name ?? 'Unknown')
+    const finalName = board.name || '热歌榜'
+    setActiveBoardName(finalName)
+    headerBarRef.current?.setBound(boundInfo.current.source, board.id, finalName)
     void saveLeaderboardSetting({
       source: boundInfo.current.source,
       boardId: board.id,
@@ -98,11 +104,6 @@ export default () => {
   // 从单榜单歌曲详情返回排行榜大厅
   const handleBackToGallery = useCallback(() => {
     setIsDetailView(false)
-  }, [])
-
-  // 页头搜索圆钮：打开独立搜索页（矩形为圆钮屏幕坐标，用于圆钮→搜索框的 Q 弹形变）
-  const handleGoSearch = useCallback((rect: { x: number, y: number, width: number, height: number }) => {
-    openSearchOverlay(rect)
   }, [])
 
   // 榜单大卡「播放全部」
@@ -157,12 +158,13 @@ export default () => {
     boundInfo.current.source = source
     setCurrentSource(source)
     loadBoards(source, (list) => {
-      const id = list[0].id
-      const name = list[0].name
+      const id = list[0]?.id || ''
+      const name = list[0]?.name || '热歌榜'
       setActiveBoardId(id)
+      setActiveBoardName(name)
       requestAnimationFrame(() => {
         boardsListRef.current?.setList(list, id)
-        headerBarRef.current?.setBound(source, id, name ?? 'Unknown')
+        headerBarRef.current?.setBound(source, id, name)
         requestAnimationFrame(() => {
           handleBoundChange(source, id)
         })
@@ -195,8 +197,10 @@ export default () => {
       setActiveBoardId(boardId)
       loadBoards(source, (list) => {
         const bound = list.find(l => l.id == boardId)
+        const finalName = bound?.name || list[0]?.name || '热歌榜'
+        setActiveBoardName(finalName)
         boardsListRef.current?.setList(list, boardId)
-        headerBarRef.current?.setBound(source, boardId, bound?.name ?? 'Unknown')
+        headerBarRef.current?.setBound(source, boardId, finalName)
       })
       musicListRef.current?.loadList(source, boardId)
     })
@@ -217,11 +221,11 @@ export default () => {
         <HeaderBar
           ref={headerBarRef}
           source={currentSource}
+          boardName={activeBoardName}
           onShowBound={onShowBound}
           onSourceChange={onSourceChange}
           isDetailView={isDetailView}
           onBackToGallery={handleBackToGallery}
-          onGoSearch={handleGoSearch}
         />
 
         {isDetailView ? (
@@ -251,8 +255,6 @@ export default () => {
 
 const styles = createStyle({
   container: {
-    width: '100%',
     flex: 1,
-    flexDirection: 'column',
   },
 })

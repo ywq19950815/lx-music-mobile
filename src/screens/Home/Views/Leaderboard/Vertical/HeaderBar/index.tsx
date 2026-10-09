@@ -14,8 +14,8 @@ export interface HeaderBarProps {
   onSourceChange: (source: LX.OnlineSource) => void
   isDetailView?: boolean
   onBackToGallery?: () => void
-  onGoSearch?: (rect: { x: number, y: number, width: number, height: number }) => void
   source?: LX.OnlineSource
+  boardName?: string
 }
 
 export interface HeaderBarType {
@@ -24,13 +24,12 @@ export interface HeaderBarType {
 
 /**
  * 排行榜页头：
- * - 画廊态：大标题「排行榜」+ 副标题 + 音源切换胶囊 + 搜索/抽屉筛选圆钮（纯粹排行榜，无虚设分类）
- * - 详情态：返回「排行榜」+ 当前榜单名 + 音源选择器
+ * - 画廊态：大标题「排行榜」+ 副标题 + 音源切换胶囊 + 抽屉筛选圆钮（纯粹排行榜，无虚设分类与多余搜索）
+ * - 详情态：返回「排行榜」+ 当前榜单名（真实受控回显）+ 音源选择器
  */
-export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourceChange, isDetailView, onBackToGallery, onGoSearch, source: propSource }, ref) => {
+export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourceChange, isDetailView, onBackToGallery, source: propSource, boardName }, ref) => {
   const activeListNameRef = useRef<ActiveListNameType>(null)
   const sourceSelectorRef = useRef<SourceSelectorType>(null)
-  const searchBtnRef = useRef<TouchableOpacity>(null)
   const [currentSource, setCurrentSource] = useState<LX.OnlineSource>(propSource ?? 'kw')
 
   useImperativeHandle(ref, () => ({
@@ -59,12 +58,12 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
           ) : null}
           <SourceSelector ref={sourceSelectorRef} source={currentSource} onSourceChange={handleSourceChange} />
         </View>
-        <ActiveListName ref={activeListNameRef} onShowBound={onShowBound} />
+        <ActiveListName ref={activeListNameRef} boardName={boardName} onShowBound={onShowBound} />
       </View>
     )
   }
 
-  // ── 排行榜画廊态 ──────────────────────────
+  // ── 排行榜画廊态（已去掉搜索功能）─────────
   return (
     <View style={styles.galleryHeader}>
       <View style={styles.titleRow}>
@@ -74,18 +73,6 @@ export default forwardRef<HeaderBarType, HeaderBarProps>(({ onShowBound, onSourc
         </View>
         <View style={styles.titleActions}>
           <SourceSelector ref={sourceSelectorRef} source={currentSource} onSourceChange={handleSourceChange} />
-          <TouchableOpacity
-            ref={searchBtnRef}
-            style={styles.circleBtn}
-            activeOpacity={0.7}
-            onPress={() => {
-              searchBtnRef.current?.measureInWindow((x, y, width, height) => {
-                onGoSearch?.({ x, y, width, height })
-              })
-            }}
-          >
-            <Icon name="search-2" size={16} color={colors.brand} />
-          </TouchableOpacity>
           <TouchableOpacity
             style={styles.circleBtn}
             activeOpacity={0.7}
@@ -108,53 +95,59 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 6,
     zIndex: 2,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.hairline,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    minHeight: 46,
   },
   titleGroup: {
     flex: 1,
     minWidth: 0,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 21,
+    fontSize: 22,
     fontWeight: '800',
     color: colors.ink,
-    letterSpacing: 0.3,
+    letterSpacing: -0.4,
   },
   subtitle: {
-    fontSize: 11.5,
+    fontSize: 11,
     color: colors.inkSecondary,
-    marginTop: 3,
+    fontWeight: '500',
+    marginTop: 2,
   },
   titleActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flexShrink: 0,
   },
   circleBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
+    width: 34,
+    height: 34,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.hairline,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
 
   // ── 详情态 ───────────────────────────────
   headerBar: {
+    height: 52,
     flexDirection: 'row',
-    height: 48,
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.hairline,
@@ -163,19 +156,17 @@ const styles = StyleSheet.create({
   detailLeftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   backBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
-    backgroundColor: '#F3F4F6',
+    gap: 3,
+    paddingVertical: 6,
+    paddingRight: 6,
   },
   backBtnText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.ink,
   },

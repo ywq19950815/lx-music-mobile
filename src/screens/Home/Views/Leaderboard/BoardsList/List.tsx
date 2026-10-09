@@ -9,7 +9,7 @@ import { getBoardsList } from '@/core/leaderboard'
 import { colors } from '@/theme/tokens'
 
 export interface ListProps {
-  onBoundChange: (listId: string) => void
+  onBoundChange: (listId: string, name?: string) => void
   onShowMenu: (info: { listId: string, name: string, index: number }, position: Position) => void
 }
 export interface ListType {
@@ -53,7 +53,7 @@ export default forwardRef<ListType, ListProps>(({ onBoundChange, onShowMenu }, r
 
   const handleBoundChange = (item: BoardItem) => {
     setActiveId(item.id)
-    onBoundChange(item.id)
+    onBoundChange(item.id, item.name)
   }
 
   const handleShowMenu: ListItemProps['onShowMenu'] = (listId, name, index, position: Position) => {

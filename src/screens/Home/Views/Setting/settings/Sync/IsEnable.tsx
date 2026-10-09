@@ -174,7 +174,7 @@ export default memo(({ host, setHost }: {
             placeholder={t('setting_sync_code_input_tip')}
             value={authCode}
             onChangeText={setAuthCode}
-            style={{ ...styles.authCodeInput, backgroundColor: theme['c-primary-background'] }}
+            style={styles.authCodeInput}
           />
         </View>
       </ConfirmAlert>
@@ -205,18 +205,26 @@ const styles = createStyle({
     flexGrow: 1,
     flexShrink: 1,
     flexDirection: 'column',
+    paddingTop: 8,
   },
   authCodeLabel: {
-    marginBottom: 5,
+    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.ink,
   },
   authCodeInput: {
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 260,
-    borderRadius: 4,
-    // paddingTop: 2,
-    // paddingBottom: 2,
-    // fontSize: 14,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13.5,
+    color: colors.ink,
   },
 
   // tagTypeList: {

@@ -1,11 +1,8 @@
 import { useState, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react'
-import { Animated, View, TouchableOpacity } from 'react-native'
+import { Animated, View, TouchableOpacity, StyleSheet } from 'react-native'
 
 import Text from '@/components/common/Text'
-import Button from '@/components/common/Button'
-import { useTheme } from '@/store/theme/hook'
-import { createStyle } from '@/utils/tools'
-import { BorderWidths } from '@/theme'
+import { colors } from '@/theme/tokens'
 
 export type SelectMode = 'single' | 'range'
 
@@ -23,15 +20,13 @@ export interface MultipleModeBarType {
 }
 
 export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelectAll, onSwitchMode, onExitSelectMode }, ref) => {
-  // const isGetDetailFailedRef = useRef(false)
   const [visible, setVisible] = useState(false)
   const [animatePlayed, setAnimatPlayed] = useState(true)
   const animFade = useRef(new Animated.Value(0)).current
-  const animTranslateY = useRef(new Animated.Value(0)).current
+  const animTranslateY = useRef(new Animated.Value(-20)).current
   const [selectMode, setSelectMode] = useState<SelectMode>('single')
   const [isSelectAll, setIsSelectAll] = useState(false)
   const [visibleBar, setVisibleBar] = useState(true)
-  const theme = useTheme()
 
   useImperativeHandle(ref, () => ({
     show() {
@@ -52,7 +47,6 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
   }))
 
   const handleShow = useCallback(() => {
-    // console.log('show List')
     setVisible(true)
     setAnimatPlayed(false)
     requestAnimationFrame(() => {
@@ -60,7 +54,7 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
 
       Animated.parallel([
         Animated.timing(animFade, {
-          toValue: 0.92,
+          toValue: 1,
           duration: 200,
           useNativeDriver: true,
         }),
@@ -95,16 +89,13 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
     })
   }, [animFade, animTranslateY])
 
-
   const animaStyle = useMemo(() => ({
     ...styles.container,
-    // backgroundColor: theme['c-content-background'],
-    borderBottomColor: theme['c-border-background'],
-    opacity: animFade, // Bind opacity to animated value
+    opacity: animFade,
     transform: [
       { translateY: animTranslateY },
     ],
-  }), [animFade, animTranslateY, theme])
+  }), [animFade, animTranslateY])
 
   const handleSelectAll = useCallback(() => {
     const selectAll = !isSelectAll
@@ -115,32 +106,58 @@ export default forwardRef<MultipleModeBarType, MultipleModeBarProps>(({ onSelect
   const component = useMemo(() => {
     return (
       <Animated.View style={animaStyle}>
-        <View style={styles.switchBtn}>
-          <Button onPress={() => { onSwitchMode('single') }} style={{ ...styles.btn, backgroundColor: selectMode == 'single' ? theme['c-button-background'] : 'rgba(0,0,0,0)' }}>
-            <Text color={theme['c-button-font']}>{global.i18n.t('list_select_single')}</Text>
-          </Button>
-          <Button onPress={() => { onSwitchMode('range') }} style={{ ...styles.btn, backgroundColor: selectMode == 'range' ? theme['c-button-background'] : 'rgba(0,0,0,0)' }}>
-            <Text color={theme['c-button-font']}>{global.i18n.t('list_select_range')}</Text>
-          </Button>
+        {/* 单选/跨选分段切换胶囊 */}
+        <View style={styles.segmentContainer}>
+          <TouchableOpacity
+            onPress={() => onSwitchMode('single')}
+            style={[styles.segmentBtn, selectMode === 'single' && styles.segmentBtnActive]}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.segmentText, selectMode === 'single' && styles.segmentTextActive]}>
+              {global.i18n.t('list_select_single')}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => onSwitchMode('range')}
+            style={[styles.segmentBtn, selectMode === 'range' && styles.segmentBtnActive]}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.segmentText, selectMode === 'range' && styles.segmentTextActive]}>
+              {global.i18n.t('list_select_range')}
+            </Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleSelectAll} style={styles.btn}>
-          <Text color={theme['c-button-font']}>{global.i18n.t(isSelectAll ? 'list_select_unall' : 'list_select_all')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onExitSelectMode} style={styles.btn}>
-          <Text color={theme['c-button-font']}>{global.i18n.t('list_select_cancel')}</Text>
-        </TouchableOpacity>
+
+        {/* 右侧操作按钮 */}
+        <View style={styles.rightActions}>
+          <TouchableOpacity
+            onPress={handleSelectAll}
+            style={styles.actionBtn}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.actionText}>
+              {global.i18n.t(isSelectAll ? 'list_select_unall' : 'list_select_all')}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onExitSelectMode}
+            style={styles.cancelBtn}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.cancelText}>
+              {global.i18n.t('list_select_cancel')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
     )
-  }, [animaStyle, selectMode, theme, handleSelectAll, isSelectAll, onExitSelectMode, onSwitchMode])
+  }, [animaStyle, selectMode, handleSelectAll, isSelectAll, onExitSelectMode, onSwitchMode])
 
-  // 注意：visibleBar 为 false 时必须彻底卸载节点。
-  // 若只把 opacity 设为 0，这条浮层仍会盖在同级的 ActiveList 上拦截点击，
-  // 导致「顶部搜索按钮/歌单胶囊点不动」。
   if (!visibleBar) return null
   return !visible && animatePlayed ? null : component
 })
 
-const styles = createStyle({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: 'absolute',
@@ -149,17 +166,58 @@ const styles = createStyle({
     width: '100%',
     height: '100%',
     flexDirection: 'row',
-    borderBottomWidth: BorderWidths.normal,
-  },
-  switchBtn: {
-    flexDirection: 'row',
-    flex: 1,
-  },
-  btn: {
-    // flex: 1,
-    paddingLeft: 18,
-    paddingRight: 18,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#F1F5F9',
+  },
+  segmentContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 16,
+    padding: 2,
+  },
+  segmentBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+  segmentBtnActive: {
+    backgroundColor: colors.brand,
+  },
+  segmentText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  segmentTextActive: {
+    color: '#FFFFFF',
+  },
+  rightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  actionBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  actionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  cancelBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    backgroundColor: '#F8FAFC',
+  },
+  cancelText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B',
   },
 })

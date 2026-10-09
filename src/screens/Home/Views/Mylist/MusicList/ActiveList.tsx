@@ -21,7 +21,7 @@ export interface ActiveListType {
 }
 
 /**
- * 歌单列表切换与搜索条：现代精炼胶囊设计。
+ * 歌单列表顶栏：对标 QQ 音乐风格，清爽优雅、层级清晰。
  */
 export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, onScrollToTop, onBackToDashboard }, ref) => {
   const currentListId = useActiveListId()
@@ -30,11 +30,11 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
   const currentListName = useMemo(() => {
     switch (currentListId) {
       case LIST_IDS.TEMP:
-        return global.i18n.t('list_name_temp')
+        return '最近播放'
       case LIST_IDS.DEFAULT:
-        return global.i18n.t('list_name_default')
+        return '最近播放'
       case LIST_IDS.LOVE:
-        return global.i18n.t('list_name_love')
+        return '我喜欢'
       default:
         return listState.allList.find(l => l.id === currentListId)?.name ?? ''
     }
@@ -57,43 +57,47 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
     })
   }, [])
 
-  // 隐藏时必须卸载，否则这层浮层会继续拦截点击（例如搜索按钮/胶囊点不动）
+  // 隐藏时必须卸载，否则这层浮层会继续拦截点击
   if (!visibleBar) return null
 
   return (
     <View style={styles.container}>
-      {onBackToDashboard ? (
+      <View style={styles.leftGroup}>
+        {onBackToDashboard ? (
+          <TouchableOpacity
+            onPress={onBackToDashboard}
+            style={styles.backBtn}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Icon name="chevron-left" size={20} color="#1E293B" />
+          </TouchableOpacity>
+        ) : null}
+
         <TouchableOpacity
-          onPress={onBackToDashboard}
-          style={styles.backBtn}
+          onPress={showList}
+          onLongPress={onScrollToTop}
+          style={styles.titleArea}
           activeOpacity={0.7}
         >
-          <Icon name="chevron-left" size={18} color="#0F172A" />
-        </TouchableOpacity>
-      ) : null}
-
-      <TouchableOpacity
-        onPress={showList}
-        onLongPress={onScrollToTop}
-        style={styles.pillBtn}
-        activeOpacity={0.7}
-      >
-        <View style={styles.pillTag}>
-          {fetching ? <Loading color="#10B981" style={styles.loading} /> : null}
+          {fetching ? <Loading color={colors.brand} style={styles.loading} /> : null}
           <Text style={styles.listTitle} numberOfLines={1}>
             {currentListName}
           </Text>
-          <Icon name="chevron-right" size={13} color="#94A3B8" />
-        </View>
-      </TouchableOpacity>
+          <View style={styles.switchIconBox}>
+            <Icon name="menu-down" size={16} color="#94A3B8" />
+          </View>
+        </TouchableOpacity>
+      </View>
 
       {/* 搜索小按钮 */}
       <TouchableOpacity
         style={styles.searchBtn}
         onPress={onShowSearchBar}
         activeOpacity={0.7}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <Icon color="#64748B" name="search-2" size={16} />
+        <Icon color="#475569" name="search-2" size={17} />
       </TouchableOpacity>
     </View>
   )
@@ -101,52 +105,55 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
 
 const styles = StyleSheet.create({
   container: {
-    height: 52,
+    height: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: '#F1F5F9',
   },
-  backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  pillBtn: {
-    flex: 1,
-    marginRight: 10,
-  },
-  pillTag: {
+  leftGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    flex: 1,
+  },
+  backBtn: {
+    width: 32,
+    height: 32,
     borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-    gap: 6,
+    backgroundColor: '#F8FAFC',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 6,
+  },
+  titleArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
   loading: {
-    marginRight: 2,
+    marginRight: 6,
   },
   listTitle: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '700',
     color: '#0F172A',
-    maxWidth: 200,
+    letterSpacing: 0.3,
+  },
+  switchIconBox: {
+    marginLeft: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   searchBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F3F4F6',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
     alignItems: 'center',
   },

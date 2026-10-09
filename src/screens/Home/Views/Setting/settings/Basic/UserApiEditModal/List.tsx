@@ -1,30 +1,30 @@
 import { useCallback } from 'react'
 import Text from '@/components/common/Text'
-import { View, TouchableOpacity, ScrollView } from 'react-native'
-import { confirmDialog, createStyle } from '@/utils/tools'
-import { useTheme } from '@/store/theme/hook'
+import { View, TouchableOpacity, ScrollView, StyleSheet } from 'react-native'
+import { confirmDialog } from '@/utils/tools'
 import { useI18n } from '@/lang'
 import { useUserApiList, state as userApiState } from '@/store/userApi'
 import { useSettingValue } from '@/store/setting/hook'
 import { removeUserApi, setUserApiAllowShowUpdateAlert } from '@/core/userApi'
-import { BorderRadius } from '@/theme'
 import CheckBox from '@/components/common/CheckBox'
 import { Icon } from '@/components/common/Icon'
 import settingState from '@/store/setting/state'
 import apiSourceInfo from '@/utils/musicSdk/api-source-info'
 import { setApiSource } from '@/core/apiSource'
+import { colors, radius } from '@/theme/tokens'
 
 const formatVersionName = (version: string) => {
   return /^\d/.test(version) ? `v${version}` : version
 }
+
 const ListItem = ({ item, activeId, onRemove, onChangeAllowShowUpdateAlert }: {
   item: LX.UserApi.UserApiInfo
   activeId: string
   onRemove: (id: string, name: string) => void
   onChangeAllowShowUpdateAlert: (id: string, enabled: boolean) => void
 }) => {
-  const theme = useTheme()
   const t = useI18n()
+  const isActive = activeId == item.id
   const changeAllowShowUpdateAlert = (check: boolean) => {
     onChangeAllowShowUpdateAlert(item.id, check)
   }
@@ -33,31 +33,31 @@ const ListItem = ({ item, activeId, onRemove, onChangeAllowShowUpdateAlert }: {
   }
 
   return (
-    <View style={{ ...styles.listItem, backgroundColor: activeId == item.id ? theme['c-primary-background-active'] : 'transparent' }}>
+    <View style={[styles.listItem, isActive ? styles.listItemActive : styles.listItemNormal]}>
       <View style={styles.listItemLeft}>
-        <Text size={14}>
+        <Text size={14} style={{ fontWeight: '600', color: colors.ink }}>
           {item.name}
           {
             item.version ? (
-              <Text size={12} color={theme['c-font-label']}>{ '   ' + formatVersionName(item.version) }</Text>
+              <Text size={12} style={{ color: colors.inkTertiary }}>{'   ' + formatVersionName(item.version)}</Text>
             ) : null
           }
           {
             item.author ? (
-              <Text size={12} color={theme['c-font-label']}>{ '   ' + item.author }</Text>
+              <Text size={12} style={{ color: colors.inkTertiary }}>{'   ' + item.author}</Text>
             ) : null
           }
         </Text>
         {
           item.description ? (
-            <Text size={12} color={theme['c-font-label']}>{item.description}</Text>
+            <Text size={12} style={{ color: colors.inkSecondary }}>{item.description}</Text>
           ) : null
         }
         <CheckBox check={item.allowShowUpdateAlert} label={t('user_api_allow_show_update_alert')} onChange={changeAllowShowUpdateAlert} size={0.86} />
       </View>
       <View style={styles.listItemRight}>
-        <TouchableOpacity style={styles.btn} onPress={handleRemove}>
-          <Icon name="close" color={theme['c-button-font']} />
+        <TouchableOpacity style={styles.btn} onPress={handleRemove} activeOpacity={0.7}>
+          <Icon name="close" size={16} color={colors.inkTertiary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -66,17 +66,14 @@ const ListItem = ({ item, activeId, onRemove, onChangeAllowShowUpdateAlert }: {
 
 export interface UserApiEditModalProps {
   onSave: (rules: string) => void
-  // onSourceChange: SourceSelectorProps['onSourceChange']
 }
 export interface UserApiEditModalType {
   show: (rules: string) => void
 }
 
-
 export default () => {
   const userApiList = useUserApiList()
   const apiSource = useSettingValue('common.apiSource')
-  const theme = useTheme()
   const t = useI18n()
 
   const handleRemove = useCallback(async(id: string, name: string) => {
@@ -95,73 +92,83 @@ export default () => {
       }
     })
   }, [])
+
   const handleChangeAllowShowUpdateAlert = useCallback((id: string, enabled: boolean) => {
     void setUserApiAllowShowUpdateAlert(id, enabled)
   }, [])
 
   return (
-    <ScrollView style={styles.scrollView} keyboardShouldPersistTaps={'always'}
+    <ScrollView
+      style={styles.scrollView}
+      keyboardShouldPersistTaps={'always'}
       showsVerticalScrollIndicator={false}
-      showsHorizontalScrollIndicator={false}>
+      showsHorizontalScrollIndicator={false}
+    >
       <View onStartShouldSetResponder={() => true}>
         {
           userApiList.length
             ? userApiList.map((item) => {
               return (
-              <ListItem
-                key={item.id}
-                item={item}
-                activeId={apiSource}
-                onRemove={handleRemove}
-                onChangeAllowShowUpdateAlert={handleChangeAllowShowUpdateAlert}
-              />
+                <ListItem
+                  key={item.id}
+                  item={item}
+                  activeId={apiSource}
+                  onRemove={handleRemove}
+                  onChangeAllowShowUpdateAlert={handleChangeAllowShowUpdateAlert}
+                />
               )
             })
-            : <Text style={styles.tipText} color={theme['c-font-label']}>{t('user_api_empty')}</Text>
+            : <Text style={styles.tipText}>{t('user_api_empty')}</Text>
         }
       </View>
     </ScrollView>
   )
 }
 
-
-const styles = createStyle({
+const styles = StyleSheet.create({
   scrollView: {
-    paddingHorizontal: 7,
+    paddingHorizontal: 2,
     flexGrow: 0,
-  },
-  list: {
-    paddingBottom: 15,
-    flexDirection: 'column',
+    maxHeight: 280,
   },
   listItem: {
-    padding: 10,
-    borderRadius: BorderRadius.normal,
+    padding: 12,
+    borderRadius: radius.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 8,
+    borderWidth: 1,
+  },
+  listItemNormal: {
+    backgroundColor: '#F8F9FA',
+    borderColor: '#ECEFF4',
+  },
+  listItemActive: {
+    backgroundColor: 'rgba(49, 194, 124, 0.08)',
+    borderColor: 'rgba(49, 194, 124, 0.3)',
   },
   listItemLeft: {
     paddingRight: 10,
     flex: 1,
-    gap: 2,
+    gap: 4,
   },
   listItemRight: {
     flex: 0,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
   },
-  // btns: {
-  //   padding: 5,
-  // },
   btn: {
-    padding: 10,
-    // backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   tipText: {
     textAlign: 'center',
     marginTop: 25,
     marginBottom: 15,
+    color: colors.inkTertiary,
+    fontSize: 13,
   },
 })
-
-
