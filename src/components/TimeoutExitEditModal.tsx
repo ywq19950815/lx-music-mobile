@@ -17,7 +17,7 @@ import CheckBox from './common/CheckBox'
 import { useSettingValue } from '@/store/setting/hook'
 import { updateSetting } from '@/core/common'
 import settingState from '@/store/setting/state'
-import { colors, radius } from '@/theme/tokens'
+import { colors, radius, useAppColors, useIsDarkTheme } from '@/theme/tokens'
 
 const MAX_MIN = 1440
 const rxp = /([1-9]\d*)/
@@ -149,12 +149,15 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
     updateSetting({ 'player.timeoutExitPlayed': check })
   }
 
+  const c = useAppColors()
+  const isDark = useIsDarkTheme()
+
   return visible ? (
-    <Dialog ref={dialogRef} title="睡眠定时关闭" theme="dark">
-      <View style={styles.container}>
+    <Dialog ref={dialogRef} title="睡眠定时关闭" theme={isDark ? 'dark' : 'light'}>
+      <View style={[styles.container, { backgroundColor: isDark ? '#181A20' : '#FFFFFF' }]}>
         {/* 当前状态卡片 */}
-        <View style={styles.statusCard}>
-          <Text style={styles.statusLabel}>当前状态：</Text>
+        <View style={[styles.statusCard, { backgroundColor: isDark ? '#22252F' : '#F8FAFC', borderColor: isDark ? 'rgba(255,255,255,0.08)' : '#EEF2F6' }]}>
+          <Text style={[styles.statusLabel, { color: isDark ? 'rgba(255,255,255,0.6)' : c.inkSecondary }]}>当前状态：</Text>
           <Text style={styles.statusVal}>
             {exitTimeInfo.time < 0
               ? '未开启定时'
@@ -163,43 +166,60 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
         </View>
 
         {/* 预设快捷胶囊 */}
-        <Text style={styles.sectionTitle}>快速选择</Text>
+        <Text style={[styles.sectionTitle, { color: isDark ? 'rgba(255,255,255,0.6)' : c.inkSecondary }]}>快速选择</Text>
         <View style={styles.presetRow}>
-          {PRESET_MINUTES.map(min => (
-            <TouchableOpacity
-              key={min}
-              style={[
-                styles.presetPill,
-                timeText === String(min) && styles.presetPillActive,
-              ]}
-              onPress={() => {
-                setTimeText(String(min))
-                handleApplyTime(min)
-              }}
-              activeOpacity={0.7}
-            >
-              <Text
+          {PRESET_MINUTES.map(min => {
+            const isActive = timeText === String(min)
+            return (
+              <TouchableOpacity
+                key={min}
                 style={[
-                  styles.presetText,
-                  timeText === String(min) && styles.presetTextActive,
+                  styles.presetPill,
+                  { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#F1F5F9' },
+                  isActive && {
+                    backgroundColor: isDark ? 'rgba(49, 196, 124, 0.22)' : 'rgba(49, 196, 124, 0.12)',
+                    borderColor: colors.brand,
+                    borderWidth: 1,
+                  },
                 ]}
+                onPress={() => {
+                  setTimeText(String(min))
+                  handleApplyTime(min)
+                }}
+                activeOpacity={0.7}
               >
-                {min} 分钟
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.presetText,
+                    { color: isDark ? '#FFFFFF' : c.ink },
+                    isActive && { color: colors.brand, fontWeight: '700' },
+                  ]}
+                >
+                  {min} 分钟
+                </Text>
+              </TouchableOpacity>
+            )
+          })}
         </View>
 
         {/* 自定义分钟输入行 */}
-        <Text style={styles.sectionTitle}>自定义时间</Text>
+        <Text style={[styles.sectionTitle, { color: isDark ? 'rgba(255,255,255,0.6)' : c.inkSecondary }]}>自定义时间</Text>
         <View style={styles.inputRow}>
           <Input
             ref={inputRef}
             placeholder="输入分钟数 (如 40)"
+            placeholderTextColor={isDark ? 'rgba(255,255,255,0.35)' : '#94A3B8'}
             value={timeText}
             onChangeText={setTimeText}
             keyboardType="number-pad"
-            style={styles.input}
+            style={[
+              styles.input,
+              {
+                backgroundColor: isDark ? '#22252F' : '#F8FAFC',
+                color: isDark ? '#FFFFFF' : c.ink,
+                borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0',
+              },
+            ]}
           />
           <TouchableOpacity
             style={styles.confirmSmallBtn}
@@ -211,7 +231,7 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
         </View>
 
         {/* 播放完当前歌曲后退出 开关 */}
-        <View style={styles.checkboxRow}>
+        <View style={[styles.checkboxRow, { borderTopColor: isDark ? 'rgba(255,255,255,0.08)' : '#F1F5F9' }]}>
           <CheckBox
             check={timeoutExitPlayed}
             label={t('timeout_exit_label_isPlayed')}
@@ -222,7 +242,13 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
         {/* 取消定时按钮 */}
         {exitTimeInfo.time >= 0 || timeInfo.isPlayedStop ? (
           <TouchableOpacity
-            style={styles.cancelTimerBtn}
+            style={[
+              styles.cancelTimerBtn,
+              {
+                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.16)' : '#FEF2F2',
+                borderColor: isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)',
+              },
+            ]}
             onPress={handleCancelTimer}
             activeOpacity={0.7}
           >
@@ -237,21 +263,20 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 20,
+    paddingTop: 14,
+    paddingBottom: 22,
   },
   statusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: radius.md,
+    borderWidth: 1,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 14,
+    paddingVertical: 12,
+    marginBottom: 16,
   },
   statusLabel: {
     fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.6)',
     fontWeight: '500',
   },
   statusVal: {
@@ -262,8 +287,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.6)',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   presetRow: {
     flexDirection: 'row',
@@ -275,39 +299,30 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  presetPillActive: {
-    backgroundColor: 'rgba(49, 196, 124, 0.18)',
     borderWidth: 1,
-    borderColor: colors.brand,
+    borderColor: 'transparent',
   },
   presetText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  presetTextActive: {
-    color: colors.brand,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginBottom: 14,
+    marginBottom: 16,
   },
   input: {
     flex: 1,
-    height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    height: 42,
     borderRadius: radius.md,
-    paddingHorizontal: 12,
+    borderWidth: 1,
+    paddingHorizontal: 14,
     fontSize: 13.5,
-    color: '#FFFFFF',
   },
   confirmSmallBtn: {
-    height: 40,
-    paddingHorizontal: 18,
+    height: 42,
+    paddingHorizontal: 20,
     borderRadius: radius.pill,
     backgroundColor: colors.brand,
     alignItems: 'center',
@@ -324,21 +339,20 @@ const styles = StyleSheet.create({
     fontSize: 13.5,
   },
   checkboxRow: {
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
   cancelTimerBtn: {
-    marginTop: 12,
-    paddingVertical: 10,
+    marginTop: 14,
+    paddingVertical: 11,
     borderRadius: radius.pill,
-    backgroundColor: 'rgba(220, 38, 38, 0.2)',
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelTimerText: {
     fontSize: 13.5,
     fontWeight: '600',
-    color: '#FCA5A5',
+    color: '#EF4444',
   },
 })

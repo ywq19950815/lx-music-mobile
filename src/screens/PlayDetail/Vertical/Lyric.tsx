@@ -92,9 +92,7 @@ const LrcLine = memo(({
   const words = line.words
   const isWordMode = !!words && words.length > 0
 
-  // 逐字模式：当前已唱到的字索引
-  const [wordIdx, setWordIdx] = useState(-1)
-  // 行级模式：擦染进度
+  // 逐字/行级模式共用：擦染流光进度
   const progressAnim = useRef(new Animated.Value(0)).current
   const [lineWidth, setLineWidth] = useState<number | null>(null)
   const [seekTick, setSeekTick] = useState(0)
@@ -151,33 +149,54 @@ const LrcLine = memo(({
     }
   }, [isPlay, active, getCurTime])
 
-  // 逐字模式驱动：本地时钟推算当前字索引（仅索引变化时 setState）
+  // 逐字模式驱动：基于逐字时间戳与字长权重计算连续流光进度，对标 QQ 音乐彻底消除字间离散突变
   useEffect(() => {
-    if (!active || !isWordMode || !words) {
-      setWordIdx(-1)
-      return
-    }
-    const computeIdx = (t: number) => {
-      let idx = -1
+    if (!active || !isWordMode || !words) return
+
+    const totalChars = words.reduce((acc, w) => acc + (w.text?.length || 1), 0) || 1
+
+    const computeWordProgress = (t: number) => {
+      let sungChars = 0
       for (let i = 0; i < words.length; i++) {
-        if (words[i].startTime <= t) idx = i
-        else break
+        const w = words[i]
+        const wLen = w.text?.length || 1
+        const start = w.startTime
+        const end = (w as any).endTime
+          ? (w as any).endTime
+          : (i < words.length - 1 ? words[i + 1].startTime : start + 400)
+        const dur = Math.max(50, end - start)
+
+        if (t <= start) {
+          break
+        } else if (t >= end) {
+          sungChars += wLen
+        } else {
+          const ratio = (t - start) / dur
+          sungChars += wLen * Math.min(1, Math.max(0, ratio))
+          break
+        }
       }
-      return idx
+      return Math.min(1, Math.max(0, sungChars / totalChars))
     }
+
     if (!clockRef.current.baseStamp) {
       clockRef.current.baseTime = line.time
       clockRef.current.baseStamp = Date.now()
     }
-    setWordIdx(computeIdx(getCurTime()))
-    const timer = setInterval(() => {
-      const idx = computeIdx(getCurTime())
-      setWordIdx(prev => (prev === idx ? prev : idx))
-    }, 60)
+
+    const updateFrame = () => {
+      if (!isPlay && frozenTRef.current != null) return
+      const curTime = getCurTime()
+      const prog = computeWordProgress(curTime)
+      progressAnim.setValue(prog)
+    }
+
+    updateFrame()
+    const timer = setInterval(updateFrame, 33) // ~30fps 极致丝滑流光推进
     return () => {
       clearInterval(timer)
     }
-  }, [active, isWordMode, words, line, getCurTime])
+  }, [active, isWordMode, words, line, isPlay, getCurTime, progressAnim, seekTick])
 
   // 行级模式：线性擦染（起始校准 + 暂停跟随 + seek 重校准）
   useEffect(() => {
@@ -237,34 +256,12 @@ const LrcLine = memo(({
     ))
   )
 
-  // 逐字染色主文本（仅激活行）
-  const renderWordModeText = () => {
-    if (!words) return null
-    return (
-      <Text
-        style={[styles.lineText, { textAlign, lineHeight, fontSize: size, fontWeight: '700' }]}
-        textBreakStrategy="simple"
-      >
-        {words.map((word, index) => (
-          <Text key={index} style={{ color: index <= wordIdx ? COLOR_SUNG : idleColor }}>
-            {word.text}
-          </Text>
-        ))}
-      </Text>
-    )
-  }
-
   return (
     <View
       style={[styles.line, active ? styles.activeLineWrapper : null]}
       onLayout={handleLayout}
     >
-      {active && isWordMode ? (
-        <View style={styles.activeTextContainer}>
-          {renderWordModeText()}
-          {renderExtended(0.8, 0.8, '600')}
-        </View>
-      ) : active ? (
+      {active ? (
         <View style={styles.activeTextContainer}>
           {/* 底层：弱化暗底文字 */}
           <Text
@@ -284,7 +281,7 @@ const LrcLine = memo(({
             {line.text}
           </Text>
 
-          {/* 顶层：线性擦染，与播放进度严格同步 */}
+          {/* 顶层：QQ 音乐级卡拉OK丝滑流光蒙版，精准染色覆盖 */}
           <Animated.View
             style={[
               styles.karaokeMask,

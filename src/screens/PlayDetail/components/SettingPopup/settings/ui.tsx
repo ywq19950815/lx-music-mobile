@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import { TouchableOpacity, View, Switch } from 'react-native'
+import { TouchableOpacity, View, Switch, StyleSheet } from 'react-native'
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import Slider, { type SliderProps } from '@/components/common/Slider'
@@ -191,20 +191,31 @@ export const SheetTextButton = ({ label, onPress }: { label: string, onPress: ()
   )
 }
 
-/** 抽屉顶部圆形关闭钮 */
-export const SheetCloseButton = ({ onPress, color }: { onPress: () => void, color: string }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    activeOpacity={0.6}
-    style={{
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      backgroundColor: color,
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
-    <Icon name="close" rawSize={16} />
-  </TouchableOpacity>
-)
+/** 抽屉顶部圆形关闭钮：对标 QQ 音乐现代设计，典雅微圆盘 + 细致微边框 + 高雅微图标 */
+export const SheetCloseButton = ({ onPress, color }: { onPress: () => void, color?: string }) => {
+  const isDark = useIsDarkTheme()
+  const c = useAppColors()
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.65}
+      style={{
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: color || (isDark ? 'rgba(255,255,255,0.08)' : '#F1F5F9'),
+        borderWidth: StyleSheet.hairlineWidth,
+        borderColor: isDark ? 'rgba(255,255,255,0.12)' : '#E2E8F0',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+    >
+      <Icon
+        name="close"
+        size={12}
+        color={isDark ? 'rgba(255,255,255,0.75)' : c.inkSecondary}
+      />
+    </TouchableOpacity>
+  )
+}

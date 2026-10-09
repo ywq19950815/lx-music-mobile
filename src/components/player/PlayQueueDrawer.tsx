@@ -21,6 +21,7 @@ import { colors, radius } from '@/theme/tokens'
 import { toast } from '@/utils/tools'
 import { useI18n } from '@/lang'
 import { getListMusics, getListMusicSync } from '@/utils/listManage'
+import { getLocalMusics } from '@/utils/localMusic'
 import { clearListMusics, removeListMusics } from '@/core/list'
 
 export interface PlayQueueDrawerType {
@@ -50,9 +51,21 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
     || listState.activeListId
     || LIST_IDS.DEFAULT
   ))
-  const [musicList, setMusicList] = useState<LX.Music.MusicInfo[]>(() => (
-    listState.allMusicList.get(activeListId) || []
-  ))
+  const [musicList, setMusicList] = useState<LX.Music.MusicInfo[]>(() => {
+    const target = playerState.playInfo.playerListId
+      || playerState.playMusicInfo.listId
+      || listState.activeListId
+      || LIST_IDS.DEFAULT
+    const sync = getListMusicSync(target)
+    if (sync && sync.length) return [...sync]
+    if (playerState.playMusicInfo.musicInfo) {
+      const raw = 'progress' in playerState.playMusicInfo.musicInfo
+        ? playerState.playMusicInfo.musicInfo.metadata.musicInfo
+        : playerState.playMusicInfo.musicInfo
+      return [raw as LX.Music.MusicInfo]
+    }
+    return []
+  })
 
   // 刷新当前播放队列与稍后播数据
   const syncData = useCallback(() => {
@@ -63,6 +76,33 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
       || LIST_IDS.DEFAULT
 
     setActiveListId(targetListId)
+
+    // 本地与下载音乐特殊异步加载
+    if (targetListId === LIST_IDS.DOWNLOAD) {
+      void getLocalMusics().then(list => {
+        if (list && list.length) {
+          setMusicList([...list])
+        } else if (playerState.playMusicInfo.musicInfo) {
+          const raw = 'progress' in playerState.playMusicInfo.musicInfo
+            ? playerState.playMusicInfo.musicInfo.metadata.musicInfo
+            : playerState.playMusicInfo.musicInfo
+          setMusicList([raw as LX.Music.MusicInfo])
+        } else {
+          setMusicList([])
+        }
+      }).catch(() => {
+        if (playerState.playMusicInfo.musicInfo) {
+          const raw = 'progress' in playerState.playMusicInfo.musicInfo
+            ? playerState.playMusicInfo.musicInfo.metadata.musicInfo
+            : playerState.playMusicInfo.musicInfo
+          setMusicList([raw as LX.Music.MusicInfo])
+        } else {
+          setMusicList([])
+        }
+      })
+      return
+    }
+
     const syncList = getListMusicSync(targetListId)
     if (syncList && syncList.length) {
       setMusicList([...syncList])
@@ -282,26 +322,28 @@ const PlayQueueDrawer = forwardRef<PlayQueueDrawerType, {}>((_, ref) => {
       })
     }
 
-    list.push({
-      type: 'header',
-      key: 'header-main',
-      title: activeListName,
-      count: musicList.length,
-    })
-
-    musicList.forEach((item, index) => {
+    if (musicList.length > 0) {
       list.push({
-        type: 'song',
-        key: `main-${index}-${item.id}`,
-        id: item.id,
-        title: item.name,
-        singer: item.singer || '未知歌手',
-        isTemp: false,
-        isActive: item.id === currentId,
-        onPress: () => handlePlayListItem(index),
-        onRemove: () => handleRemoveItem(item.id, false, index),
+        type: 'header',
+        key: 'header-main',
+        title: activeListName,
+        count: musicList.length,
       })
-    })
+
+      musicList.forEach((item, index) => {
+        list.push({
+          type: 'song',
+          key: `main-${index}-${item.id}`,
+          id: item.id,
+          title: item.name,
+          singer: item.singer || '未知歌手',
+          isTemp: false,
+          isActive: item.id === currentId,
+          onPress: () => handlePlayListItem(index),
+          onRemove: () => handleRemoveItem(item.id, false, index),
+        })
+      })
+    }
 
     return list
   }, [tempList, musicList, currentMusicInfo.id, activeListId, activeListName])

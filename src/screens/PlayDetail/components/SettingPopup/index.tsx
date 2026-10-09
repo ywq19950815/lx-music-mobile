@@ -75,10 +75,9 @@ export default forwardRef<SettingPopupType, SettingPopupProps>(({ direction }, r
             paddingHorizontal: 18,
             paddingVertical: 14,
           }}>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: c.ink }}>{t('play_detail_setting_title')}</Text>
+            <Text style={{ fontSize: 17, fontWeight: '700', color: c.ink, letterSpacing: -0.2 }}>{t('play_detail_setting_title')}</Text>
             <SheetCloseButton
               onPress={() => modalRef.current?.setVisible(false)}
-              color={isDark ? 'rgba(255,255,255,0.09)' : '#F1F5F9'}
             />
           </View>
 

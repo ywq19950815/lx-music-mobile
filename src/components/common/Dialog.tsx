@@ -100,6 +100,7 @@ export default forwardRef<DialogType, DialogProps>(({
 
           <View style={[
             styles.body,
+            height ? { flex: 1 } : null,
             isDark && styles.bodyDark,
             isBottom && { paddingBottom: Math.max(navigationBarHeight, 18) },
           ]}>
