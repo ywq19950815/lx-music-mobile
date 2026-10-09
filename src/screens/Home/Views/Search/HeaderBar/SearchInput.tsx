@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import Input, { type InputType } from '@/components/common/Input'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
+import { colors } from '@/theme/tokens'
 
 export interface SearchInputProps {
   prefix?: React.ReactNode
@@ -57,6 +58,8 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, placehol
     }
   }, [onSubmit, text])
 
+  const hasContent = text.trim().length > 0
+
   return (
     <View style={styles.inputWrapper}>
       <View style={styles.searchBox}>
@@ -67,7 +70,7 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, placehol
           </View>
         ) : null}
         <View style={styles.searchIconBox}>
-          <Icon name="search-2" size={14} color="#10B981" />
+          <Icon name="search-2" size={14} color="#94A3B8" />
         </View>
         <Input
           ref={inputRef}
@@ -83,11 +86,11 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, placehol
           clearBtn
         />
         <TouchableOpacity
-          style={styles.searchBtn}
+          style={[styles.searchBtn, hasContent && styles.searchBtnActive]}
           onPress={handleSubmit}
           activeOpacity={0.7}
         >
-          <Text style={styles.searchBtnText}>搜索</Text>
+          <Text style={[styles.searchBtnText, hasContent && styles.searchBtnTextActive]}>搜索</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -97,24 +100,18 @@ export default forwardRef<SearchInputType, SearchInputProps>(({ prefix, placehol
 const styles = StyleSheet.create({
   inputWrapper: {
     flex: 1,
-    paddingVertical: 4,
     justifyContent: 'center',
   },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F4F5F7',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#EAECEF',
     borderRadius: 999,
-    height: 40,
+    height: 38,
     paddingLeft: 6,
-    paddingRight: 5,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1.5 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 1,
+    paddingRight: 6,
   },
   prefixContainer: {
     flexDirection: 'row',
@@ -124,7 +121,7 @@ const styles = StyleSheet.create({
   verticalDivider: {
     width: 1,
     height: 14,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: '#DCDFE6',
     marginLeft: 2,
     marginRight: 6,
   },
@@ -135,23 +132,29 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '500',
-    color: '#0F172A',
+    color: colors.ink,
     height: '100%',
     padding: 0,
   },
   searchBtn: {
-    backgroundColor: '#10B981',
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 999,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  searchBtnActive: {
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
+  },
   searchBtnText: {
-    color: '#FFFFFF',
+    color: '#94A3B8',
+    fontWeight: '600',
+    fontSize: 12.5,
+  },
+  searchBtnTextActive: {
+    color: colors.brand,
     fontWeight: '700',
-    fontSize: 12,
   },
 })

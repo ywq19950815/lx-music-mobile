@@ -10,10 +10,13 @@ import { colors } from '@/theme/tokens'
  */
 const Header = () => {
   const sbHeight = useStatusbarHeight()
-  // 在 Android 下由于 translucent={true}，若 SizeView 计算出的 sbHeight 为 0，必须保底使用原生物理状态栏高度 (RNStatusBar.currentHeight ?? 24)
-  const statusBarHeight = sbHeight > 0
-    ? sbHeight
-    : (Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 24) : 0)
+  // 在 Android 下由于开启了沉浸式 (translucent=true)，顶栏必须留出真实状态栏物理避让空间
+  // 现代打孔全面屏物理状态栏通常在 36~46dp 之间，多重保底彻底消除任何机型上的遮挡
+  const statusBarHeight = Math.max(
+    sbHeight,
+    Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 36) : 0,
+    Platform.OS === 'android' ? 36 : 0,
+  )
 
   return (
     <>

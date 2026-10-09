@@ -22,6 +22,7 @@ export interface OnlineListProps {
 export interface OnlineListType {
   setList: (list: LX.Music.MusicInfoOnline[], isAppend?: boolean, showSource?: boolean) => void
   setStatus: (val: Status) => void
+  showMultiSelect: () => void
 }
 
 export default forwardRef<OnlineListType, OnlineListProps>(({
@@ -48,6 +49,9 @@ export default forwardRef<OnlineListType, OnlineListProps>(({
     },
     setStatus(val) {
       listRef.current?.setStatus(val)
+    },
+    showMultiSelect() {
+      hancelMultiSelect()
     },
   }))
 

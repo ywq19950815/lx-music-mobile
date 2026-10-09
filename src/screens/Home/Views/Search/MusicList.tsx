@@ -10,13 +10,7 @@ import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import { useI18n } from '@/lang'
 import { createStyle, toast } from '@/utils/tools'
-import { colors, radius } from '@/theme/tokens'
-
-// export type MusicListProps = Pick<OnlineListProps,
-// 'onLoadMore'
-// | 'onPlayList'
-// | 'onRefresh'
-// >
+import { colors } from '@/theme/tokens'
 
 export interface MusicListType {
   loadList: (text: string, source: Source) => void
@@ -52,11 +46,14 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
     })
   }, [])
 
+  const handleMultiSelect = useCallback(() => {
+    listRef.current?.showMultiSelect()
+  }, [])
+
   useImperativeHandle(ref, () => ({
     async loadList(text, source) {
       searchInfoRef.current.text = text
       searchInfoRef.current.source = source
-      // const listDetailInfo = searchMusicState.listDetailInfo
       listRef.current?.setList([], false, source == 'all')
       setListCount(0)
       if (searchMusicState.searchText == text && searchMusicState.source == source && searchMusicState.listInfos[searchMusicState.source]!.list.length) {
@@ -69,7 +66,6 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
         searchInfoRef.current.text = text
         searchInfoRef.current.source = source
         return search(text, page, source).then((list) => {
-          // const result = setListInfo(listDetail, id, page)
           if (isUnmountedRef.current) return
           requestAnimationFrame(() => {
             applyList(list, false, source == 'all')
@@ -89,12 +85,10 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
     }
   }, [])
 
-
   const handleRefresh: OnlineListProps['onRefresh'] = () => {
     const page = 1
     listRef.current?.setStatus('refreshing')
     search(searchInfoRef.current.text, page, searchInfoRef.current.source).then((list) => {
-      // const result = setListInfo(listDetail, searchMusicState.listDetailInfo.id, page)
       if (isUnmountedRef.current) return
       applyList(list, false, searchInfoRef.current.source == 'all')
       listRef.current?.setStatus(searchMusicState.listInfos[searchInfoRef.current.source]!.maxPage <= page ? 'end' : 'idle')
@@ -102,12 +96,12 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
       listRef.current?.setStatus('error')
     })
   }
+
   const handleLoadMore: OnlineListProps['onLoadMore'] = () => {
     listRef.current?.setStatus('loading')
     const info = searchMusicState.listInfos[searchInfoRef.current.source]!
     const page = info?.list.length ? info.page + 1 : 1
     search(searchInfoRef.current.text, page, searchInfoRef.current.source).then((list) => {
-      // const result = setListInfo(listDetail, searchMusicState.listDetailInfo.id, page)
       if (isUnmountedRef.current) return
       applyList(list, true, searchInfoRef.current.source == 'all')
       listRef.current?.setStatus(info.maxPage <= page ? 'end' : 'idle')
@@ -116,19 +110,27 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
     })
   }
 
-  // 列表头部：播放全部（搜索有结果时才出现）
+  // 对标 QQ 音乐：通栏高质感操作工具栏（左侧实心 QQ 绿播放微徽章 + 加粗播放全部 + 歌曲总数，右侧多选操作）
   const header = useMemo(() => (
     listCount
       ? (
-          <View style={styles.headerBox}>
-            <TouchableOpacity style={styles.playAllBtn} activeOpacity={0.82} onPress={handlePlayAll}>
-              <Icon name="play" size={13} color="#FFFFFF" />
-              <Text style={styles.playAllText}>{t('play_all')} ({listCount})</Text>
+          <View style={styles.toolbar}>
+            <TouchableOpacity style={styles.playAllGroup} activeOpacity={0.72} onPress={handlePlayAll}>
+              <View style={styles.playBadge}>
+                <Icon name="play" size={11} color="#FFFFFF" style={styles.playBadgeIcon} />
+              </View>
+              <Text style={styles.playAllTitle}>{t('play_all')}</Text>
+              <Text style={styles.countText}>{`(共 ${listCount} 首)`}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.multiSelectBtn} activeOpacity={0.72} onPress={handleMultiSelect}>
+              <Icon name="checkbox-marked" size={13} color={colors.inkSecondary} />
+              <Text style={styles.multiSelectText}>多选</Text>
             </TouchableOpacity>
           </View>
         )
       : null
-  ), [listCount, handlePlayAll, t])
+  ), [listCount, handlePlayAll, handleMultiSelect, t])
 
   return <OnlineList
     ref={listRef}
@@ -141,29 +143,58 @@ export default forwardRef<MusicListType, {}>((props, ref) => {
 })
 
 const styles = createStyle({
-  headerBox: {
-    paddingHorizontal: 14,
-    paddingTop: 4,
-    paddingBottom: 10,
-  },
-  playAllBtn: {
+  toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    gap: 6,
-    height: 34,
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    borderRadius: radius.pill,
-    backgroundColor: colors.brand,
-    shadowColor: colors.brand,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    elevation: 3,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
-  playAllText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  playAllGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  playBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.brand,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    shadowColor: colors.brand,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.24,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  playBadgeIcon: {
+    marginLeft: 1.5,
+  },
+  playAllTitle: {
+    fontSize: 15.5,
+    fontWeight: '700',
+    color: colors.ink,
+  },
+  countText: {
+    fontSize: 12.5,
+    fontWeight: '500',
+    color: colors.inkTertiary,
+    marginLeft: 5,
+  },
+  multiSelectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: '#F3F4F6',
+  },
+  multiSelectText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.inkSecondary,
   },
 })

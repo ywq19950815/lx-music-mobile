@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   View,
   useWindowDimensions,
+  Platform,
+  StatusBar as RNStatusBar,
 } from 'react-native'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
@@ -40,7 +42,12 @@ const PILL_HEIGHT = 40
  * - 搜索逻辑与发现页同源：TipList 联想 + List 结果，历史词、搜索设置全部真实持久化
  */
 export default () => {
-  const statusBarHeight = useStatusbarHeight()
+  const rawSbHeight = useStatusbarHeight()
+  const statusBarHeight = Math.max(
+    rawSbHeight,
+    Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 36) : 0,
+    Platform.OS === 'android' ? 36 : 0,
+  )
   const { width: windowWidth } = useWindowDimensions()
 
   const [visible, setVisible] = useState(false)
