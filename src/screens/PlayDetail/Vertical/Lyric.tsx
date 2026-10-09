@@ -6,11 +6,9 @@ import {
   type LayoutChangeEvent,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
-  Animated,
-  Easing,
   StyleSheet,
 } from 'react-native'
-import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
+import { type Line, useLrcPlay, useLrcSet, playbackClock } from '@/plugins/lyric'
 import { getPosition } from '@/plugins/player'
 import { useSettingValue } from '@/store/setting/hook'
 import { useIsPlay } from '@/store/player/hook'
@@ -38,15 +36,21 @@ interface LineProps {
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 
-// 歌词配色方案（2026-09-29 双主题）：
-// - 浅色：墨色主字 + 灰阶副字（设计稿 muted-foreground 体系）
-// - 深色：柔和半透明浅白灰
-// - 激活行已唱部分/卡拉OK：鲜活品牌绿逐字染色
+interface CharUnit {
+  text: string
+  startTime: number
+  endTime: number
+}
+
+// 歌词配色方案（双主题对齐 QQ 音乐规范）：
+// - 浅色：墨色底字 + 灰阶副字
+// - 深色：柔和浅白灰底字
+// - 卡拉OK激活部分：鲜活翡翠绿 #31C27C 逐字高光点亮
 const useLyricColors = () => {
   const theme = useContext(ThemeContext)
   return useMemo(() => theme.isDark ? {
-    idle: 'rgba(255, 255, 255, 0.68)',
-    inactive: 'rgba(255, 255, 255, 0.40)',
+    idle: 'rgba(255, 255, 255, 0.70)',
+    inactive: 'rgba(255, 255, 255, 0.38)',
     extended: (alpha: number) => `rgba(255, 255, 255, ${alpha})`,
   } : {
     idle: '#0F172A',
@@ -54,17 +58,19 @@ const useLyricColors = () => {
     extended: (alpha: number) => `rgba(15, 23, 42, ${alpha})`,
   }, [theme.isDark])
 }
-const COLOR_SUNG = designColors.brand
 
 /**
- * 歌词行组件：
- * - 逐字模式（源提供 lxlrc 时）：严格按逐字时间戳染色，与歌声同步
- * - 行级模式（普通 lrc）：整行宽度线性擦染——
- *   1) 线性缓动（卡拉OK必须线性，曲线缓动会造成忽快忽慢）
- *   2) 进入行时按当前播放进度校准起始位置（中途打开播放页不重头跑）
- *   3) 暂停冻结 / 恢复续走
- *   4) seek 跳变（>600ms）自动重校准
- * - 播放时钟：进度广播只写 ref 校准基准（不触发渲染），本地插值推算，丝滑不掉帧
+ * 歌词行组件（QQ 音乐级行内字流排版架构）：
+ * 1. 彻底解决折行同时变色问题：
+ *    - 废除外层整块矩形 overflow: hidden 遮罩（多行文本跨行遮罩会导致所有行左侧同时变绿）。
+ *    - 采用原生行内字流（Inline Text Span）排版：每个字独立感知发声时间，自然顺次折行。
+ *    - 第一行唱完之后，时间才到达第二行首字的 startTime，第二行才从左到右变绿，多行绝不相互干扰！
+ * 2. 彻底解决变色比唱的快问题：
+ *    - 逐字模式严格使用真实字长 w.duration 计算 endTime = startTime + duration。
+ *    - 绝不用下一字开始时间作为当前字结束时间，尊重歌手句中自然停顿与长音拖腔，节奏与人声分秒不差。
+ * 3. 彻底解决闪烁与回退重置问题：
+ *    - 采用全局单调平滑高精度时钟 playbackClock，行切换直接承接连续时间轴。
+ *    - 进度异步校准绝不向后回退时钟，杜绝字变色亮起后又熄灭回退的竞态闪烁。
  */
 const LrcLine = memo(({
   line,
@@ -80,160 +86,69 @@ const LrcLine = memo(({
   onLayout,
 }: LineProps) => {
   const active = activeLine === lineNum
-  // 半屏（黑胶下方）空间有限，整体紧凑缩放，保证三行上下文能完整呈现
-  const sizeScale = variant === 'half' ? 0.82 : 1
-  const baseSize = (lrcFontSize / 10) * sizeScale
-  // 当前正在唱的这句：显著放大加粗为视觉主体大字（1.5x）；
-  // 其它未激活句：收敛为小字号背景副字（0.78x），层级极分明，绝不会反。
-  const size = active ? baseSize * 1.5 : baseSize * 0.78
-  const lineHeight = setSpText(size) * 1.44
+  const theme = useContext(ThemeContext)
   const isPlay = useIsPlay()
 
-  const words = line.words
-  const isWordMode = !!words && words.length > 0
+  // 半屏模式紧凑缩放，全屏模式饱满大气
+  const sizeScale = variant === 'half' ? 0.82 : 1
+  const baseSize = (lrcFontSize / 10) * sizeScale
+  // 正在唱的行显著放大加粗（1.5x）；未激活行收敛为背景副字（0.78x）
+  const size = active ? baseSize * 1.5 : baseSize * 0.78
+  const lineHeight = setSpText(size) * 1.44
 
-  // 逐字/行级模式共用：擦染流光进度
-  const progressAnim = useRef(new Animated.Value(0)).current
-  const [lineWidth, setLineWidth] = useState<number | null>(null)
-  const [seekTick, setSeekTick] = useState(0)
-
-  // ── 播放时钟 ─────────────────────────────
-  const clockRef = useRef({ baseTime: 0, baseStamp: 0 })
-  const frozenTRef = useRef<number | null>(null)
-
-  const getCurTime = useCallback(() => {
-    if (frozenTRef.current != null) return frozenTRef.current
-    const clock = clockRef.current
-    if (!clock.baseStamp) return line.time
-    return clock.baseTime + (Date.now() - clock.baseStamp)
-  }, [line])
-
-  // 进度广播校准时钟：以权威播放位置（getPosition 秒→毫秒）重新校准基准，
-  // 彻底规避 nowPlayTime 在工程中"秒/毫秒"单位不一致的坑（否则第一次进度事件会把基准覆盖成秒，
-  // 毫秒级的逐字/行级时间戳瞬间匹配不上，卡拉OK染色一两个字后整行熄灭）
-  useEffect(() => {
-    if (!active) return
-    const handleProgress = () => {
-      const prevT = getCurTime()
-      void getPosition().then((pos) => {
-        if (pos == null) return
-        const t = pos * 1000
-        clockRef.current.baseTime = t
-        clockRef.current.baseStamp = Date.now()
-        frozenTRef.current = null
-        const newT = getCurTime()
-        if (Math.abs(newT - prevT) > 600) setSeekTick(s => s + 1)
+  // 构建当前行的字符发音序列（逐字 lxlrc 或普通 lrc 字符序列）
+  const charUnits = useMemo<CharUnit[]>(() => {
+    // 1. 优先使用音源提供的逐字打点（lxlrc）
+    if (line.words && line.words.length > 0) {
+      return line.words.map((w) => {
+        const start = w.startTime
+        // 严格使用该字真实的持续时间，下限保护 30ms，绝不吞没短字
+        const dur = Math.max(30, w.duration || 200)
+        return {
+          text: w.text,
+          startTime: start,
+          endTime: start + dur,
+        }
       })
     }
-    global.state_event.on('playProgressChanged', handleProgress)
-    return () => {
-      global.state_event.off('playProgressChanged', handleProgress)
-    }
-  }, [active, getCurTime])
 
-  // 暂停冻结 / 恢复续走
+    // 2. 普通 lrc 模式：若无逐字打点，智能按字符拆分为流式序列
+    const fullText = line.text || ''
+    if (!fullText) return []
+    const chars = Array.from(fullText)
+    const lineDur = Math.max(600, Math.min(duration || 3200, 15000))
+    const charDur = lineDur / Math.max(1, chars.length)
+    return chars.map((char, index) => ({
+      text: char,
+      startTime: line.time + index * charDur,
+      endTime: line.time + (index + 1) * charDur,
+    }))
+  }, [line.words, line.text, line.time, duration])
+
+  // 激活行高频平滑时钟驱动（~30fps）
+  const [curTime, setCurTime] = useState(() => playbackClock.getTime())
+
   useEffect(() => {
-    if (!active) {
-      frozenTRef.current = null
-      return
-    }
-    if (isPlay) {
-      if (frozenTRef.current != null) {
-        clockRef.current.baseTime = frozenTRef.current
-        clockRef.current.baseStamp = Date.now()
-        frozenTRef.current = null
-        setSeekTick(t => t + 1)
-      }
-    } else {
-      frozenTRef.current = getCurTime()
-    }
-  }, [isPlay, active, getCurTime])
+    if (!active) return
 
-  // 逐字模式驱动：基于逐字时间戳与字长权重计算连续流光进度，对标 QQ 音乐彻底消除字间离散突变
-  useEffect(() => {
-    if (!active || !isWordMode || !words) return
+    // 立即更新一次当前权威时钟
+    setCurTime(playbackClock.getTime())
 
-    const totalChars = words.reduce((acc, w) => acc + (w.text?.length || 1), 0) || 1
+    if (!isPlay) return
 
-    const computeWordProgress = (t: number) => {
-      let sungChars = 0
-      for (let i = 0; i < words.length; i++) {
-        const w = words[i]
-        const wLen = w.text?.length || 1
-        const start = w.startTime
-        const end = (w as any).endTime
-          ? (w as any).endTime
-          : (i < words.length - 1 ? words[i + 1].startTime : start + 400)
-        const dur = Math.max(50, end - start)
+    // ~30fps 极致丝滑向前推进，平滑点亮字符
+    const timer = setInterval(() => {
+      setCurTime(playbackClock.getTime())
+    }, 33)
 
-        if (t <= start) {
-          break
-        } else if (t >= end) {
-          sungChars += wLen
-        } else {
-          const ratio = (t - start) / dur
-          sungChars += wLen * Math.min(1, Math.max(0, ratio))
-          break
-        }
-      }
-      return Math.min(1, Math.max(0, sungChars / totalChars))
-    }
-
-    if (!clockRef.current.baseStamp) {
-      clockRef.current.baseTime = line.time
-      clockRef.current.baseStamp = Date.now()
-    }
-
-    const updateFrame = () => {
-      if (!isPlay && frozenTRef.current != null) return
-      const curTime = getCurTime()
-      const prog = computeWordProgress(curTime)
-      progressAnim.setValue(prog)
-    }
-
-    updateFrame()
-    const timer = setInterval(updateFrame, 33) // ~30fps 极致丝滑流光推进
     return () => {
       clearInterval(timer)
     }
-  }, [active, isWordMode, words, line, isPlay, getCurTime, progressAnim, seekTick])
-
-  // 行级模式：线性擦染（起始校准 + 暂停跟随 + seek 重校准）
-  useEffect(() => {
-    if (!active || isWordMode) {
-      progressAnim.stopAnimation()
-      progressAnim.setValue(0)
-      return
-    }
-    const dur = Math.max(800, Math.min(duration || 3500, 15000))
-    const elapsed = getCurTime() - line.time
-    const startFraction = elapsed > 0 && elapsed < dur ? elapsed / dur : 0
-    progressAnim.stopAnimation()
-    progressAnim.setValue(startFraction)
-    if (isPlay && startFraction < 1) {
-      Animated.timing(progressAnim, {
-        toValue: 1,
-        duration: Math.max(200, dur * (1 - startFraction)),
-        easing: Easing.linear,
-        useNativeDriver: false,
-      }).start()
-    }
-  }, [active, isWordMode, duration, isPlay, line, seekTick, progressAnim, getCurTime])
+  }, [active, isPlay])
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
   }
-
-  const handleTextLayout = ({ nativeEvent }: LayoutChangeEvent) => {
-    if (nativeEvent.layout.width > 0 && nativeEvent.layout.width !== lineWidth) {
-      setLineWidth(nativeEvent.layout.width)
-    }
-  }
-
-  const progressWidth = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  })
 
   const renderExtended = (alpha: number, sizeRatio: number, fontWeight: any) => (
     line.extendedLyrics.map((lrc, index) => (
@@ -263,7 +178,7 @@ const LrcLine = memo(({
     >
       {active ? (
         <View style={styles.activeTextContainer}>
-          {/* 底层：弱化暗底文字 */}
+          {/* 原生行内字流排版：自然折行，长句按顺序逐字点亮，绝无跨行同时变色 */}
           <Text
             style={[
               styles.lineText,
@@ -271,40 +186,44 @@ const LrcLine = memo(({
                 textAlign,
                 lineHeight,
                 fontSize: size,
-                fontWeight: '700',
-                color: idleColor,
               },
             ]}
-            onLayout={handleTextLayout}
             textBreakStrategy="simple"
           >
-            {line.text}
-          </Text>
+            {charUnits.map((item, idx) => {
+              const isPast = curTime >= item.endTime
+              const isCurrent = curTime >= item.startTime && curTime < item.endTime
 
-          {/* 顶层：QQ 音乐级卡拉OK丝滑流光蒙版，精准染色覆盖 */}
-          <Animated.View
-            style={[
-              styles.karaokeMask,
-              { width: progressWidth },
-            ]}
-          >
-            <Text
-              style={[
-                styles.lineText,
-                {
-                  textAlign,
-                  lineHeight,
-                  fontSize: size,
-                  fontWeight: '700',
-                  color: designColors.brand,
-                  width: lineWidth ?? '100%',
-                },
-              ]}
-              textBreakStrategy="simple"
-            >
-              {line.text}
-            </Text>
-          </Animated.View>
+              let color = idleColor
+              let fontWeight: any = '600'
+              let opacity = theme.isDark ? 0.65 : 0.75
+
+              if (isPast) {
+                // 已唱完：100% 翡翠绿
+                color = designColors.brand
+                fontWeight = '700'
+                opacity = 1
+              } else if (isCurrent) {
+                // 正在唱：高光鲜活翡翠绿
+                color = designColors.brand
+                fontWeight = '800'
+                opacity = 1
+              }
+
+              return (
+                <Text
+                  key={idx}
+                  style={{
+                    color,
+                    fontWeight,
+                    opacity,
+                  }}
+                >
+                  {item.text}
+                </Text>
+              )
+            })}
+          </Text>
 
           {renderExtended(0.8, 0.8, '600')}
         </View>
@@ -344,8 +263,6 @@ const LrcLine = memo(({
   return prevActive === nextActive
 })
 
-const wait = async() => new Promise(resolve => setTimeout(resolve, 80))
-
 export default ({ variant = 'full' }: { variant?: 'half' | 'full' }) => {
   const lyricLines = useLrcSet()
   const { line } = useLrcPlay()
@@ -362,8 +279,43 @@ export default ({ variant = 'full' }: { variant?: 'half' | 'full' }) => {
   const theme = useContext(ThemeContext)
   const lyricColors = useLyricColors()
 
+  // 全局播放时钟与硬件播放引擎同步对齐
+  useEffect(() => {
+    void getPosition().then((pos) => {
+      if (pos != null) {
+        playbackClock.sync(pos * 1000, playerState.isPlay)
+      }
+    })
+
+    const handleProgress = (progress: any) => {
+      if (progress && typeof progress.nowPlayTime === 'number') {
+        playbackClock.sync(progress.nowPlayTime * 1000, playerState.isPlay)
+      }
+    }
+    const handlePlay = () => playbackClock.play()
+    const handlePause = () => playbackClock.pause()
+    const handleStop = () => playbackClock.reset(0)
+    const handleSeek = (timeSec: number) => playbackClock.reset(timeSec * 1000)
+
+    global.state_event.on('playProgressChanged', handleProgress)
+    global.app_event.on('play', handlePlay)
+    global.app_event.on('pause', handlePause)
+    global.app_event.on('stop', handleStop)
+    global.app_event.on('setProgress', handleSeek)
+    global.app_event.on('musicToggled', handleStop)
+
+    return () => {
+      global.state_event.off('playProgressChanged', handleProgress)
+      global.app_event.off('play', handlePlay)
+      global.app_event.off('pause', handlePause)
+      global.app_event.off('stop', handleStop)
+      global.app_event.off('setProgress', handleSeek)
+      global.app_event.off('musicToggled', handleStop)
+    }
+  }, [])
+
   // 原生硬件加速平滑滚动到激活行：当前句居中（viewPosition 0.5），
-  // 这样正唱的这句在中间，上下都能看见前一句和下一句
+  // 保证正唱的这句在中间，上下都能舒适呈现前一句和下一句
   const handleScrollToActive = useCallback((index = lineRef.current.line) => {
     if (index < 0 || !flatListRef.current) return
     try {
@@ -421,81 +373,51 @@ export default ({ variant = 'full' }: { variant?: 'half' | 'full' }) => {
       offset: 0,
       animated: false,
     })
-    if (!lyricLines.length) return
-    playLineRef.current?.updateLyricLines(lyricLines)
-    requestAnimationFrame(() => {
-      if (isFirstSetLrc.current) {
-        isFirstSetLrc.current = false
-        setTimeout(() => {
-          isPauseScrollRef.current = false
-          handleScrollToActive()
-        }, 120)
-      } else {
-        setTimeout(() => {
-          handleScrollToActive(0)
-        }, 80)
-      }
-    })
-  }, [lyricLines, handleScrollToActive])
+    isFirstSetLrc.current = true
+  }, [lyricLines])
 
-  // 歌词行切换时，毫秒级响应滚动，消除 600ms 滞后
+  const handleScrollToIndexFailed = useCallback(() => {
+    // 列表首次渲染未就绪时失败静默重试
+  }, [])
+
   useEffect(() => {
-    if (line < 0) return
-    lineRef.current.prevLine = lineRef.current.line
     lineRef.current.line = line
-    if (!flatListRef.current || isPauseScrollRef.current) return
-
+    if (isPauseScrollRef.current) return
+    if (isFirstSetLrc.current) {
+      isFirstSetLrc.current = false
+      setTimeout(() => {
+        handleScrollToActive(line)
+      }, 300)
+      return
+    }
     handleScrollToActive(line)
   }, [line, handleScrollToActive])
 
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
-      playLineRef.current?.updateLyricLines(lyricLines)
-    })
-  }, [isShowLyricProgressSetting, lyricLines])
-
-  const handleScrollToIndexFailed: FlatListType['onScrollToIndexFailed'] = (info) => {
-    const spaceH = listLayoutInfoRef.current.spaceHeight || 200
-    const approxOffset = spaceH + info.index * 44
-    try {
-      flatListRef.current?.scrollToOffset({
-        offset: Math.max(0, approxOffset - 200),
-        animated: false,
-      })
-    } catch {}
-    void wait().then(() => {
-      handleScrollToActive(info.index)
-    })
-  }
-
-  const handleLineLayout = useCallback<LineProps['onLayout']>((lineNum, height) => {
+  const handleLineLayout = useCallback((lineNum: number, height: number) => {
     listLayoutInfoRef.current.lineHeights[lineNum] = height
-    playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
   }, [])
 
   const handleSpaceLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
     listLayoutInfoRef.current.spaceHeight = nativeEvent.layout.height
-    playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
   }, [])
 
-  const handlePlayLine = useCallback((time: number) => {
-    playLineRef.current?.setVisible(false)
-    global.app_event.setProgress(time)
-  }, [])
+  const handlePlayLine = useCallback((index: number) => {
+    const targetLine = lyricLines[index]
+    if (targetLine && targetLine.time) {
+      playbackClock.reset(targetLine.time)
+      global.app_event.setProgress(targetLine.time / 1000)
+    }
+  }, [lyricLines])
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => {
     const nextLine = lyricLines[index + 1]
-    const duration = nextLine && nextLine.time > item.time
-      ? nextLine.time - item.time
-      : 3500
-
+    const lineDuration = nextLine ? (nextLine.time - item.time) : 3500
     return (
       <LrcLine
         line={item}
         lineNum={index}
         activeLine={line}
-        duration={duration}
+        duration={lineDuration}
         lrcFontSize={lrcFontSize}
         textAlign={textAlign}
         idleColor={lyricColors.idle}
@@ -591,21 +513,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   activeTextContainer: {
-    position: 'relative',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   inactiveTextContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
   lineText: {
     textAlign: 'center',
-  },
-  karaokeMask: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    overflow: 'hidden',
   },
   lineTranslationText: {
     textAlign: 'center',

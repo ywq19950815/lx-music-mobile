@@ -6,12 +6,11 @@ import {
   type LayoutChangeEvent,
   type NativeSyntheticEvent,
   type NativeScrollEvent,
-  Animated,
-  Easing,
   StyleSheet,
 } from 'react-native'
-import { type Line, useLrcPlay, useLrcSet } from '@/plugins/lyric'
+import { type Line, useLrcPlay, useLrcSet, playbackClock } from '@/plugins/lyric'
 import { useSettingValue } from '@/store/setting/hook'
+import { useIsPlay } from '@/store/player/hook'
 import Text from '@/components/common/Text'
 import { useStatusText } from '@/store/player/hook'
 import { setSpText } from '@/utils/pixelRatio'
@@ -31,6 +30,12 @@ interface LineProps {
   onLayout: (lineNum: number, height: number, width: number) => void
 }
 
+interface CharUnit {
+  text: string
+  startTime: number
+  endTime: number
+}
+
 const LrcLine = memo(({
   line,
   lineNum,
@@ -41,42 +46,55 @@ const LrcLine = memo(({
   onLayout,
 }: LineProps) => {
   const active = activeLine === lineNum
+  const isPlay = useIsPlay()
   const baseSize = lrcFontSize / 10
-  const size = active ? baseSize * 1.15 : baseSize
-  const lineHeight = setSpText(size) * 1.35
+  const size = active ? baseSize * 1.25 : baseSize * 0.85
+  const lineHeight = setSpText(size) * 1.4
 
-  const progressAnim = useRef(new Animated.Value(active ? 1 : 0)).current
-  const [lineWidth, setLineWidth] = useState<number | null>(null)
+  const charUnits = useMemo<CharUnit[]>(() => {
+    if (line.words && line.words.length > 0) {
+      return line.words.map((w) => {
+        const start = w.startTime
+        const dur = Math.max(30, w.duration || 200)
+        return {
+          text: w.text,
+          startTime: start,
+          endTime: start + dur,
+        }
+      })
+    }
+
+    const fullText = line.text || ''
+    if (!fullText) return []
+    const chars = Array.from(fullText)
+    const lineDur = Math.max(600, Math.min(duration || 3200, 15000))
+    const charDur = lineDur / Math.max(1, chars.length)
+    return chars.map((char, index) => ({
+      text: char,
+      startTime: line.time + index * charDur,
+      endTime: line.time + (index + 1) * charDur,
+    }))
+  }, [line.words, line.text, line.time, duration])
+
+  const [curTime, setCurTime] = useState(() => playbackClock.getTime())
 
   useEffect(() => {
-    if (active) {
-      progressAnim.setValue(0)
-      const animDuration = Math.max(800, Math.min(duration || 3500, 9000))
-      Animated.timing(progressAnim, {
-        toValue: 1,
-        duration: animDuration,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-        useNativeDriver: false,
-      }).start()
-    } else {
-      progressAnim.setValue(0)
+    if (!active) return
+    setCurTime(playbackClock.getTime())
+    if (!isPlay) return
+
+    const timer = setInterval(() => {
+      setCurTime(playbackClock.getTime())
+    }, 33)
+
+    return () => {
+      clearInterval(timer)
     }
-  }, [active, duration, progressAnim])
+  }, [active, isPlay])
 
   const handleLayout = ({ nativeEvent }: LayoutChangeEvent) => {
     onLayout(lineNum, nativeEvent.layout.height, nativeEvent.layout.width)
   }
-
-  const handleTextLayout = ({ nativeEvent }: LayoutChangeEvent) => {
-    if (nativeEvent.layout.width > 0 && nativeEvent.layout.width !== lineWidth) {
-      setLineWidth(nativeEvent.layout.width)
-    }
-  }
-
-  const progressWidth = progressAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  })
 
   return (
     <View
@@ -92,39 +110,42 @@ const LrcLine = memo(({
                 textAlign,
                 lineHeight,
                 fontSize: size,
-                fontWeight: '700',
-                color: 'rgba(255, 255, 255, 0.35)',
               },
             ]}
-            onLayout={handleTextLayout}
             textBreakStrategy="simple"
           >
-            {line.text}
-          </Text>
+            {charUnits.map((item, idx) => {
+              const isPast = curTime >= item.endTime
+              const isCurrent = curTime >= item.startTime && curTime < item.endTime
 
-          <Animated.View
-            style={[
-              styles.karaokeMask,
-              { width: progressWidth },
-            ]}
-          >
-            <Text
-              style={[
-                styles.lineText,
-                {
-                  textAlign,
-                  lineHeight,
-                  fontSize: size,
-                  fontWeight: '700',
-                  color: designColors.brand,
-                  width: lineWidth ?? '100%',
-                },
-              ]}
-              textBreakStrategy="simple"
-            >
-              {line.text}
-            </Text>
-          </Animated.View>
+              let color = 'rgba(255, 255, 255, 0.40)'
+              let fontWeight: any = '600'
+              let opacity = 0.85
+
+              if (isPast) {
+                color = designColors.brand
+                fontWeight = '700'
+                opacity = 1
+              } else if (isCurrent) {
+                color = designColors.brand
+                fontWeight = '800'
+                opacity = 1
+              }
+
+              return (
+                <Text
+                  key={idx}
+                  style={{
+                    color,
+                    fontWeight,
+                    opacity,
+                  }}
+                >
+                  {item.text}
+                </Text>
+              )
+            })}
+          </Text>
 
           {line.extendedLyrics.map((lrc, index) => (
             <Text
@@ -136,7 +157,7 @@ const LrcLine = memo(({
                   lineHeight: lineHeight * 0.8,
                   fontSize: size * 0.8,
                   fontWeight: '600',
-                  color: 'rgba(245, 166, 35, 0.85)',
+                  color: 'rgba(255, 255, 255, 0.85)',
                 },
               ]}
               textBreakStrategy="simple"
@@ -155,7 +176,7 @@ const LrcLine = memo(({
                 lineHeight,
                 fontSize: size,
                 fontWeight: '500',
-                color: 'rgba(255, 255, 255, 0.55)',
+                color: 'rgba(255, 255, 255, 0.45)',
               },
             ]}
             textBreakStrategy="simple"
@@ -172,7 +193,7 @@ const LrcLine = memo(({
                   lineHeight: lineHeight * 0.8,
                   fontSize: size * 0.8,
                   fontWeight: '400',
-                  color: 'rgba(255, 255, 255, 0.35)',
+                  color: 'rgba(255, 255, 255, 0.30)',
                 },
               ]}
               textBreakStrategy="simple"
@@ -194,8 +215,6 @@ const LrcLine = memo(({
     (prevProps.activeLine !== prevProps.lineNum)
   )
 })
-
-const wait = async() => new Promise(resolve => setTimeout(resolve, 80))
 
 export default () => {
   const lyricLines = useLrcSet()
@@ -268,80 +287,51 @@ export default () => {
       offset: 0,
       animated: false,
     })
-    if (!lyricLines.length) return
-    playLineRef.current?.updateLyricLines(lyricLines)
-    requestAnimationFrame(() => {
-      if (isFirstSetLrc.current) {
-        isFirstSetLrc.current = false
-        setTimeout(() => {
-          isPauseScrollRef.current = false
-          handleScrollToActive()
-        }, 120)
-      } else {
-        setTimeout(() => {
-          handleScrollToActive(0)
-        }, 80)
-      }
-    })
-  }, [lyricLines, handleScrollToActive])
+    isFirstSetLrc.current = true
+  }, [lyricLines])
+
+  const handleScrollToIndexFailed = useCallback(() => {
+    // 失败重试
+  }, [])
 
   useEffect(() => {
-    if (line < 0) return
-    lineRef.current.prevLine = lineRef.current.line
     lineRef.current.line = line
-    if (!flatListRef.current || isPauseScrollRef.current) return
-
+    if (isPauseScrollRef.current) return
+    if (isFirstSetLrc.current) {
+      isFirstSetLrc.current = false
+      setTimeout(() => {
+        handleScrollToActive(line)
+      }, 300)
+      return
+    }
     handleScrollToActive(line)
   }, [line, handleScrollToActive])
 
-  useEffect(() => {
-    requestAnimationFrame(() => {
-      playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
-      playLineRef.current?.updateLyricLines(lyricLines)
-    })
-  }, [isShowLyricProgressSetting, lyricLines])
-
-  const handleScrollToIndexFailed: FlatListType['onScrollToIndexFailed'] = (info) => {
-    const spaceH = listLayoutInfoRef.current.spaceHeight || 160
-    const approxOffset = spaceH + info.index * 38
-    try {
-      flatListRef.current?.scrollToOffset({
-        offset: Math.max(0, approxOffset - 160),
-        animated: false,
-      })
-    } catch {}
-    void wait().then(() => {
-      handleScrollToActive(info.index)
-    })
-  }
-
-  const handleLineLayout = useCallback<LineProps['onLayout']>((lineNum, height) => {
+  const handleLineLayout = useCallback((lineNum: number, height: number) => {
     listLayoutInfoRef.current.lineHeights[lineNum] = height
-    playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
   }, [])
 
   const handleSpaceLayout = useCallback(({ nativeEvent }: LayoutChangeEvent) => {
     listLayoutInfoRef.current.spaceHeight = nativeEvent.layout.height
-    playLineRef.current?.updateLayoutInfo(listLayoutInfoRef.current)
   }, [])
 
-  const handlePlayLine = useCallback((time: number) => {
-    playLineRef.current?.setVisible(false)
-    global.app_event.setProgress(time)
-  }, [])
+  const handlePlayLine = useCallback((index: number) => {
+    const targetLine = lyricLines[index]
+    if (targetLine && targetLine.time) {
+      playbackClock.reset(targetLine.time)
+      global.app_event.setProgress(targetLine.time / 1000)
+    }
+  }, [lyricLines])
 
   const renderItem: FlatListType['renderItem'] = ({ item, index }) => {
     const nextLine = lyricLines[index + 1]
-    const duration = nextLine && nextLine.time > item.time
-      ? nextLine.time - item.time
-      : 3500
-
+    const lineDuration = nextLine ? (nextLine.time - item.time) : 3500
     return (
       <LrcLine
         line={item}
         lineNum={index}
         activeLine={line}
-        duration={duration}
+        duration={lineDuration}
         lrcFontSize={lrcFontSize}
         textAlign={textAlign}
         onLayout={handleLineLayout}
@@ -358,13 +348,9 @@ export default () => {
   const statusText = useStatusText()
   const emptyComponent = useMemo(() => (
     <View style={styles.emptyContainer}>
-      <View style={styles.emptyCard}>
-        <Text style={styles.emptyIcon}>🎵</Text>
-        <Text style={styles.emptyText}>
-          {playerState.musicInfo.id ? (statusText || '正在加载歌词...') : '暂无播放歌曲'}
-        </Text>
-      </View>
+      <Text style={styles.emptyText}>{playerState.musicInfo.id ? statusText : ''}</Text>
     </View>
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [statusText])
 
   return (
@@ -382,9 +368,9 @@ export default () => {
         onScrollBeginDrag={handleScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
         fadingEdgeLength={100}
-        initialNumToRender={Math.max(line + 15, 20)}
-        maxToRenderPerBatch={10}
-        windowSize={7}
+        initialNumToRender={Math.max(line + 10, 15)}
+        maxToRenderPerBatch={8}
+        windowSize={5}
         removeClippedSubviews={true}
         onScrollToIndexFailed={handleScrollToIndexFailed}
         onScroll={handleScroll}
@@ -401,52 +387,37 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   space: {
-    paddingTop: '90%',
+    paddingTop: 150,
   },
   emptyContainer: {
-    paddingTop: '35%',
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderRadius: 16,
-    paddingHorizontal: 22,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  emptyIcon: {
-    fontSize: 26,
-    marginBottom: 6,
-  },
   emptyText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    textAlign: 'center',
+    paddingTop: '20%',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   line: {
-    paddingVertical: 8,
+    paddingTop: 8,
+    paddingBottom: 8,
     alignItems: 'center',
   },
   activeLineWrapper: {
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 12,
   },
   activeTextContainer: {
-    position: 'relative',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   inactiveTextContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
   lineText: {
     textAlign: 'center',
-  },
-  karaokeMask: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    overflow: 'hidden',
   },
   lineTranslationText: {
     textAlign: 'center',

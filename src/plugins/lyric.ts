@@ -56,7 +56,8 @@ export const parseLxLrc = (lxlrc: string | null | undefined): Map<number, LyricW
 }
 
 // 为普通歌词行匹配逐字数据（时间戳容差匹配，音源生成的 lrc 与 lxlrc 行时间应一致）
-const TIME_MATCH_TOLERANCE = 20
+// 提高时间容差至 300ms，优先选择时间差最小的最佳匹配，彻底解决音源之间数十毫秒时间偏差导致逐字匹配失败的问题
+const TIME_MATCH_TOLERANCE = 300
 const matchWords = (map: Map<number, LyricWord[]>, time: number): LyricWord[] | undefined => {
   if (!map.size) return undefined
   let best: LyricWord[] | undefined
@@ -139,12 +140,69 @@ const lrcTools = {
 }
 
 
+// 权威全局单调高精度播放时钟（毫秒）
+// 彻底解决行切换、异步进度纠偏导致的时间倒流闪烁与比唱的快的问题
+class PlaybackClock {
+  baseTime = 0
+  baseStamp = 0
+  isPlay = false
+
+  sync(authoritativeTimeMs: number, playing: boolean) {
+    this.isPlay = playing
+    const now = Date.now()
+    if (!this.baseStamp) {
+      this.baseTime = authoritativeTimeMs
+      this.baseStamp = now
+      return
+    }
+    const currentEstimated = this.getTime()
+    const diff = authoritativeTimeMs - currentEstimated
+    // Seek 跳转或切歌跳跃 > 400ms，立即重置
+    if (Math.abs(diff) > 400) {
+      this.baseTime = authoritativeTimeMs
+      this.baseStamp = now
+    } else if (diff > 0) {
+      // 权威时间稍微超前，平滑前推
+      this.baseTime = authoritativeTimeMs
+      this.baseStamp = now
+    }
+    // diff <= 0 且在误差范围内时绝对不向后回拨时钟，保持单调递增，杜绝字变色闪烁倒流
+  }
+
+  getTime(): number {
+    if (!this.baseStamp || !this.isPlay) return this.baseTime
+    return this.baseTime + (Date.now() - this.baseStamp)
+  }
+
+  play(time?: number) {
+    this.isPlay = true
+    if (typeof time === 'number') this.baseTime = time
+    this.baseStamp = Date.now()
+  }
+
+  pause() {
+    if (this.isPlay) {
+      this.baseTime = this.getTime()
+      this.isPlay = false
+      this.baseStamp = 0
+    }
+  }
+
+  reset(timeMs = 0) {
+    this.baseTime = timeMs
+    this.baseStamp = Date.now()
+  }
+}
+
+export const playbackClock = new PlaybackClock()
+
 export const init = async() => {
   lrcTools.init()
 }
 
 export const setLyric = (lyric: string, translation?: string, romalrc?: string, lxlrc?: string) => {
   lrcTools.isPlay = false
+  playbackClock.reset(0)
   lrcTools.lyricText = lyric
   lrcTools.translationText = translation
   lrcTools.romaText = romalrc
@@ -167,11 +225,13 @@ export const toggleRoma = (isShow: boolean) => {
 export const play = (time: number) => {
   // console.log(time)
   lrcTools.isPlay = true
+  playbackClock.play(time)
   lrcTools.lrc!.play(time)
 }
 export const pause = () => {
   // console.log('pause')
   lrcTools.isPlay = false
+  playbackClock.pause()
   lrcTools.lrc!.pause()
 }
 
