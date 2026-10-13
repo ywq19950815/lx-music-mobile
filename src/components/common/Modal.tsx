@@ -21,6 +21,8 @@ import { useStatusbarHeight } from '@/store/common/hook'
 
 export interface ModalProps extends Omit<_ModalProps, 'visible'> {
   onHide?: () => void
+  /** 显示后的回调（ children 挂载后触发，用于播放进场动画） */
+  onShow?: () => void
   /**
    * 按返回键是否隐藏
    */
@@ -29,6 +31,10 @@ export interface ModalProps extends Omit<_ModalProps, 'visible'> {
    * 点击背景是否隐藏
    */
   bgHide?: boolean
+  /**
+   * 点击背景的自定义处理（提供时优先于 bgHide，由调用方决定是否播放退场动画）
+   */
+  onBgPress?: () => void
   /**
    * 背景颜色
    */
@@ -46,8 +52,10 @@ export interface ModalType {
 
 export default forwardRef<ModalType, ModalProps>(({
   onHide = () => {},
+  onShow,
   keyHide = true,
   bgHide = true,
+  onBgPress,
   bgColor = 'rgba(0,0,0,0)',
   statusBarPadding = true,
   children,
@@ -63,6 +71,10 @@ export default forwardRef<ModalType, ModalProps>(({
     }
   }
   const handleBgClose = () => {
+    if (onBgPress) {
+      onBgPress()
+      return
+    }
     if (bgHide) {
       setVisible(false)
       onHide()
@@ -74,6 +86,7 @@ export default forwardRef<ModalType, ModalProps>(({
       if (visible == _visible) return
       setVisible(_visible)
       if (!_visible) onHide()
+      else onShow?.()
     },
   }))
 

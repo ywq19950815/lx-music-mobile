@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
   segmentTextActive: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#10B981',
+    color: '#31C27C',
   },
 })

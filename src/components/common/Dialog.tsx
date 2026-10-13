@@ -1,13 +1,17 @@
-import { useImperativeHandle, forwardRef, useMemo, useRef } from 'react'
-import { View, TouchableOpacity, StyleSheet } from 'react-native'
+import { useImperativeHandle, forwardRef, useMemo, useRef, useState, useEffect, useCallback } from 'react'
+import { View, TouchableOpacity, StyleSheet, Animated, Easing, PanResponder } from 'react-native'
 import Modal, { type ModalType } from './Modal'
 import { Icon } from '@/components/common/Icon'
 import { useKeyboard } from '@/utils/hooks'
+import { useWindowSize } from '@/utils/hooks'
 import { useNavigationBarHeight } from '@/store/common/hook'
 import Text from './Text'
-import { colors, radius } from '@/theme/tokens'
+import { colors, radius, motion } from '@/theme/tokens'
 
 const HEADER_HEIGHT = 46
+/** 下拉关闭阈值：位移超过 96dp 或速度够快即关闭 */
+const CLOSE_DISTANCE = 96
+const CLOSE_VELOCITY = 0.5
 
 export interface DialogProps {
   onHide?: () => void
@@ -39,14 +43,107 @@ export default forwardRef<DialogType, DialogProps>(({
 }: DialogProps, ref) => {
   const { keyboardShown, keyboardHeight } = useKeyboard()
   const navigationBarHeight = useNavigationBarHeight()
+  const { height: winHeight } = useWindowSize()
   const modalRef = useRef<ModalType>(null)
   const isDark = theme === 'dark'
+  const isBottom = position === 'bottom'
+
+  // ── 显隐状态（与内部 Modal 同步，用于驱动进出场动画）────────────
+  const [show, setShow] = useState(false)
+  const hidingRef = useRef(false)
+
+  // ── 进出场动画值 ───────────────────────────────
+  const translateY = useRef(new Animated.Value(winHeight)).current
+  const scale = useRef(new Animated.Value(0.96)).current
+  const dragY = useRef(new Animated.Value(0)).current
+
+  // 进场：底部抽屉自屏幕外弹簧上滑；居中弹窗轻微放大
+  useEffect(() => {
+    if (!show) return
+    if (isBottom) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.bezier(0.2, 0.9, 0.3, 1),
+        useNativeDriver: true,
+      }).start()
+    } else {
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: motion.spring.friction,
+        tension: motion.spring.tension,
+        useNativeDriver: true,
+      }).start()
+    }
+  }, [show, isBottom, translateY, scale])
+
+  const hide = useCallback(() => {
+    if (hidingRef.current) return
+    hidingRef.current = true
+    const finish = () => {
+      hidingRef.current = false
+      setShow(false)
+      modalRef.current?.setVisible(false)
+    }
+    if (isBottom) {
+      // 退场：跟手下落感（加速曲线）后卸载
+      Animated.timing(translateY, {
+        toValue: winHeight,
+        duration: 200,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }).start(finish)
+    } else {
+      Animated.timing(scale, {
+        toValue: 0.96,
+        duration: motion.durationFast,
+        useNativeDriver: true,
+      }).start(finish)
+    }
+  }, [isBottom, translateY, scale, winHeight])
 
   useImperativeHandle(ref, () => ({
     setVisible(visible: boolean) {
-      modalRef.current?.setVisible(visible)
+      if (visible) {
+        // 重置动画基准，保证下次进场从屏幕外开始
+        hidingRef.current = false
+        dragY.setValue(0)
+        translateY.setValue(winHeight)
+        setShow(true)
+        modalRef.current?.setVisible(true)
+      } else {
+        hide()
+      }
     },
   }))
+
+  // ── 抓手区域下拉关闭手势（仅底部抽屉）────────────
+  const panResponder = useMemo(() => PanResponder.create({
+    onMoveShouldSetPanResponder: (_e, g) => isBottom && !hidingRef.current && g.dy > 4 && Math.abs(g.dy) > Math.abs(g.dx),
+    onPanResponderMove: (_e, g) => {
+      dragY.setValue(Math.max(0, g.dy))
+    },
+    onPanResponderRelease: (_e, g) => {
+      if (g.dy > CLOSE_DISTANCE || g.vy > CLOSE_VELOCITY) {
+        hide()
+      } else {
+        Animated.spring(dragY, {
+          toValue: 0,
+          friction: motion.spring.friction,
+          tension: motion.spring.tension,
+          useNativeDriver: true,
+        }).start()
+      }
+    },
+    onPanResponderTerminate: () => {
+      Animated.spring(dragY, {
+        toValue: 0,
+        friction: motion.spring.friction,
+        tension: motion.spring.tension,
+        useNativeDriver: true,
+      }).start()
+    },
+  }), [isBottom, dragY, hide])
 
   const closeBtnComponent = useMemo(() => {
     return closeBtn
@@ -54,39 +151,65 @@ export default forwardRef<DialogType, DialogProps>(({
           <TouchableOpacity
             style={[styles.closeBtn, isDark && styles.closeBtnDark]}
             activeOpacity={0.7}
-            onPress={() => modalRef.current?.setVisible(false)}
+            onPress={hide}
           >
             <Icon name="close" color={isDark ? 'rgba(255,255,255,0.7)' : colors.inkSecondary} size={13} />
           </TouchableOpacity>
         )
       : null
-  }, [closeBtn, isDark])
+  }, [closeBtn, isDark, hide])
 
-  const isBottom = position === 'bottom'
+  const cardTransform = useMemo(() => (
+    isBottom
+      ? [{ translateY: Animated.add(translateY, dragY) }]
+      : [{ scale }]
+  ), [isBottom, translateY, dragY, scale])
 
   return (
-    <Modal onHide={onHide} keyHide={keyHide} bgHide={bgHide} bgColor={isDark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(0, 0, 0, 0.45)'} ref={modalRef}>
+    <Modal
+      onHide={onHide}
+      keyHide={keyHide}
+      bgHide={false}
+      onBgPress={bgHide ? hide : undefined}
+      onRequestClose={hide}
+      bgColor={isDark ? 'rgba(0, 0, 0, 0.65)' : 'rgba(0, 0, 0, 0.45)'}
+      ref={modalRef}
+    >
       <View
         style={[
           isBottom ? styles.bottomView : styles.centeredView,
           { paddingBottom: keyboardShown ? keyboardHeight : 0 },
         ]}
       >
-        <View
+        <Animated.View
           style={[
             isBottom ? styles.bottomSheetCard : styles.centeredModalCard,
             isDark && styles.cardDark,
             height ? { height } : null,
+            { transform: cardTransform },
           ]}
           onStartShouldSetResponder={() => true}
         >
           {isBottom ? (
-            <View style={styles.handleContainer}>
+            /* 抓手 + 标题区：支持下拉关闭手势 */
+            <View style={styles.handleContainer} {...panResponder.panHandlers}>
               <View style={[styles.handleBar, isDark && styles.handleBarDark]} />
+
+              {title || closeBtn ? (
+                <View style={[styles.header, isDark && styles.headerDark]}>
+                  <View style={styles.headerTitleBox}>
+                    <View style={styles.headerDot} />
+                    <Text style={styles.title} size={15} color={isDark ? '#FFFFFF' : colors.ink} numberOfLines={1}>
+                      {title}
+                    </Text>
+                  </View>
+                  {closeBtnComponent}
+                </View>
+              ) : null}
             </View>
           ) : null}
 
-          {title || closeBtn ? (
+          {!isBottom && (title || closeBtn) ? (
             <View style={[styles.header, isDark && styles.headerDark]}>
               <View style={styles.headerTitleBox}>
                 <View style={styles.headerDot} />
@@ -106,7 +229,7 @@ export default forwardRef<DialogType, DialogProps>(({
           ]}>
             {children}
           </View>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   )

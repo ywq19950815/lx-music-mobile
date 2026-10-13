@@ -85,7 +85,7 @@ export default forwardRef<ActiveListType, ActiveListProps>(({ onShowSearchBar, o
             {currentListName}
           </Text>
           <View style={styles.switchIconBox}>
-            <Icon name="menu-down" size={16} color="#94A3B8" />
+            <Icon name="chevron-right" size={13} color="#94A3B8" style={styles.switchIcon} />
           </View>
         </TouchableOpacity>
       </View>
@@ -148,6 +148,9 @@ const styles = StyleSheet.create({
     marginLeft: 2,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  switchIcon: {
+    transform: [{ rotate: '90deg' }],
   },
   searchBtn: {
     width: 34,

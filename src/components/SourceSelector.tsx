@@ -86,10 +86,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   arrowIcon: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: colors.inkSecondary,
     marginLeft: 3,
+    transform: [{ rotate: '90deg' }],
   },
   // 底部抽屉遮罩
   mask: {
@@ -305,7 +303,8 @@ const Component = <S extends Sources>(
         <Text style={styles.sourceMenuText} numberOfLines={1} size={fontSize}>
           {currentLabel}
         </Text>
-        <Text style={styles.arrowIcon}>▾</Text>
+        {/* 图标字体无下拉箭头，用右向箭头旋转 90° 表达展开方向 */}
+        <Icon name="chevron-right" size={10} color={colors.inkSecondary} style={styles.arrowIcon} />
       </TouchableOpacity>
 
       {/* 新粗野主义底部音源选择抽屉 */}
@@ -379,7 +378,7 @@ const Component = <S extends Sources>(
                           </View>
                           {isActive && (
                             <View style={styles.checkBadge}>
-                              <Icon name="check" size={12} color="#FFFFFF" />
+                              <Icon name="checkbox-marked" size={12} color="#FFFFFF" />
                             </View>
                           )}
                         </TouchableOpacity>

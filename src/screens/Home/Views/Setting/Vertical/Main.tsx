@@ -19,7 +19,7 @@ import SwipeBackView from '@/components/common/SwipeBackView'
 
 // 各分类的菜单图标与主题色（QQ 音乐柔和配色规范）
 const CATEGORY_META: Record<SettingScreenIds, { icon: string, color: string }> = {
-  basic: { icon: 'setting', color: '#10B981' },
+  basic: { icon: 'setting', color: '#31C27C' },
   player: { icon: 'play', color: colors.brand },
   lyric_desktop: { icon: 'lyric-on', color: '#8B5CF6' },
   list: { icon: 'list-order', color: '#EC4899' },
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     height: '100%',
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#F8FAFC',
   },
   // ── 一体化顶栏 ─────────────────────────────
   navBar: {
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 14,
-    backgroundColor: '#F7F8FA',
+    backgroundColor: '#F8FAFC',
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: 'rgba(0, 0, 0, 0.05)',
   },

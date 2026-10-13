@@ -43,7 +43,7 @@ export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemPr
     >
       <View style={[styles.badgeIconWrap, active ? styles.badgeIconWrapActive : styles.badgeIconWrapInactive]}>
         <Icon
-          name="trophy"
+          name="leaderboard"
           size={13}
           color={active ? '#FFFFFF' : '#8A92A0'}
         />
@@ -59,7 +59,7 @@ export default ({ item, activeId, index, onBoundChange, onShowMenu }: ListItemPr
       </View>
       {active && (
         <View style={styles.activeCheckWrap}>
-          <Icon name="check" size={12} color="#10B981" />
+          <Icon name="checkbox-marked" size={12} color="#31C27C" />
         </View>
       )}
     </Button>
@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   cardActive: {
     backgroundColor: 'rgba(49, 194, 124, 0.08)',
     borderWidth: 1.5,
-    borderColor: '#10B981',
+    borderColor: '#31C27C',
   },
   cardInactive: {
     backgroundColor: '#F8FAFC',
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   badgeIconWrapActive: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#31C27C',
   },
   badgeIconWrapInactive: {
     backgroundColor: '#FFFFFF',

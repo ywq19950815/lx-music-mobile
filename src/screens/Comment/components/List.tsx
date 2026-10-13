@@ -9,6 +9,8 @@ import { useNavigationBarHeight } from '@/store/common/hook'
 import { type Comment } from '../utils'
 import { useI18n } from '@/lang'
 import Text from '@/components/common/Text'
+import { Icon } from '@/components/common/Icon'
+import { colors, radius } from '@/theme/tokens'
 
 type FlatListType = FlatListProps<Comment>
 
@@ -138,12 +140,14 @@ const Footer = ({ label, onLoadMore }: {
 }
 
 const EmptyState = ({ status }: { status: Status }) => {
-  const theme = useTheme()
   if (status === 'loading' || status === 'refreshing') return null
   return (
     <View style={styles.empty}>
-      <Text style={styles.emptyTitle} color={theme['c-font']}>还没有评论</Text>
-      <Text style={styles.emptySub} color={theme['c-font-label']}>这首歌还没有人评论，快来抢沙发～</Text>
+      <View style={styles.emptyIconCircle}>
+        <Icon name="comment" size={30} color={colors.inkTertiary} />
+      </View>
+      <Text style={styles.emptyTitle} color={colors.ink}>还没有评论</Text>
+      <Text style={styles.emptySub} color={colors.inkTertiary}>这首歌还没有人评论，快来抢沙发～</Text>
     </View>
   )
 }
@@ -168,6 +172,15 @@ const styles = createStyle({
     justifyContent: 'center',
     paddingTop: 80,
     paddingBottom: 80,
+  },
+  emptyIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.muted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 16,

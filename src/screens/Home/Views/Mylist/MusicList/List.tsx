@@ -1,6 +1,6 @@
 import { playList } from '@/core/player/player'
-import { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react'
-import { FlatList, View, TouchableOpacity, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps } from 'react-native'
+import { useMemo, useRef, useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react'
+import { FlatList, View, TouchableOpacity, RefreshControl, StyleSheet, type NativeScrollEvent, type NativeSyntheticEvent, type FlatListProps } from 'react-native'
 
 import listState from '@/store/list/state'
 import playerState from '@/store/player/state'
@@ -15,6 +15,7 @@ import { useActiveListId } from '@/store/list/hook'
 import { useSettingValue } from '@/store/setting/hook'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
+import ListError from '@/components/common/ListError'
 import { colors } from '@/theme/tokens'
 import { LIST_IDS } from '@/config/constant'
 import { scaleSizeH } from '@/utils/pixelRatio'
@@ -65,6 +66,23 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
   const rowInfo = useRef(getRowInfo())
   const isShowAlbumName = useSettingValue('list.isShowAlbumName')
   const isShowInterval = useSettingValue('list.isShowInterval')
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState(false)
+
+  // 下拉刷新：重新拉取当前列表数据，弱网失败时进入错误态可重试
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true)
+    const id = listState.activeListId
+    void getListMusics(id).then((list) => {
+      if (currentListIdRef.current != id) return
+      setError(false)
+      setList([...list])
+    }).catch(() => {
+      setError(true)
+    }).finally(() => {
+      setRefreshing(false)
+    })
+  }, [])
 
   useImperativeHandle(ref, () => ({
     setIsMultiSelectMode(mode) {
@@ -116,6 +134,7 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       void Promise.all([getListMusics(id), getListPosition(id)]).then(([list, position]) => {
         requestAnimationFrame(() => {
           if (currentListIdRef.current != id) return
+          setError(false)
           selectedListRef.current = []
           setSelectedList([])
           setList([...list])
@@ -134,6 +153,9 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
             flatListRef.current?.scrollToOffset({ offset: position, animated: false })
           })
         })
+      }).catch(() => {
+        if (currentListIdRef.current != id) return
+        setError(true)
       })
     }
     const handleChange = (ids: string[]) => {
@@ -278,15 +300,16 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Icon name="checkbox" size={15} color="#64748B" />
+          <Icon name="checkbox-blank-outline" size={15} color="#64748B" />
           <Text style={styles.multiSelectText}>多选</Text>
         </TouchableOpacity>
       </View>
     )
   }
 
-  // QQ音乐质感空状态引导
+  // QQ音乐质感空状态引导（加载失败时优先展示可重试的错误态）
   const renderEmpty = () => {
+    if (error) return <ListError onRetry={handleRefresh} />
     const isLove = listState.activeListId === LIST_IDS.LOVE
     const isTemp = listState.activeListId === LIST_IDS.TEMP || listState.activeListId === LIST_IDS.DEFAULT
     return (
@@ -295,7 +318,7 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
           <Icon
             name={isLove ? 'love' : isTemp ? 'history' : 'logo'}
             size={32}
-            color={isLove ? '#EF4444' : colors.brand}
+            color={isLove ? '#FA5151' : colors.brand}
           />
         </View>
         <Text style={styles.emptyTitle}>
@@ -357,6 +380,15 @@ const List = forwardRef<ListType, ListProps>(({ onShowMenu, onMuiltSelectMode, o
       keyExtractor={getkey}
       extraData={`${activeIndex}_${isMultiSelectMode}_${selectedList.length}`}
       getItemLayout={getItemLayout}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.brand]}
+          tintColor={colors.brand}
+          progressBackgroundColor="#FFFFFF"
+        />
+      }
     />
   )
 })
@@ -441,7 +473,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyIconLove: {
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    backgroundColor: 'rgba(250, 81, 81, 0.1)',
   },
   emptyTitle: {
     fontSize: 16,

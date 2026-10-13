@@ -245,8 +245,8 @@ export default forwardRef<TimeoutExitEditModalType, TimeoutExitEditModalProps>((
             style={[
               styles.cancelTimerBtn,
               {
-                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.16)' : '#FEF2F2',
-                borderColor: isDark ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)',
+                backgroundColor: isDark ? 'rgba(250, 81, 81, 0.16)' : '#FEF2F2',
+                borderColor: isDark ? 'rgba(250, 81, 81, 0.3)' : 'rgba(250, 81, 81, 0.2)',
               },
             ]}
             onPress={handleCancelTimer}
@@ -353,6 +353,6 @@ const styles = StyleSheet.create({
   cancelTimerText: {
     fontSize: 13.5,
     fontWeight: '600',
-    color: '#EF4444',
+    color: '#FA5151',
   },
 })

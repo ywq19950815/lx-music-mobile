@@ -127,19 +127,43 @@ const LrcLine = memo(({
 
   // 激活行高频平滑时钟驱动（~30fps）
   const [curTime, setCurTime] = useState(() => playbackClock.getTime())
+  const charUnitsRef = useRef(charUnits)
+  const lastIdxRef = useRef(-2)
+
+  useEffect(() => {
+    charUnitsRef.current = charUnits
+  }, [charUnits])
 
   useEffect(() => {
     if (!active) return
 
     // 立即更新一次当前权威时钟
     setCurTime(playbackClock.getTime())
+    lastIdxRef.current = -2
 
     if (!isPlay) return
 
-    // ~30fps 极致丝滑向前推进，平滑点亮字符
-    const timer = setInterval(() => {
-      setCurTime(playbackClock.getTime())
-    }, 33)
+    // ~30fps 轮询权威时钟，但仅在「激活字索引发生变化」时才 setState：
+    // 视觉状态只取决于每个字是 未唱/在唱/已唱，字索引不变时重渲染毫无意义。
+    // 这样把每行 30 次/秒的重渲染降到每字 1 次（约 5~8 次/秒），
+    // 长句低端机掉帧与字重切换抖动问题随之消失，观感完全一致。
+    const tick = () => {
+      const t = playbackClock.getTime()
+      const units = charUnitsRef.current
+      let idx = -1
+      for (let i = 0; i < units.length; i++) {
+        if (t < units[i].startTime) break
+        if (t < units[i].endTime) {
+          idx = i
+          break
+        }
+      }
+      if (idx !== lastIdxRef.current) {
+        lastIdxRef.current = idx
+        setCurTime(t)
+      }
+    }
+    const timer = setInterval(tick, 33)
 
     return () => {
       clearInterval(timer)

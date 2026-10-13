@@ -44,8 +44,8 @@ export default memo(() => {
 
   const tips = useMemo(() => [
     { key: 'free', icon: 'love', color: colors.brand, title: t('about_tip_free_title'), desc: t('about_tip_free_desc') },
-    { key: 'noad', icon: 'thumbs-up', color: '#3B82F6', title: t('about_tip_no_ad_title'), desc: t('about_tip_no_ad_desc') },
-    { key: 'beware', icon: 'help', color: '#F97316', title: t('about_tip_beware_title'), desc: t('about_tip_beware_desc') },
+    { key: 'noad', icon: 'thumbs-up', color: colors.inkSecondary, title: t('about_tip_no_ad_title'), desc: t('about_tip_no_ad_desc') },
+    { key: 'beware', icon: 'help', color: colors.inkTertiary, title: t('about_tip_beware_title'), desc: t('about_tip_beware_desc') },
   ], [t])
 
   return (
@@ -53,7 +53,7 @@ export default memo(() => {
       {/* 品牌卡：应用名 + 版本 + 定位语 */}
       <View style={styles.brandCard}>
         <View style={styles.brandMark}>
-          <Text style={styles.brandMarkText}>♪</Text>
+          <Icon name="logo" size={22} color="#FFFFFF" />
         </View>
         <View style={styles.brandInfo}>
           <Text style={styles.brandName}>安迪音乐 (Andy Music)</Text>
@@ -125,11 +125,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 5,
     elevation: 2,
-  },
-  brandMarkText: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#FFFFFF',
   },
   brandInfo: {
     flexGrow: 1,

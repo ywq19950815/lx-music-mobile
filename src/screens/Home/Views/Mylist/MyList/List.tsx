@@ -183,8 +183,8 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   cardActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.08)',
-    borderColor: 'rgba(245, 166, 35, 0.35)',
+    backgroundColor: 'rgba(49, 194, 124, 0.08)',
+    borderColor: 'rgba(49, 194, 124, 0.35)',
   },
   cardDefault: {
     backgroundColor: colors.surface,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   listNameActive: {
-    color: '#B36B00',
+    color: '#1B8A57',
     fontWeight: '700',
   },
   listNameDefault: {

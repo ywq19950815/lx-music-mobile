@@ -141,28 +141,30 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
             backgroundColor: 'transparent',
           },
           layout: {
-            componentBackgroundColor: theme['c-content-background'],
+            // 与播放页根视图同色（colors.canvas），消除入场时的白雾闪烁
+            componentBackgroundColor: '#F8FAFC',
           },
           popGesture: true,
           animations: {
             push: skipAnimation ? {} : {
-              // QQ 音乐式入场：整页自底部胶囊平滑弹升展开，浑然一体无撕裂
-              content: {
-                translationY: {
-                  from: windowSizeTools.getSize().height,
-                  to: 0,
-                  duration: 320,
-                  interpolation: { type: 'decelerate' },
+              // QQ 音乐式开场：迷你播放条封面共享元素生长为黑胶唱盘，其余内容淡入
+              sharedElementTransitions: [
+                {
+                  fromId: 'playDetail_pic',
+                  toId: 'playDetail_pic',
+                  interpolation: { type: 'spring' },
                 },
+              ],
+              content: {
                 alpha: {
-                  from: 0.75,
+                  from: 0,
                   to: 1,
                   duration: 260,
                 },
               },
             },
             pop: {
-              // 下滑退出：与入场对称，优雅回落到底部胶囊
+              // 与下拉关闭同向：优雅落回底部（手势关闭时由 JS 接管，见 Vertical/index.tsx）
               content: {
                 translationY: {
                   from: 0,
@@ -172,7 +174,7 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
                 },
                 alpha: {
                   from: 1,
-                  to: 0.75,
+                  to: 0.9,
                   duration: 240,
                 },
               },

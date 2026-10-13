@@ -109,7 +109,7 @@ export default memo(({
             {isMultiSelectMode ? (
               <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
                 {isSelected ? (
-                  <Icon name="check" size={12} color="#FFFFFF" />
+                  <Icon name="checkbox-marked" size={12} color="#FFFFFF" />
                 ) : null}
               </View>
             ) : active ? (

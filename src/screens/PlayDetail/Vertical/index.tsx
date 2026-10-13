@@ -74,37 +74,47 @@ export default memo(({ componentId }: { componentId: string }) => {
   const gestureMode = useRef<'vertical' | 'horizontal' | null>(null)
   const isClosingRef = useRef(false)
 
+  /**
+   * 关闭播放页。
+   * 关键：下拉/侧滑的滑出由 JS 动画负责（页面跟手到屏幕外），
+   * 因此 pop 必须合并一个 1ms 无位移的 exit 动画，避免原生 pop 再播一次
+   * 滑出造成「先滑走→闪回→再滑一次」的双段动画（mergeOptions 见 navigation/utils.ts）。
+   */
   const handleClose = useCallback(() => {
     const compId = componentId ?? commonState.componentIds.playDetail
-    if (compId) void pop(compId)
+    if (compId) {
+      void pop(compId, {
+        animations: {
+          pop: {
+            content: {
+              translationY: { from: winHeight, to: winHeight, duration: 1 },
+              alpha: { from: 1, to: 1, duration: 1 },
+            },
+          },
+        },
+      })
+    }
     global.app_event?.closePlayDetail?.()
     if ((globalThis as any).__lxTogglePlayDetail) {
       (globalThis as any).__lxTogglePlayDetail(false)
     }
-  }, [componentId])
+  }, [componentId, winHeight])
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponderCapture: (_e, g) => {
+      // 注意：不要用 onMoveShouldSetPanResponderCapture——那会在捕获阶段
+      // 抢走歌词 FlatList 的滚动与 PagerView 的翻页手势。
+      // 这里只用非捕获的 onMoveShouldSetPanResponder：子组件（列表/翻页）
+      // 先拒绝后，父级才接管；歌词列表在顶部继续下拉时列表无法滚动，
+      // 手势自然落到整页拖拽，与 QQ音乐的交互一致。
+      onMoveShouldSetPanResponder: (_e, g) => {
         if (g.numberActiveTouches !== 1 || isClosingRef.current) return false
-        // 1. 下拉关闭手势
+        // 1. 下拉关闭手势（纵向主导）
         if (g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5) {
           gestureMode.current = 'vertical'
           return true
         }
         // 2. 左边缘向右侧滑关闭手势（左侧 70dp 内触摸起步）
-        if (g.x0 <= 70 && g.dx > 10 && g.dx > Math.abs(g.dy) * 1.5) {
-          gestureMode.current = 'horizontal'
-          return true
-        }
-        return false
-      },
-      onMoveShouldSetPanResponder: (_e, g) => {
-        if (g.numberActiveTouches !== 1 || isClosingRef.current) return false
-        if (g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx) * 1.5) {
-          gestureMode.current = 'vertical'
-          return true
-        }
         if (g.x0 <= 70 && g.dx > 10 && g.dx > Math.abs(g.dy) * 1.5) {
           gestureMode.current = 'horizontal'
           return true
@@ -122,14 +132,13 @@ export default memo(({ componentId }: { componentId: string }) => {
         if (gestureMode.current === 'vertical') {
           if (g.dy > 110 || g.vy > 0.6) {
             isClosingRef.current = true
+            // 页面跟手滑出到屏幕外后直接无动画出栈，单段干净动画
             Animated.timing(panY, {
               toValue: winHeight,
               duration: 200,
               useNativeDriver: true,
             }).start(() => {
               handleClose()
-              panY.setValue(0)
-              isClosingRef.current = false
             })
           } else {
             Animated.spring(panY, {
@@ -149,14 +158,12 @@ export default memo(({ componentId }: { componentId: string }) => {
               useNativeDriver: true,
             }).start(() => {
               handleClose()
-              panX.setValue(0)
-              isClosingRef.current = false
             })
           } else {
             Animated.spring(panX, {
               toValue: 0,
-              friction: 8,
-              tension: 40,
+              friction: motion.spring.friction,
+              tension: motion.spring.tension,
               useNativeDriver: true,
             }).start()
           }
@@ -174,8 +181,8 @@ export default memo(({ componentId }: { componentId: string }) => {
         } else if (gestureMode.current === 'horizontal') {
           Animated.spring(panX, {
             toValue: 0,
-            friction: 8,
-            tension: 40,
+            friction: motion.spring.friction,
+            tension: motion.spring.tension,
             useNativeDriver: true,
           }).start()
         }
@@ -207,7 +214,8 @@ export default memo(({ componentId }: { componentId: string }) => {
         >
           {/* ── Page 0：黑胶唱机 + 同屏伴随歌词 ── */}
           <View key="page_pic" style={styles.pageWrap}>
-            <View style={[styles.picArea, { height: picAreaHeight }]} {...panResponder.panHandlers}>
+            {/* 手势统一由根视图处理（非捕获），此处不再重复挂载 */}
+            <View style={[styles.picArea, { height: picAreaHeight }]}>
               <Pic componentId={componentId} />
             </View>
 

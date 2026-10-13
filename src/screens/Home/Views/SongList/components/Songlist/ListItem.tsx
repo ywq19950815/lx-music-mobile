@@ -1,17 +1,18 @@
 import { memo } from 'react'
-import { View, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 import { type ListInfoItem } from '@/store/songlist/state'
 import Text from '@/components/common/Text'
 import { scaleSizeW } from '@/utils/pixelRatio'
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant'
 import Image from '@/components/common/Image'
+import PressableScale from '@/components/common/PressableScale'
 import { colors } from '@/theme/tokens'
 
 // 卡片左右单侧外边距（两张卡片之间的间距为 gap * 2）
 const gap = scaleSizeW(6)
 
 /**
- * 歌单封面卡片：现代柔和微阴影设计。
+ * 歌单封面卡片：现代柔和微阴影设计，整卡统一弹簧按压反馈。
  */
 export default memo(({ item, index, showSource, onPress }: {
   item: ListInfoItem
@@ -24,14 +25,10 @@ export default memo(({ item, index, showSource, onPress }: {
   }
 
   return item.source ? (
-    <View style={styles.listItem}>
+    <PressableScale style={styles.listItem} scaleTo={0.96} onPress={handlePress}>
       {/* 封面区域：圆角微浮雕阴影 */}
       <View style={styles.coverWrapper}>
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={handlePress}
-          style={styles.coverFront}
-        >
+        <View style={styles.coverFront}>
           <Image
             url={item.img}
             nativeID={`${NAV_SHEAR_NATIVE_IDS.songlistDetail_pic}_from_${item.id}`}
@@ -46,16 +43,16 @@ export default memo(({ item, index, showSource, onPress }: {
               </Text>
             </View>
           ) : null}
-        </TouchableOpacity>
+        </View>
       </View>
 
       {/* 歌单标题 */}
-      <TouchableOpacity activeOpacity={0.7} onPress={handlePress} style={styles.titleWrap}>
+      <View style={styles.titleWrap}>
         <Text style={styles.listItemTitle} numberOfLines={2}>
           {item.name}
         </Text>
-      </TouchableOpacity>
-    </View>
+      </View>
+    </PressableScale>
   ) : (
     <View style={styles.listItem} />
   )
@@ -73,7 +70,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   coverFront: {
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',
     shadowColor: '#171A1F',
@@ -85,7 +82,7 @@ const styles = StyleSheet.create({
   cover: {
     width: '100%',
     aspectRatio: 1,
-    borderRadius: 10,
+    borderRadius: 12,
   },
   sourceBadge: {
     position: 'absolute',

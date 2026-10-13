@@ -33,7 +33,7 @@ export default ({ listInfo, onPress, musicInfo }: {
         <Icon
           name={isLove ? 'love' : 'logo'}
           size={18}
-          color={isLove ? '#EF4444' : colors.brand}
+          color={isLove ? '#FA5151' : colors.brand}
         />
       </View>
       <View style={styles.infoBox}>

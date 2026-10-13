@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import { View, TouchableOpacity } from 'react-native'
 import Text from '@/components/common/Text'
+import { Icon } from '@/components/common/Icon'
 import { useI18n } from '@/lang'
 import { colors, radius } from '@/theme/tokens'
 import { createStyle } from '@/utils/tools'
@@ -15,7 +16,7 @@ export default memo(({ onRetry }: { onRetry: () => void }) => {
   return (
     <View style={styles.box}>
       <View style={styles.iconCircle}>
-        <Text style={styles.iconEmoji}>😥</Text>
+        <Icon name="help" size={30} color={colors.inkTertiary} />
       </View>
       <Text style={styles.title}>{t('list_error')}</Text>
       <Text style={styles.subtitle}>{t('list_error_hint')}</Text>
@@ -41,10 +42,6 @@ const styles = createStyle({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  iconEmoji: {
-    fontSize: 32,
-    lineHeight: 38,
   },
   title: {
     fontSize: 15,

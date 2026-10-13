@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   qualityBadge: {
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
     borderRadius: 4,
     paddingHorizontal: 4,
     paddingVertical: 1,
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   qualityBadgeText: {
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#059669',
+    color: '#29AE6D',
   },
   closeBtn: {
     width: 26,

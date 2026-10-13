@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   sourceBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#10B981',
+    color: '#31C27C',
   },
   cardContainer: {
     marginHorizontal: 12,

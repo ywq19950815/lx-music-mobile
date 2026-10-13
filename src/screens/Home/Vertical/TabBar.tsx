@@ -149,9 +149,9 @@ const MiniPlayerCard = ({ onOpenList }: { onOpenList: () => void }) => {
   return (
     <View style={styles.miniRow} pointerEvents="box-none">
       <TouchableOpacity style={styles.miniCard} activeOpacity={0.92} onPress={handleOpenPlayDetail}>
-        {/* 左侧曜黑旋转黑胶唱盘 */}
+        {/* 左侧曜黑旋转黑胶唱盘（nativeID 供共享元素转场：胶囊封面 → 全屏黑胶） */}
         <View style={styles.miniCoverWrap}>
-          <Animated.View style={[styles.vinylRecord, { transform: [{ rotate: coverSpin }] }]}>
+          <Animated.View nativeID="playDetail_pic" style={[styles.vinylRecord, { transform: [{ rotate: coverSpin }] }]}>
             {musicInfo.pic ? (
               <Image source={{ uri: musicInfo.pic }} style={styles.miniCover} />
             ) : (

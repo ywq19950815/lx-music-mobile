@@ -1,4 +1,4 @@
-import { memo, useMemo, useEffect, useRef, useCallback, useState } from 'react'
+import { memo, useMemo, useEffect, useRef, useCallback, useState, useContext } from 'react'
 import {
   View,
   FlatList,
@@ -17,8 +17,23 @@ import { setSpText } from '@/utils/pixelRatio'
 import playerState from '@/store/player/state'
 import PlayLine, { type PlayLineType } from '../components/PlayLine'
 import { colors as designColors } from '@/theme/tokens'
+import { ThemeContext } from '@/store/theme/state'
 
 type FlatListType = FlatListProps<Line>
+
+// 歌词配色（与竖屏对齐）：浅色墨色底字 + 灰阶副字，深色柔和白灰
+const useLyricColors = () => {
+  const theme = useContext(ThemeContext)
+  return useMemo(() => theme.isDark ? {
+    idle: 'rgba(255, 255, 255, 0.70)',
+    inactive: 'rgba(255, 255, 255, 0.38)',
+    extended: (alpha: number) => `rgba(255, 255, 255, ${alpha})`,
+  } : {
+    idle: '#0F172A',
+    inactive: '#94A3B8',
+    extended: (alpha: number) => `rgba(15, 23, 42, ${alpha})`,
+  }, [theme.isDark])
+}
 
 interface LineProps {
   line: Line
@@ -47,6 +62,7 @@ const LrcLine = memo(({
 }: LineProps) => {
   const active = activeLine === lineNum
   const isPlay = useIsPlay()
+  const lc = useLyricColors()
   const baseSize = lrcFontSize / 10
   const size = active ? baseSize * 1.25 : baseSize * 0.85
   const lineHeight = setSpText(size) * 1.4
@@ -77,15 +93,37 @@ const LrcLine = memo(({
   }, [line.words, line.text, line.time, duration])
 
   const [curTime, setCurTime] = useState(() => playbackClock.getTime())
+  const charUnitsRef = useRef(charUnits)
+  const lastIdxRef = useRef(-2)
+
+  useEffect(() => {
+    charUnitsRef.current = charUnits
+  }, [charUnits])
 
   useEffect(() => {
     if (!active) return
     setCurTime(playbackClock.getTime())
+    lastIdxRef.current = -2
     if (!isPlay) return
 
-    const timer = setInterval(() => {
-      setCurTime(playbackClock.getTime())
-    }, 33)
+    // 仅在激活字索引变化时重渲染（与竖屏同策略），大幅降低重渲染频率
+    const tick = () => {
+      const t = playbackClock.getTime()
+      const units = charUnitsRef.current
+      let idx = -1
+      for (let i = 0; i < units.length; i++) {
+        if (t < units[i].startTime) break
+        if (t < units[i].endTime) {
+          idx = i
+          break
+        }
+      }
+      if (idx !== lastIdxRef.current) {
+        lastIdxRef.current = idx
+        setCurTime(t)
+      }
+    }
+    const timer = setInterval(tick, 33)
 
     return () => {
       clearInterval(timer)
@@ -118,7 +156,7 @@ const LrcLine = memo(({
               const isPast = curTime >= item.endTime
               const isCurrent = curTime >= item.startTime && curTime < item.endTime
 
-              let color = 'rgba(255, 255, 255, 0.40)'
+              let color = lc.inactive
               let fontWeight: any = '600'
               let opacity = 0.85
 
@@ -157,7 +195,7 @@ const LrcLine = memo(({
                   lineHeight: lineHeight * 0.8,
                   fontSize: size * 0.8,
                   fontWeight: '600',
-                  color: 'rgba(255, 255, 255, 0.85)',
+                  color: lc.extended(0.85),
                 },
               ]}
               textBreakStrategy="simple"
@@ -176,7 +214,7 @@ const LrcLine = memo(({
                 lineHeight,
                 fontSize: size,
                 fontWeight: '500',
-                color: 'rgba(255, 255, 255, 0.45)',
+                color: lc.idle,
               },
             ]}
             textBreakStrategy="simple"
@@ -193,7 +231,7 @@ const LrcLine = memo(({
                   lineHeight: lineHeight * 0.8,
                   fontSize: size * 0.8,
                   fontWeight: '400',
-                  color: 'rgba(255, 255, 255, 0.30)',
+                  color: lc.extended(0.55),
                 },
               ]}
               textBreakStrategy="simple"
@@ -397,7 +435,7 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     paddingTop: '20%',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: designColors.inkSecondary,
   },
   line: {
     paddingTop: 8,

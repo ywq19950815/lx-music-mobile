@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
     borderRadius: radius.pill,
   },
   badgeChecking: {
@@ -111,6 +111,6 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 12.5,
     fontWeight: '600',
-    color: '#059669',
+    color: '#29AE6D',
   },
 })

@@ -97,7 +97,7 @@ const styles = createStyle({
     alignItems: 'center',
   },
   listItemActive: {
-    backgroundColor: 'rgba(245, 166, 35, 0.12)',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
   },
   listItemInactive: {
     backgroundColor: 'transparent',

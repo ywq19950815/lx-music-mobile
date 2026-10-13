@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
+import PressableScale from '@/components/common/PressableScale'
 import { useMyList } from '@/store/list/hook'
 import { setActiveList } from '@/core/list'
 import { getListMusics } from '@/utils/listManage'
@@ -216,9 +217,9 @@ export default memo(({
       {/* ── 3. 快捷入口三金刚区（已移除重复设置入口） ── */}
       <View style={styles.quickGrid}>
         {/* 本地下载（真功能落地） */}
-        <TouchableOpacity
+        <PressableScale
           style={styles.quickCard}
-          activeOpacity={0.8}
+          scaleTo={0.96}
           onPress={onOpenLocalDownload}
         >
           <View style={styles.quickIconCircle}>
@@ -228,12 +229,12 @@ export default memo(({
           <Text style={styles.quickSub}>
             {localCount > 0 ? `${localCount} 首` : '离线畅听'}
           </Text>
-        </TouchableOpacity>
+        </PressableScale>
 
         {/* 最近播放 */}
-        <TouchableOpacity
+        <PressableScale
           style={styles.quickCard}
-          activeOpacity={0.8}
+          scaleTo={0.96}
           onPress={() => {
             setActiveList(LIST_IDS.DEFAULT)
             onSelectList(LIST_IDS.DEFAULT)
@@ -244,20 +245,20 @@ export default memo(({
           </View>
           <Text style={styles.quickTitle} numberOfLines={1}>最近播放</Text>
           <Text style={styles.quickSub}>{defaultCount} 首</Text>
-        </TouchableOpacity>
+        </PressableScale>
 
         {/* 我喜欢 */}
-        <TouchableOpacity
+        <PressableScale
           style={styles.quickCard}
-          activeOpacity={0.8}
+          scaleTo={0.96}
           onPress={handlePlayLove}
         >
-          <View style={[styles.quickIconCircle, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
-            <Icon name="love" size={19} color="#EF4444" />
+          <View style={[styles.quickIconCircle, { backgroundColor: 'rgba(250, 81, 81, 0.1)' }]}>
+            <Icon name="love" size={19} color="#FA5151" />
           </View>
           <Text style={styles.quickTitle} numberOfLines={1}>我喜欢</Text>
           <Text style={styles.quickSub}>{loveCount} 首</Text>
-        </TouchableOpacity>
+        </PressableScale>
       </View>
 
       {/* ── 4. 音乐资产专区（彻底重塑，布局极致协调） ─ */}
@@ -511,7 +512,7 @@ export default memo(({
                 {followSingers.map((singer) => (
                   <View key={singer.id} style={styles.singerCard}>
                     <View style={styles.singerAvatar}>
-                      <Icon name="author" size={18} color={colors.brand} />
+                      <Icon name="single" size={18} color={colors.brand} />
                     </View>
                     <View style={styles.singerInfo}>
                       <Text style={styles.singerName} numberOfLines={1}>{singer.name}</Text>
@@ -541,7 +542,7 @@ export default memo(({
             {/* 热门歌手推荐墙 */}
             <View style={styles.popularWallCard}>
               <View style={styles.popularWallHeader}>
-                <Icon name="stars" size={15} color={colors.brand} />
+                <Icon name="thumbs-up" size={15} color={colors.brand} />
                 <Text style={styles.popularWallTitle}>
                   {followSingers.length === 0 ? '推荐歌手 · 快速关注' : '探索更多热门歌手'}
                 </Text>
@@ -729,7 +730,7 @@ const styles = StyleSheet.create({
   quickCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 15,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E8ECF2',
     alignItems: 'center',
@@ -780,7 +781,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 7,
-    borderRadius: 9,
+    borderRadius: 8,
     gap: 4,
   },
   segmentedTabItemActive: {
@@ -873,7 +874,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     padding: 12,
@@ -1005,7 +1006,7 @@ const styles = StyleSheet.create({
   // 空态卡片
   emptyPlaylistCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 22,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1107,7 +1108,7 @@ const styles = StyleSheet.create({
   // 热门歌手推荐墙
   popularWallCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -1163,7 +1164,7 @@ const styles = StyleSheet.create({
   modalDialog: {
     width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

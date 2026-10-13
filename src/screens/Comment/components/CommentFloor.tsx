@@ -101,7 +101,7 @@ const CommentFloor = memo(({ comment, isLast }: {
 
 const styles = createStyle({
   container: {
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 12,
     marginTop: GAP,
     marginHorizontal: 12,

@@ -3,6 +3,7 @@ import { View, TouchableOpacity, ScrollView, StyleSheet, Animated, Easing } from
 import Text from '@/components/common/Text'
 import { Icon } from '@/components/common/Icon'
 import Image from '@/components/common/Image'
+import PressableScale from '@/components/common/PressableScale'
 import { type BoardItem } from '@/store/leaderboard/state'
 import { colors, radius } from '@/theme/tokens'
 import { getListDetail } from '@/core/leaderboard'
@@ -94,9 +95,9 @@ const ChartCard = memo(({ board, index, previews, onSelect, onPlay }: {
 }) => {
   const top1 = previews && previews !== 'error' ? previews[0] : undefined
   return (
-    <TouchableOpacity
+    <PressableScale
       style={s.chartCard}
-      activeOpacity={0.85}
+      scaleTo={0.97}
       onPress={() => onSelect(board)}
     >
       {/* 卡片头：榜单名 + 播放全部 */}
@@ -145,7 +146,7 @@ const ChartCard = memo(({ board, index, previews, onSelect, onPlay }: {
           </View>
         </View>
       </View>
-    </TouchableOpacity>
+    </PressableScale>
   )
 })
 
@@ -157,9 +158,9 @@ const SubBoardCard = memo(({ board, index, onSelect, onPlay }: {
   onPlay: (b: BoardItem) => void
 }) => {
   return (
-    <TouchableOpacity
+    <PressableScale
       style={s.subCard}
-      activeOpacity={0.8}
+      scaleTo={0.96}
       onPress={() => onSelect(board)}
     >
       <View style={s.subCardLeft}>
@@ -178,7 +179,7 @@ const SubBoardCard = memo(({ board, index, onSelect, onPlay }: {
       >
         <Icon name="play" size={10} color={colors.brand} />
       </TouchableOpacity>
-    </TouchableOpacity>
+    </PressableScale>
   )
 })
 
@@ -385,7 +386,7 @@ const s = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    backgroundColor: 'rgba(49, 194, 124, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },

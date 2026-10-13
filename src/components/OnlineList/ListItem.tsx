@@ -4,6 +4,7 @@ import Text from '@/components/common/Text'
 import Badge, { type BadgeType } from '@/components/common/Badge'
 import { Icon } from '@/components/common/Icon'
 import Image from '@/components/common/Image'
+import PressableScale from '@/components/common/PressableScale'
 import { useI18n } from '@/lang'
 import { scaleSizeH } from '@/utils/pixelRatio'
 import { LIST_ITEM_HEIGHT } from '@/config/constant'
@@ -86,17 +87,18 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
       styles.cardWrapper,
       { width: rowInfo.rowWidth, height: ITEM_HEIGHT },
     ]}>
-      {/* 现代柔和列表单行卡片 */}
-      <View style={[
-        styles.cardFront,
-        isSelected && styles.cardSelected,
-      ]}>
-        <TouchableOpacity
-          style={styles.listItemLeft}
-          activeOpacity={0.7}
-          onPress={() => { onPress(item, index) }}
-          onLongPress={() => { onLongPress(item, index) }}
-        >
+      {/* 现代柔和列表单行卡片：整卡统一弹簧按压反馈 */}
+      <PressableScale
+        style={[
+          styles.cardFront,
+          isSelected && styles.cardSelected,
+        ]}
+        scaleTo={0.98}
+        pressBg="rgba(49, 194, 124, 0.06)"
+        onPress={() => { onPress(item, index) }}
+        onLongPress={() => { onLongPress(item, index) }}
+      >
+        <View style={styles.listItemLeft}>
           {/* 精致序号徽章 */}
           <View style={[
             styles.snBox,
@@ -107,7 +109,7 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
             <Text
               style={[styles.snText, index < 3 && styles.topSnText]}
               size={11}
-              color={index === 0 ? '#FFFFFF' : (index === 1 ? '#B36B00' : colors.inkSecondary)}
+              color={index === 0 ? '#FFFFFF' : (index === 1 ? '#1B8A57' : colors.inkSecondary)}
             >
               {index + 1}
             </Text>
@@ -142,13 +144,13 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
               </Text>
             ) : null
           }
-        </TouchableOpacity>
+        </View>
 
         {/* 更多菜单按钮 */}
         <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton} activeOpacity={0.7}>
           <Icon name="dots-vertical" size={15} color={colors.inkSecondary} />
         </TouchableOpacity>
-      </View>
+      </PressableScale>
     </View>
   )
 }, (prevProps, nextProps) => {
@@ -170,7 +172,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    borderRadius: 12,
     paddingRight: 8,
     paddingLeft: 8,
     shadowColor: '#171A1F',
@@ -180,7 +182,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   cardSelected: {
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    backgroundColor: 'rgba(49, 194, 124, 0.12)',
   },
   listItemLeft: {
     flex: 1,
@@ -196,10 +198,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   snGold: {
-    backgroundColor: '#10B981',
+    backgroundColor: '#31C27C',
   },
   snSoftGold: {
-    backgroundColor: 'rgba(245, 166, 35, 0.18)',
+    backgroundColor: 'rgba(49, 194, 124, 0.18)',
   },
   snGray: {
     backgroundColor: '#F3F4F6',

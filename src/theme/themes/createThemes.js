@@ -10,7 +10,7 @@ const defaultThemes = [
     name: '翡翠绿音',
     isDark: false,
     config: {
-      primary: 'rgb(16, 185, 129)',
+      primary: 'rgb(49, 194, 124)',
       font: 'rgb(15, 23, 42)',
       'c-app-background': 'var(c-primary-light-600-alpha-700)',
       'c-main-background': 'rgba(255, 255, 255, 1)',

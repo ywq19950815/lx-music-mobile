@@ -9,10 +9,10 @@ import { ThemeContext } from '@/store/theme/state'
  */
 
 export const colors = {
-  // 品牌（2026-09-29 设计稿定调：翡翠绿 Emerald #10B981）
-  brand: '#10B981', // 翡翠绿 primary
-  brandDeep: '#059669', // 绿的按压/暂停态
-  brandLight: '#34D399', // 绿的亮部（渐变/光晕用）
+  // 品牌（奇哥定调：QQ 音乐绿 #31C27C，全 App 唯一品牌色）
+  brand: '#31C27C', // QQ 音乐绿 primary
+  brandDeep: '#29AE6A', // 绿的按压/暂停态
+  brandLight: '#5FD6A3', // 绿的亮部（渐变/光晕用）
 
   // 浅色世界（浏览场景，对齐设计稿 Slate 浅色系）
   canvas: '#F8FAFC', // 页面底
@@ -47,9 +47,9 @@ export const darkColors = {
   inkSecondary: 'rgba(255,255,255,0.60)',
   inkTertiary: 'rgba(255,255,255,0.38)',
   // 品牌系列在深色下保持一致
-  brand: '#10B981',
-  brandDeep: '#059669',
-  brandLight: '#34D399',
+  brand: '#31C27C',
+  brandDeep: '#29AE6A',
+  brandLight: '#5FD6A3',
   night: '#0E0F12',
   nightSurface: '#17191E',
   onNight: 'rgba(255,255,255,0.92)',
