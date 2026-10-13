@@ -114,25 +114,10 @@ export const SwipeBackView = memo(({
     })
   ).current
 
-  const backdropOpacity = translateX.interpolate({
-    inputRange: [0, winWidth],
-    outputRange: [0.2, 0],
-    extrapolate: 'clamp',
-  })
-
   return (
     <View style={[styles.root, style]} {...panResponder.panHandlers}>
-      {/* 侧滑底色与遮罩 */}
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          styles.backdrop,
-          {
-            opacity: backdropOpacity,
-          },
-        ]}
-      />
-      {/* 内容主体平移 */}
+      {/* 内容主体平移（侧滑时直接露出 root 背景色，无需常驻遮罩层——
+          常驻半透明黑遮罩会让整页在静止状态下发灰） */}
       <Animated.View
         style={[
           styles.content,
@@ -156,19 +141,10 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000000',
-  },
   content: {
     flex: 1,
     width: '100%',
     height: '100%',
-    shadowColor: '#000',
-    shadowOffset: { width: -3, height: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 8,
   },
 })
 

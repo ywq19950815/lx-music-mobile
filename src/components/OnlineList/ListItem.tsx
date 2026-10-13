@@ -93,6 +93,7 @@ export default memo(({ item, index, showSource, onPress, onLongPress, onShowMenu
           styles.cardFront,
           isSelected && styles.cardSelected,
         ]}
+        row
         scaleTo={0.98}
         pressBg="rgba(49, 194, 124, 0.06)"
         onPress={() => { onPress(item, index) }}

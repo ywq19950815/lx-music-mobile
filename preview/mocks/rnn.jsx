@@ -187,11 +187,11 @@ export function RNNTree() {
   if (!generator) {
     return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Screen not registered: {top.name}</Text></View>
   }
-  // RNN 语义：generator(props) 返回一个组件（如 inject），再以 JSX 渲染它
-  const Screen = generator({ ...top.passProps, componentId: top.componentId })
+  // RNN 语义：generator() 返回包装后的组件（如 inject），passProps 在渲染时注入
+  const Screen = generator()
   return (
     <View style={{ flex: 1 }} key={top.key}>
-      <Screen />
+      <Screen {...top.passProps} componentId={top.componentId} />
     </View>
   )
 }

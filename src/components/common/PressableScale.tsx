@@ -18,6 +18,8 @@ export interface PressableScaleProps {
   hitSlop?: { top?: number, bottom?: number, left?: number, right?: number }
   testID?: string
   delayLongPress?: number
+  /** 内容横向排布（列表行等单行布局必开，否则子元素会竖向堆叠） */
+  row?: boolean
 }
 
 /**
@@ -41,6 +43,7 @@ export default function PressableScale({
   hitSlop,
   testID,
   delayLongPress = 500,
+  row = false,
 }: PressableScaleProps) {
   const scale = useRef(new Animated.Value(1)).current
   const press = useRef(new Animated.Value(0)).current
@@ -77,7 +80,7 @@ export default function PressableScale({
         onPressOut={() => { animateTo(false); onPressOut?.() }}
         delayLongPress={delayLongPress}
         hitSlop={hitSlop}
-        style={styles.inner}
+        style={[styles.inner, row && styles.innerRow]}
       >
         {children}
       </TouchableOpacity>
@@ -88,5 +91,9 @@ export default function PressableScale({
 const styles = StyleSheet.create({
   inner: {
     flex: 1,
+  },
+  innerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 })
